@@ -61,32 +61,47 @@ class MyView1 extends PolymerElement {
       </style>
 
       <div class="card">
-        <button id="login" on-click="login" class$="[[loginButton.disabled]]">[[loginButton.text]]</button><br/>
+        <template is="dom-if" if="{{!username}}">
+            <button id="login" on-click="login">Google Login</button><br/>
+        </template>
+        <template is="dom-if" if="{{username}}">
+            <span>Logged in as [[username]]</span>
+            <button id="logout" on-click="logout">ログアウト</button><br/>
+        </template>
         <input id="text" type="text" placeholder="Message" class$="[[textInput.class]]" value$="[[textInput.value]]"><br/>
         <button id="post" class$="[[postButton.class]]" on-click="post">Post</button><br/>
-        <div id="results"></div>
+        <div id="results">
+        <template is="dom-repeat" items="{{posts}}">
+          <div class="msg">
+            <b>{{item.username}}</b>
+            <p>{{item.text}}</p>
+          </div>
+        </template>
+        </div>
       </div>
     `;
     }
 
     constructor() {
+        console.log( 'constructor()' );
         super();
         this.username = '';
-
-        this.loginButton = { text: 'Google Login', disabled: '' };
-        this.textInput = { value: '', class: 'visible' };
-        this.postButton = { class: 'visible' };
+        this.textInput = { value: '', class: 'unvisible' };
+        this.postButton = { class: 'unvisible' };
+        this.posts = [];
+        this.initFirebase();
     }
 
     ready() {
+        console.log( 'ready()' );
         super.ready();
-        this.initFirebase();
+        this.setUserInfo();
     }
 
     // Initialize Firebase
     initFirebase() {
-        console.log( 'Initialize Firebase' );
-        var config = {
+        console.log( 'initFirebase()' );
+        let config = {
             apiKey: "AIzaSyAGW3s4tqAe8wAZY65hrM6YKpvKHj2dNjM",
             authDomain: "buddyup-204005.firebaseapp.com",
             databaseURL: "https://buddyup-204005.firebaseio.com",
@@ -95,70 +110,81 @@ class MyView1 extends PolymerElement {
             messagingSenderId: "541079223817"
         };
         firebase.initializeApp( config );
+        firebase.auth().onAuthStateChanged( user => {
+            console.log( 'onAuthStateChanged' );
+            this.setUserInfo();
+            if ( user ) {
+                this.startListening();
+            }
+        } );
+    }
+
+    // set user info and toggle visible/disable
+    setUserInfo() {
+        console.log( 'setUserInfo()' );
+        let user = firebase.auth().currentUser;
+        if ( user ) {
+            // User is signed in.
+            this.username = user.displayName;
+            this.set( 'textInput.value', '' );
+            this.set( 'textInput.class', 'visible' );
+            this.set( 'postButton.class', 'visible' );
+        } else {
+            // No user is signed in.
+            this.username = '';
+            this.set( 'textInput.value', '' );
+            this.set( 'textInput.class', 'unvisible' );
+            this.set( 'postButton.class', 'unvisible' );
+        }
     }
 
     // Function to add a data listener
     startListening() {
-        console.log( 'Function to add a data listener' );
-        firebase.database().ref( '/' ).on( 'child_added', function( snapshot ) {
-            var msg = snapshot.val();
-            console.log( 'MESSAGE:', msg );
-
-            // var msgUsernameElement = document.createElement( "b" );
-            // msgUsernameElement.textContent = msg.username;
-            //
-            // var msgTextElement = document.createElement( "p" );
-            // msgTextElement.textContent = msg.text;
-            //
-            // var msgElement = document.createElement( "div" );
-            // msgElement.appendChild( msgUsernameElement );
-            // msgElement.appendChild( msgTextElement );
-            //
-            // msgElement.className = "msg";
-            // document.getElementById( "results" ).appendChild( msgElement );
+        console.log( 'startListening()' );
+        firebase.database().ref( '/' ).on( 'child_added', snapshot => {
+            this.push( 'posts', snapshot.val() );
         } );
     }
 
     // login
     login() {
-        console.log( 'login' );
-        var provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithRedirect( provider );
-        console.log( '1------------' );
-        firebase.auth().getRedirectResult().then( function( result ) {
-            console.log( '2------------' );
-            if ( result.credential ) {
-                // This gives you a Google Access Token. You can use it to access the Google API.
-                var token = result.credential.accessToken;
-                // The signed-in user info.
-                var user = result.user;
-                this.username = user.displayName;
-                this.set( 'loginButton.text', 'Logged in as ' + this.username );
-                this.set( 'loginButton.disabled', 'true' );
-                this.set( 'textInput.class', 'visible' );
-                this.set( 'postButton.class', 'visible' );
-                // Start listening for data, remove previous calls to this method
-                this.startListening();
-            }
+        console.log( 'login()' );
+        let provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup( provider ).then( result => {
+            // This gives you a Google Access Token. You can use it to access the Google API.
+            let token = result.credential.accessToken;
             // The signed-in user info.
-            var user = result.user;
-        } ).catch( function( error ) {
+            let user = result.user;
+        } ).catch( error => {
             // Handle Errors here.
-            var errorCode = error.code;
-            var errorMessage = error.message;
+            let errorCode = error.code;
+            let errorMessage = error.message;
             // The email of the user's account used.
-            var email = error.email;
+            let email = error.email;
             // The firebase.auth.AuthCredential type that was used.
-            var credential = error.credential;
+            let credential = error.credential;
             console.error( 'ERROR:', error );
+        } );
+    }
+
+    // logout
+    logout() {
+        console.log( 'logout()' );
+        this.set( 'posts', [] );
+        firebase.auth().signOut().then( () => {
+            // Sign-out successful.
+            console.log( 'loged out' );
+        } ).catch( error => {
+            // An error happened.
+            console.error( error );
         } );
     }
 
     // post
     post() {
-        console.log( this.$.text.value );
+        console.log( 'post()' );
         firebase.database().ref( '/' ).push( {
-            username: 'this.username',
+            username: this.username,
             text: this.$.text.value
         } );
         this.textInput.value = '';
