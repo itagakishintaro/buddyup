@@ -10,6 +10,9 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
+import './auth-view.js';
+import './post-view.js';
+import './comments-view.js';
 
 class MyView1 extends PolymerElement {
     static get template() {
@@ -20,65 +23,13 @@ class MyView1 extends PolymerElement {
 
           padding: 10px;
         }
-
-        body {
-            font-family: 'HelveticaNeue-Light';
-        }
-
-        .msg {
-            margin: 10px 0;
-            padding: 10px;
-            width: 400px;
-            background-color: #efefef;
-        }
-
-        #username,
-        #text {
-            margin: 5px 0px;
-        }
-
-        #post {
-            padding: 0.5em 1em;
-            background-color: #50b1ff;
-            border: none;
-            color: #FFF;
-        }
-
-        #login {
-            padding: 0.5em 1em;
-            background-color: #DD4B39;
-            border: none;
-            color: #FFF;
-            cursor: pointer;
-        }
-
-        .visible {
-            display: block;
-        }
-        .unvisible{
-            display: none;
-        }
       </style>
 
       <div class="card">
-        <template is="dom-if" if="{{!username}}">
-            <button id="login" on-click="login">Google Login</button><br/>
-        </template>
-        <template is="dom-if" if="{{username}}">
-            <span>Logged in as [[username]]</span>
-            <button id="logout" on-click="logout">ログアウト</button><br/>
-        </template>
-        <input id="text" type="text" placeholder="Message" class$="[[textInput.class]]" value$="[[textInput.value]]"><br/>
-        <button id="post" class$="[[postButton.class]]" on-click="post">Post</button><br/>
-        <div id="results">
-        <template is="dom-repeat" items="{{posts}}">
-          <div class="msg">
-            <b>{{item.username}}</b>
-            <p>{{item.text}}</p>
-          </div>
-        </template>
-        </div>
-      </div>
+        <auth-view username={{username}}></auth-view>
+        <post-view class={{postViewClass}}></post-view>
+        <comments-view comments={{comments}}></comments-view>
+
     `;
     }
 
@@ -86,9 +37,8 @@ class MyView1 extends PolymerElement {
         console.log( 'constructor()' );
         super();
         this.username = '';
-        this.textInput = { value: '', class: 'unvisible' };
-        this.postButton = { class: 'unvisible' };
-        this.posts = [];
+        this.postViewClass = 'visible';
+        this.comments = [];
         this.initFirebase();
     }
 
@@ -127,15 +77,11 @@ class MyView1 extends PolymerElement {
         if ( user ) {
             // User is signed in.
             this.username = user.displayName;
-            this.set( 'textInput.value', '' );
-            this.set( 'textInput.class', 'visible' );
-            this.set( 'postButton.class', 'visible' );
+            this.set( 'postViewClass', 'visible' );
         } else {
             // No user is signed in.
             this.username = '';
-            this.set( 'textInput.value', '' );
-            this.set( 'textInput.class', 'unvisible' );
-            this.set( 'postButton.class', 'unvisible' );
+            this.set( 'postViewClass', 'unvisible' );
         }
     }
 
@@ -143,53 +89,10 @@ class MyView1 extends PolymerElement {
     startListening() {
         console.log( 'startListening()' );
         firebase.database().ref( '/' ).on( 'child_added', snapshot => {
-            this.push( 'posts', snapshot.val() );
+            this.push( 'comments', snapshot.val() );
         } );
     }
 
-    // login
-    login() {
-        console.log( 'login()' );
-        let provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithPopup( provider ).then( result => {
-            // This gives you a Google Access Token. You can use it to access the Google API.
-            let token = result.credential.accessToken;
-            // The signed-in user info.
-            let user = result.user;
-        } ).catch( error => {
-            // Handle Errors here.
-            let errorCode = error.code;
-            let errorMessage = error.message;
-            // The email of the user's account used.
-            let email = error.email;
-            // The firebase.auth.AuthCredential type that was used.
-            let credential = error.credential;
-            console.error( 'ERROR:', error );
-        } );
-    }
-
-    // logout
-    logout() {
-        console.log( 'logout()' );
-        this.set( 'posts', [] );
-        firebase.auth().signOut().then( () => {
-            // Sign-out successful.
-            console.log( 'loged out' );
-        } ).catch( error => {
-            // An error happened.
-            console.error( error );
-        } );
-    }
-
-    // post
-    post() {
-        console.log( 'post()' );
-        firebase.database().ref( '/' ).push( {
-            username: this.username,
-            text: this.$.text.value
-        } );
-        this.textInput.value = '';
-    }
 }
 
 window.customElements.define( 'my-view1', MyView1 );

@@ -10,7 +10,7 @@
 
 import '@polymer/polymer/polymer-element.js';
 
-const $_documentContainer = document.createElement('template');
+const $_documentContainer = document.createElement( 'template' );
 $_documentContainer.innerHTML = `<dom-module id="shared-styles">
   <template>
     <style>
@@ -35,13 +35,24 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
         line-height: 64px;
       }
 
+      body {
+          font-family: 'HelveticaNeue-Light';
+      }
+
       h1 {
         margin: 16px 0;
         color: #212121;
         font-size: 22px;
       }
+
+      .visible {
+          display: block;
+      }
+      .unvisible{
+          display: none;
+      }
     </style>
   </template>
 </dom-module>`;
 
-document.head.appendChild($_documentContainer.content);
+document.head.appendChild( $_documentContainer.content );
