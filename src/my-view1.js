@@ -25,7 +25,6 @@ class MyView1 extends PolymerElement {
         }
       </style>
 
-      <div class="card">
         <auth-view username={{username}}></auth-view>
         <post-view class={{postViewClass}}></post-view>
         <comments-view comments={{comments}}></comments-view>

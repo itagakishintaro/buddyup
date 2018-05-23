@@ -12,14 +12,34 @@ class AuthView extends PolymerElement {
           color: #FFF;
           cursor: pointer;
       }
+
+      #logout {
+          padding: 0.5em 1em;
+          background-color: rgba(158,158,158,.2);
+          border: none;
+          color: #000;
+          cursor: pointer;
+      }
+
+      #login-label {
+          height: 2em;
+      }
+
+      #container {
+          display: flex;
+         justify-content: space-between;
+         margin: 1em 0;
+      }
       </style>
 
       <template is="dom-if" if="{{!username}}">
-          <button id="login" on-click="login">Google Login</button><br/>
+          <button id="login" on-click="login">Google Login</button>
       </template>
       <template is="dom-if" if="{{username}}">
-          <span>Logged in as {{username}}</span>
-          <button id="logout" on-click="logout">ログアウト</button><br/>
+      <div id="container">
+        <div id="login-label">{{username}}さん</div>
+        <button id="logout" on-click="logout">ログアウト</button>
+        </div>
       </template>
 
     `;
