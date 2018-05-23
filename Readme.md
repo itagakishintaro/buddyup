@@ -1,3 +1,18 @@
+＃Architecture
+
+* mBaaS(Hosting, Database, Authentication): [firebase](https://console.firebase.google.com/)
+* Framework: [Polymer](https://www.polymer-project.org/)
+
+# Contribute
+
+```
+polymer serve // local check
+polymer build // JS transpile etc
+firebase deploy // deploy to firebase
+```
+
+---
+
 # Polymer App Toolbox - Starter Kit
 
 [![Build Status](https://travis-ci.org/Polymer/polymer-starter-kit.svg?branch=master)](https://travis-ci.org/Polymer/polymer-starter-kit)

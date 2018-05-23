@@ -101,7 +101,8 @@ class MyView1 extends PolymerElement {
     // Initialize Firebase
     initFirebase() {
         console.log( 'initFirebase()' );
-        let config = {
+        // Initialize Firebase
+        var config = {
             apiKey: "AIzaSyAGW3s4tqAe8wAZY65hrM6YKpvKHj2dNjM",
             authDomain: "buddyup-204005.firebaseapp.com",
             databaseURL: "https://buddyup-204005.firebaseio.com",
