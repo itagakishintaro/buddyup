@@ -5,25 +5,44 @@ class CommentsView extends PolymerElement {
     static get template() {
         return html `
       <style include="shared-styles">
-      #username,
+      #container {
+          overflow: scroll;
+          margin: 1em;
+      }
+
+      #username {
+          font-size: .5em;
+
+      }
       #text {
-          margin: 5px 0px;
+        vertical-align: text-top;
+        display:table-cell;
       }
 
       .msg {
-          margin: 10px 0;
-          padding: 10px;
-          width: 400px;
-          background-color: #efefef;
+          margin-bottom: 1em;
+          width: 100%;
+          display: flex;
+      }
+
+      .icon {
+          width: 2em;
+          height: 2em;
+          margin-right: .5em;
       }
       </style>
 
-      <template is="dom-repeat" items="{{comments}}">
-        <div class="msg">
-          <b id="username">{{item.username}}</b>
-          <p id="text">{{item.text}}</p>
-        </div>
-      </template>
+      <div id="container">
+          <template is="dom-repeat" items="{{comments}}" on-dom-change="scroll">
+            <div class="msg">
+                <div><img src="images/manifest/icon-48x48.png" class="icon"></div>
+                <div>
+                    <div id="username">{{item.username}}</div>
+                    <p id="text">{{item.text}}</p>
+                </div>
+            </div>
+          </template>
+          <div id="bottom"></div>
       </div>
 
     `;
@@ -38,6 +57,11 @@ class CommentsView extends PolymerElement {
         return {
             comments: Array
         }
+    }
+
+    scroll() {
+        console.log( 'scroll()' );
+        this.$.bottom.scrollIntoView( true );
     }
 
 }

@@ -49,6 +49,8 @@ class MyApp extends PolymerElement {
         app-header {
           color: #fff;
           background-color: var(--app-primary-color);
+          position: fixed;
+          top:0;
         }
 
         app-header paper-icon-button {
@@ -84,24 +86,27 @@ class MyApp extends PolymerElement {
         <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
           <app-toolbar>Menu</app-toolbar>
           <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-            <a name="view1" href="[[rootPath]]view1">View One</a>
+            <a name="chat-view" href="[[rootPath]]chat-view">投稿ページ</a>
             <a name="view2" href="[[rootPath]]view2">View Two</a>
+            <template is="dom-if" if="{{user}}">
+                <a name="logout" on-click="logout">ログアウト</a>
+            </template>
           </iron-selector>
         </app-drawer>
 
         <!-- Main content -->
         <app-header-layout has-scrolling-region="">
 
-          <app-header slot="header" condenses="" reveals="" effects="waterfall">
+          <app-header slot="header" fixed condenses="" reveals="" effects="waterfall">
             <app-toolbar>
               <paper-icon-button icon="my-icons:menu" drawer-toggle=""></paper-icon-button>
-              <div main-title="">My App</div>
+              <div main-title="">Buddyup!</div>
             </app-toolbar>
           </app-header>
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
-            <my-view1 name="view1"></my-view1>
-            <my-view2 name="view2"></my-view2>
+            <login-view name="login-view"></login-view>
+            <chat-view name="chat-view"></chat-view>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
         </app-header-layout>
@@ -133,8 +138,8 @@ class MyApp extends PolymerElement {
         // If no page was found in the route data, page will be an empty string.
         // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
         if ( !page ) {
-            this.page = 'view1';
-        } else if ( [ 'view1', 'view2', 'view3' ].indexOf( page ) !== -1 ) {
+            this.page = 'login-view';
+        } else if ( [ 'login-view', 'chat-view' ].indexOf( page ) !== -1 ) {
             this.page = page;
         } else {
             this.page = 'view404';
@@ -152,16 +157,56 @@ class MyApp extends PolymerElement {
         // Note: `polymer build` doesn't like string concatenation in the import
         // statement, so break it up.
         switch ( page ) {
-            case 'view1':
-                import ( './my-view1.js' );
+            case 'login-view':
+                import ( './login-view.js' );
                 break;
-            case 'view2':
-                import ( './my-view2.js' );
+            case 'chat-view':
+                import ( './chat-view.js' );
                 break;
             case 'view404':
                 import ( './my-view404.js' );
                 break;
         }
+    }
+
+    constructor() {
+        console.log( 'constructor()' );
+        super();
+        this.user = '';
+        this.initFirebase();
+    }
+
+    // Initialize Firebase
+    initFirebase() {
+        console.log( 'initFirebase()' );
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyAGW3s4tqAe8wAZY65hrM6YKpvKHj2dNjM",
+            authDomain: "buddyup-204005.firebaseapp.com",
+            databaseURL: "https://buddyup-204005.firebaseio.com",
+            projectId: "buddyup-204005",
+            storageBucket: "buddyup-204005.appspot.com",
+            messagingSenderId: "541079223817"
+        };
+        firebase.initializeApp( config );
+        firebase.auth().onAuthStateChanged( user => {
+            console.log( 'onAuthStateChanged' );
+            this.user = user;
+        } );
+    }
+
+    // logout
+    logout() {
+        console.log( 'logout()', firebase.auth().currentUser );
+        this.$.drawer.close();
+        firebase.auth().signOut().then( () => {
+            // Sign-out successful.
+            console.log( 'loged out' );
+            this.set( 'route.path', '/' );
+        } ).catch( error => {
+            // An error happened.
+            console.error( error );
+        } );
     }
 }
 

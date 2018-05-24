@@ -35,9 +35,7 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
         line-height: 64px;
       }
 
-      body {
-          font-family: 'HelveticaNeue-Light';
-      }
+
 
       h1 {
         margin: 16px 0;
