@@ -86,9 +86,12 @@ class MyApp extends PolymerElement {
         <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
           <app-toolbar>Menu</app-toolbar>
           <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
-            <a name="chat-view" href="[[rootPath]]chat-view">投稿ページ</a>
-            <a name="view2" href="[[rootPath]]view2">View Two</a>
+          <template is="dom-if" if="{{!user}}">
+                <a name="chat-view" href="[[rootPath]]login-view">ログイン</a>
+          </template>
             <template is="dom-if" if="{{user}}">
+                <a name="chat-view" href="[[rootPath]]chat-view">投稿ページ</a>
+                <a name="view2" href="[[rootPath]]view2">View Two</a>
                 <a name="logout" on-click="logout">ログアウト</a>
             </template>
           </iron-selector>
@@ -105,8 +108,8 @@ class MyApp extends PolymerElement {
           </app-header>
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
-            <login-view name="login-view"></login-view>
-            <chat-view name="chat-view"></chat-view>
+            <login-view name="login-view" user="{{user}}"></login-view>
+            <chat-view name="chat-view" user="{{user}}"></chat-view>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
         </app-header-layout>
@@ -138,7 +141,7 @@ class MyApp extends PolymerElement {
         // If no page was found in the route data, page will be an empty string.
         // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
         if ( !page ) {
-            this.page = 'login-view';
+            this.page = 'chat-view';
         } else if ( [ 'login-view', 'chat-view' ].indexOf( page ) !== -1 ) {
             this.page = page;
         } else {
@@ -192,6 +195,7 @@ class MyApp extends PolymerElement {
         firebase.auth().onAuthStateChanged( user => {
             console.log( 'onAuthStateChanged' );
             this.user = user;
+            console.log( this.user );
         } );
     }
 
@@ -203,6 +207,7 @@ class MyApp extends PolymerElement {
             // Sign-out successful.
             console.log( 'loged out' );
             this.set( 'route.path', '/' );
+            location.href = '/login-view/';
         } ).catch( error => {
             // An error happened.
             console.error( error );

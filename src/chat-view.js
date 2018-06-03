@@ -18,7 +18,6 @@ class ChatView extends PolymerElement {
         return html `
       <style include="shared-styles">
           #container{
-              /*margin: 1em;*/
           }
           #comments {
               padding-bottom: 3.5em;
@@ -26,10 +25,11 @@ class ChatView extends PolymerElement {
         #post{
             background-color: white;
             border-top: 1px solid rgba(0,0,0,.12);
+            height: 3.5em;
             position: fixed;
             bottom: 0;
             width: 100%;
-            height: 3.5em;
+            max-width: 384px;
         }
       </style>
       <div id="container">
@@ -37,7 +37,7 @@ class ChatView extends PolymerElement {
             <comments-view comments={{comments}}></comments-view>
         </div>
         <div id="post">
-            <post-view class={{postViewClass}}></post-view>
+            <post-view></post-view>
         </div>
         <div id="bottom"></div>
       </div>
@@ -48,15 +48,8 @@ class ChatView extends PolymerElement {
     constructor() {
         console.log( 'constructor()' );
         super();
-        this.username = '';
-        this.postViewClass = 'visible';
         this.comments = [];
         this.startListening();
-    }
-
-    ready() {
-        console.log( 'ready()' );
-        super.ready();
     }
 
     // Function to add a data listener

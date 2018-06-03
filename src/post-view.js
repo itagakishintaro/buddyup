@@ -7,29 +7,31 @@ class PostView extends PolymerElement {
       <style include="shared-styles">
       #container {
           display: flex;
-          justify-content: space-between;
-          margin: 0 .5em .5em 0;
+          /*justify-content: space-between;*/
+          margin-bottom: .5em;
           background-color: white;
       }
+
+      #text {
+          border: none;
+          border-bottom: 1px solid rgba(0,0,0,.12);
+          padding: .5em 1em;
+          resize: none;
+          width: calc(100% - 8em);
+      }
+      ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+            color: gray;
+            opacity: 1; /* Firefox */
+        }
 
       #post {
           margin-top: .5em;
           background-color: #50b1ff;
           border: none;
           color: #FFF;
-          width: 15%;
+          width: 5em;
       }
-      #text {
-          border: none;
-          /*border-bottom: 1px solid rgba(0,0,0,.12);*/
-          padding: .5em 1em;
-          resize: none;
-          width: 85%;
-      }
-      ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-            color: gray;
-            opacity: 1; /* Firefox */
-        }
+
       </style>
 
       <div id="container">

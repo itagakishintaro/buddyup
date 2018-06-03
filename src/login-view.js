@@ -30,6 +30,7 @@ class LoginView extends PolymerElement {
             let token = result.credential.accessToken;
             // The signed-in user info.
             let user = result.user;
+            location.href = '/chat-view/';
         } ).catch( error => {
             // Handle Errors here.
             let errorCode = error.code;
