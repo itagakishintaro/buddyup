@@ -1,5 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
+import './newparty-view.js';
 
 class PartiesView extends PolymerElement {
     static get template() {
@@ -21,10 +22,6 @@ class PartiesView extends PolymerElement {
           align-self: flex-end;
         }
 
-        #post {
-          float: right;
-        }
-
       </style>
 
       <div id="container">
@@ -44,13 +41,7 @@ class PartiesView extends PolymerElement {
             </div>
           </template>
           <hr>
-          <form class="clearfix">
-            <span class="badge">ランチ会の新規登録</span></br>
-            <input id="date" type="date">
-            <input id="name" type="text" placeholder="ランチ会の名前">
-            <input id="place" type="text" placeholder="ランチ会の場所">
-            <button id="post" class="post-btn" on-click="post">登録</button>
-          </form>
+          <newparty-view user={{user}}></newparty-view>
       </div>
     `;
     }
@@ -75,17 +66,6 @@ class PartiesView extends PolymerElement {
                 this.push( 'parties', data.val() );
                 console.log( data.key, data.val(), this.members );
             } );
-        } );
-    }
-
-    // post
-    post() {
-        console.log( 'post()', this.user );
-        firebase.database().ref( 'parties' ).push( {
-            date: this.$.date.value,
-            name: this.$.name.value,
-            place: this.$.place.value,
-            members: [ { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email } ]
         } );
     }
 
