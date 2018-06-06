@@ -91,7 +91,7 @@ class MyApp extends PolymerElement {
           </template>
             <template is="dom-if" if="{{user}}">
                 <a name="chat-view" href="[[rootPath]]chat-view">投稿ページ</a>
-                <a name="members-view" href="[[rootPath]]members-view">メンバー一覧</a>
+                <a name="parties-view" href="[[rootPath]]parties-view">ランチ会一覧</a>
                 <a name="logout" on-click="logout">ログアウト</a>
             </template>
           </iron-selector>
@@ -110,7 +110,7 @@ class MyApp extends PolymerElement {
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <login-view name="login-view" user="{{user}}"></login-view>
             <chat-view name="chat-view" user="{{user}}"></chat-view>
-            <members-view name="members-view" user="{{user}}"></members-view>
+            <parties-view name="parties-view" user="{{user}}"></parties-view>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
         </app-header-layout>
@@ -143,7 +143,7 @@ class MyApp extends PolymerElement {
         // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
         if ( !page ) {
             this.page = 'chat-view';
-        } else if ( [ 'login-view', 'chat-view', 'members-view' ].indexOf( page ) !== -1 ) {
+        } else if ( [ 'login-view', 'chat-view', 'parties-view' ].indexOf( page ) !== -1 ) {
             this.page = page;
         } else {
             this.page = 'view404';
@@ -167,8 +167,8 @@ class MyApp extends PolymerElement {
             case 'chat-view':
                 import ( './chat-view.js' );
                 break;
-            case 'members-view':
-                import ( './members-view.js' );
+            case 'parties-view':
+                import ( './parties-view.js' );
                 break;
             case 'view404':
                 import ( './my-view404.js' );

@@ -37,7 +37,7 @@ class ChatView extends PolymerElement {
             <comments-view comments={{comments}}></comments-view>
         </div>
         <div id="post">
-            <post-view></post-view>
+            <post-view user={{user}}></post-view>
         </div>
         <div id="bottom"></div>
       </div>
@@ -50,6 +50,12 @@ class ChatView extends PolymerElement {
         super();
         this.comments = [];
         this.startListening();
+    }
+
+    static get properties() {
+        return {
+            user: Object
+        }
     }
 
     // Function to add a data listener

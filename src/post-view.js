@@ -29,6 +29,7 @@ class PostView extends PolymerElement {
           background-color: #50b1ff;
           border: none;
           color: #FFF;
+          height: 3em;
           width: 5em;
       }
 
@@ -44,23 +45,22 @@ class PostView extends PolymerElement {
 
     constructor() {
         super();
-        this.class = 'visible';
     }
 
     static get properties() {
         return {
-            class: String
+            user: Object
         }
     }
 
     // post
     post() {
-        console.log( 'post()' );
+        console.log( 'post()', this.$.text.value, this.user.displayName );
         firebase.database().ref( '/' ).push( {
-            username: this.username,
+            username: this.user.displayName,
             text: this.$.text.value
         } );
-        this.textInput.value = '';
+        this.$.text.value = '';
     }
 
 }
