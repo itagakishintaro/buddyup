@@ -32,7 +32,7 @@ class PartiesView extends PolymerElement {
                 <div>{{item.name}}@{{item.place}}</div>
                 <template is="dom-repeat" items="{{item.members}}" on-dom-change="scroll">
                   <div id="member">
-                  {{item.displayName}}
+                    <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
                   </div>
                 </template>
               </div>

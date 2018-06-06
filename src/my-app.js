@@ -78,7 +78,7 @@ class MyApp extends PolymerElement {
       <app-location route="{{route}}" url-space-regex="^[[rootPath]]">
       </app-location>
 
-      <app-route route="{{route}}" pattern="[[rootPath]]:page" data="{{routeData}}" tail="{{subroute}}">
+      <app-route route="{{route}}" pattern="[[rootPath]]chat-view/:talker" data="{{routeData}}" tail="{{subroute}}">
       </app-route>
 
       <app-drawer-layout fullbleed="" narrow="{{narrow}}">
@@ -109,7 +109,7 @@ class MyApp extends PolymerElement {
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <login-view name="login-view" user="{{user}}"></login-view>
-            <chat-view name="chat-view" user="{{user}}"></chat-view>
+            <chat-view name="chat-view" user="{{user}}" talker={{routeData.talker}}></chat-view>
             <parties-view name="parties-view" user="{{user}}"></parties-view>
             <my-view404 name="view404"></my-view404>
           </iron-pages>

@@ -37,7 +37,7 @@ class ChatView extends PolymerElement {
             <comments-view comments={{comments}}></comments-view>
         </div>
         <div id="post">
-            <post-view user={{user}}></post-view>
+            <post-view user={{user}} talker={{talker}}></post-view>
         </div>
         <div id="bottom"></div>
       </div>
@@ -49,19 +49,25 @@ class ChatView extends PolymerElement {
         console.log( 'constructor()' );
         super();
         this.comments = [];
-        this.startListening();
+        // this.startListening( this.talker );
     }
 
     static get properties() {
         return {
-            user: Object
+            user: Object,
+            talker: { type: String, observer: '_talkerChanged' }
         }
     }
 
+    _talkerChanged( newValue, oldValue ) {
+        console.log( '_talkerChanged', newValue );
+        this.startListening( newValue );
+    }
+
     // Function to add a data listener
-    startListening() {
-        console.log( 'startListening()' );
-        firebase.database().ref( '/' ).on( 'child_added', snapshot => {
+    startListening( talker ) {
+        console.log( 'startListening()', talker );
+        firebase.database().ref( 'comments/user:' + talker ).on( 'child_added', snapshot => {
             this.push( 'comments', snapshot.val() );
         } );
     }
