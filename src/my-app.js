@@ -78,7 +78,7 @@ class MyApp extends PolymerElement {
       <app-location route="{{route}}" url-space-regex="^[[rootPath]]">
       </app-location>
 
-      <app-route route="{{route}}" pattern="[[rootPath]]chat-view/:talker" data="{{routeData}}" tail="{{subroute}}">
+      <app-route route="{{route}}" pattern="[[rootPath]]:page/:talker" data="{{routeData}}" tail="{{subroute}}">
       </app-route>
 
       <app-drawer-layout fullbleed="" narrow="{{narrow}}">
@@ -87,11 +87,11 @@ class MyApp extends PolymerElement {
           <app-toolbar>Menu</app-toolbar>
           <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
           <template is="dom-if" if="{{!user}}">
-                <a name="chat-view" href="[[rootPath]]login-view">ログイン</a>
+                <a name="login-view" href="[[rootPath]]login-view/">ログイン</a>
           </template>
             <template is="dom-if" if="{{user}}">
-                <a name="chat-view" href="[[rootPath]]chat-view">投稿ページ</a>
-                <a name="parties-view" href="[[rootPath]]parties-view">ランチ会一覧</a>
+                <a name="chat-view" href="[[rootPath]]chat-view/">投稿ページ</a>
+                <a name="parties-view" href="[[rootPath]]parties-view/">ランチ会一覧</a>
                 <a name="logout" on-click="logout">ログアウト</a>
             </template>
           </iron-selector>
@@ -141,6 +141,7 @@ class MyApp extends PolymerElement {
         //
         // If no page was found in the route data, page will be an empty string.
         // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
+        console.log( '_routePageChanged', page );
         if ( !page ) {
             this.page = 'chat-view';
         } else if ( [ 'login-view', 'chat-view', 'parties-view' ].indexOf( page ) !== -1 ) {
