@@ -5,29 +5,52 @@ class PartiesView extends PolymerElement {
     static get template() {
         return html `
       <style include="shared-styles">
-        #party {
+        #container{
           margin: 1em;
+        }
+        #party {
+          display: flex;
+          justify-content: space-between;
+        }
+
+        #member{
+          margin-left: 1em;
+        }
+
+        #join {
+          align-self: flex-end;
+        }
+
+        #post {
+          float: right;
         }
 
       </style>
 
       <div id="container">
-          <template is="dom-repeat" items="{{parties}}" on-dom-change="scroll">
+          <template is="dom-repeat" items="{{parties}}">
             <div id="party">
-            {{item.date}} {{item.name}} @{{item.place}}
-              <template is="dom-repeat" items="{{item.members}}" on-dom-change="scroll">
-                <div id="member">
-                {{item.displayName}}
-                </div>
-              </template>
+              <div>
+                <div>{{item.date}}</div>
+                <div>{{item.name}}@{{item.place}}</div>
+                <template is="dom-repeat" items="{{item.members}}" on-dom-change="scroll">
+                  <div id="member">
+                  {{item.displayName}}
+                  </div>
+                </template>
+              </div>
+
+              <button id="join" class="post-btn">参加する</button>
             </div>
           </template>
-          <div id="bottom"></div>
-
-          <input id="date" type="date">
-          <input id="name" type="text">
-          <input id="place" type="text">
-          <button id="post" on-click="post">登録</button>
+          <hr>
+          <form class="clearfix">
+            <span class="badge">ランチ会の新規登録</span></br>
+            <input id="date" type="date">
+            <input id="name" type="text" placeholder="ランチ会の名前">
+            <input id="place" type="text" placeholder="ランチ会の場所">
+            <button id="post" class="post-btn" on-click="post">登録</button>
+          </form>
       </div>
     `;
     }
@@ -62,7 +85,7 @@ class PartiesView extends PolymerElement {
             date: this.$.date.value,
             name: this.$.name.value,
             place: this.$.place.value,
-            members: [ { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email }, { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email }, { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email }, { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email }, { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email } ]
+            members: [ { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email } ]
         } );
     }
 

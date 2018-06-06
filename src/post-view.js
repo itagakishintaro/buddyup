@@ -19,25 +19,12 @@ class PostView extends PolymerElement {
           resize: none;
           width: calc(100% - 8em);
       }
-      ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-            color: gray;
-            opacity: 1; /* Firefox */
-        }
-
-      #post {
-          margin-top: .5em;
-          background-color: #50b1ff;
-          border: none;
-          color: #FFF;
-          height: 3em;
-          width: 5em;
-      }
 
       </style>
 
       <div id="container">
-        <textarea id="text" type="text" rows="3" placeholder="スキルや得意なことなど、その人の印象を書いてください"></textarea>
-        <button id="post" on-click="post">投稿</button>
+        <textarea id="text" type="text" rows="2" placeholder="スキルや得意なことなど、その人の印象を書いてください"></textarea>
+        <button id="post" class="post-btn" on-click="post">投稿</button>
       </div>
 
     `;
