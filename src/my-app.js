@@ -90,8 +90,8 @@ class MyApp extends PolymerElement {
                 <a name="login-view" href="[[rootPath]]login-view/">ログイン</a>
           </template>
             <template is="dom-if" if="{{user}}">
-                <a name="chat-view" href="[[rootPath]]chat-view/">投稿ページ</a>
                 <a name="parties-view" href="[[rootPath]]parties-view/">ランチ会一覧</a>
+                <!-- <a name="chat-view" href="[[rootPath]]chat-view/">投稿ページ</a> -->
                 <a name="logout" on-click="logout">ログアウト</a>
             </template>
           </iron-selector>
