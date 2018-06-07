@@ -37,7 +37,7 @@ class PartiesView extends PolymerElement {
                 </template>
               </div>
 
-              <button id="join" class="post-btn">参加する</button>
+              <button id="join" class="post-btn">参加</button>
             </div>
           </template>
           <hr>

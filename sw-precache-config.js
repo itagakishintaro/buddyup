@@ -9,14 +9,16 @@
  */
 
 module.exports = {
-  staticFileGlobs: [
-    'src/**/*',
-    'manifest.json'
-  ],
-  runtimeCaching: [
-    {
-      urlPattern: /\/@webcomponents\/webcomponentsjs\//,
-      handler: 'fastest'
-    }
-  ]
+    staticFileGlobs: [
+        // 'src/**/*',
+        // 'manifest.json'
+        '/index.html',
+        '/manifest.json',
+        '/bower_components/webcomponentsjs/webcomponents-lite.js',
+        '/images/*'
+    ],
+    runtimeCaching: [ {
+        urlPattern: /\/@webcomponents\/webcomponentsjs\//,
+        handler: 'fastest'
+    } ]
 };
