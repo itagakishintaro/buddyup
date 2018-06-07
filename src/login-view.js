@@ -21,36 +21,47 @@ class LoginView extends PolymerElement {
     `;
     }
 
+    static get properties() {
+        return {
+            user: Object
+        }
+    }
+
     // login
     login() {
         console.log( 'login()' );
         let provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithPopup( provider ).then( result => {
-            // This gives you a Google Access Token. You can use it to access the Google API.
-            let token = result.credential.accessToken;
-            // The signed-in user info.
-            let user = result.user;
-            location.href = '/chat-view/';
-        } ).catch( error => {
-            // Handle Errors here.
-            let errorCode = error.code;
-            let errorMessage = error.message;
-            // The email of the user's account used.
-            let email = error.email;
-            // The firebase.auth.AuthCredential type that was used.
-            let credential = error.credential;
-            console.error( 'ERROR:', error );
-        } );
+        // signInWithPopup or signInWithRedirect
+        firebase.auth().signInWithRedirect( provider );
 
-        // firebase.auth().signInWithRedirect( provider );
-        // firebase.auth().getRedirectResult().then( function( result ) {
+        // firebase.auth().signInWithPopup( provider ).then( result => {
+        //     // This gives you a Google Access Token. You can use it to access the Google API.
+        //     let token = result.credential.accessToken;
+        //     // The signed-in user info.
+        //     let user = result.user;
+        //     console.log( 'logined', user );
+        //     location.href = '/chat-view/';
+        // } ).catch( error => {
+        //     // Handle Errors here.
+        //     let errorCode = error.code;
+        //     let errorMessage = error.message;
+        //     // The email of the user's account used.
+        //     let email = error.email;
+        //     // The firebase.auth.AuthCredential type that was used.
+        //     let credential = error.credential;
+        //     console.error( 'ERROR:', error );
+        // } );
+
+        // firebase.auth().getRedirectResult().then( result => {
         //     if ( result.credential ) {
         //         // This gives you a Google Access Token. You can use it to access the Google API.
         //         var token = result.credential.accessToken;
         //     }
         //     // The signed-in user info.
-        //     var user = result.user;
-        // } ).catch( function( error ) {
+        //     this.user = result.user;
+        //     console.log( 'redirect' );
+        //     location.href = '/parties-view/';
+        // } ).catch( error => {
         //     // Handle Errors here.
         //     var errorCode = error.code;
         //     var errorMessage = error.message;

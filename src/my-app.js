@@ -198,9 +198,12 @@ class MyApp extends PolymerElement {
         };
         firebase.initializeApp( config );
         firebase.auth().onAuthStateChanged( user => {
-            console.log( 'onAuthStateChanged' );
+            console.log( 'onAuthStateChanged', user );
             this.user = user;
-            console.log( this.user );
+            if ( user ) {
+                console.log( 'LOGINED' );
+                this.set( 'route.path', '/parties-view/' );
+            }
         } );
     }
 
@@ -211,8 +214,7 @@ class MyApp extends PolymerElement {
         firebase.auth().signOut().then( () => {
             // Sign-out successful.
             console.log( 'loged out' );
-            this.set( 'route.path', '/' );
-            location.href = '/login-view/';
+            this.set( 'route.path', '/login-view/' );
         } ).catch( error => {
             // An error happened.
             console.error( error );
