@@ -17,7 +17,7 @@ class NewpartyView extends PolymerElement {
             <input id="date" type="date">
             <input id="name" type="text" placeholder="ランチ会の名前">
             <input id="place" type="text" placeholder="ランチ会の場所">
-            <button id="post" class="post-btn" on-click="post">登録</button>
+            <button id="post" type="button" class="post-btn" on-click="post">登録</button>
           </form>
       </div>
     `;
@@ -36,12 +36,20 @@ class NewpartyView extends PolymerElement {
     // post
     post() {
         console.log( 'post()', this.user );
+        let userObj = {};
+        userObj[ this.user.uid ] = { displayName: this.user.displayName, email: this.user.email };
         firebase.database().ref( 'parties' ).push( {
             date: this.$.date.value,
             name: this.$.name.value,
             place: this.$.place.value,
-            members: [ { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email } ]
+            members: userObj
         } );
+        // console.log( {
+        //     date: this.$.date.value,
+        //     name: this.$.name.value,
+        //     place: this.$.place.value,
+        //     members: userObj
+        // } );
     }
 
 }

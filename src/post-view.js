@@ -24,7 +24,7 @@ class PostView extends PolymerElement {
 
       <div id="container">
         <textarea id="text" type="text" rows="2" placeholder="スキルや得意なことなど、その人の印象を書いてください"></textarea>
-        <button id="post" class="post-btn" on-click="post">投稿</button>
+        <button id="post" class="post-btn" on-tap="post">投稿</button>
       </div>
 
     `;

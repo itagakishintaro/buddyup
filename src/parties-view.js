@@ -30,14 +30,14 @@ class PartiesView extends PolymerElement {
               <div>
                 <div>{{item.date}}</div>
                 <div>{{item.name}}@{{item.place}}</div>
-                <template is="dom-repeat" items="{{item.members}}" on-dom-change="scroll">
+                <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
                   <div id="member">
                     <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
                   </div>
                 </template>
               </div>
 
-              <button id="join" class="post-btn">参加</button>
+              <button id="join" class="post-btn" data-uid$="{{ item.uid }}" on-click="join">参加</button>
             </div>
           </template>
           <hr>
@@ -63,10 +63,18 @@ class PartiesView extends PolymerElement {
         console.log( 'getMembers()' );
         firebase.database().ref( 'parties' ).on( 'value', snapshot => {
             snapshot.forEach( data => {
-                this.push( 'parties', data.val() );
-                console.log( data.key, data.val(), this.members );
+                let v = data.val();
+                v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, v.members[ key ] ) ); // Convert members from Object to Array
+                this.push( 'parties', Object.assign( { uid: data.key }, v ) );
             } );
         } );
+    }
+
+    // join
+    join( e ) {
+        console.log( 'join()', e.target.dataset.uid );
+        this.parties = [];
+        firebase.database().ref( `parties/${e.target.dataset.uid}/members` ).push( { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email } );
     }
 
 }
