@@ -201,7 +201,7 @@ class MyApp extends PolymerElement {
             console.log( 'onAuthStateChanged', user );
             this.user = user;
             if ( user ) {
-                console.log( 'LOGINED' );
+                console.log( 'LOGINED', user );
                 this.set( 'route.path', '/parties-view/' );
             }
         } );

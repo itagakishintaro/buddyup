@@ -61,6 +61,7 @@ class ChatView extends PolymerElement {
 
     _talkerChanged( newValue, oldValue ) {
         console.log( '_talkerChanged', newValue );
+        this.comments = [];
         this.startListening( newValue );
     }
 
