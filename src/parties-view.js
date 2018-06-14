@@ -36,8 +36,12 @@ class PartiesView extends PolymerElement {
                   </div>
                 </template>
               </div>
-
-              <button id="join" class="post-btn" data-uid$="{{ item.uid }}" on-click="join">参加</button>
+              <template is="dom-if" if="{{ item.joined }}">
+                <button id="join" class="cancel-btn" data-uid$="{{ item.uid }}" on-click="cancel">キャンセル</button>
+              </template>
+              <template is="dom-if" if="{{ !item.joined }}">
+                <button id="join" class="post-btn" data-uid$="{{ item.uid }}" on-click="join">参加</button>
+              </template>
             </div>
           </template>
           <hr>
@@ -58,23 +62,29 @@ class PartiesView extends PolymerElement {
         }
     }
 
-    // getMembers
     getMembers() {
         console.log( 'getMembers()' );
         firebase.database().ref( 'parties' ).on( 'value', snapshot => {
+            this.parties = [];
             snapshot.forEach( data => {
                 let v = data.val();
-                v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, v.members[ key ] ) ); // Convert members from Object to Array
+                if ( v.members ) {
+                    v.joined = Object.keys( v.members ).includes( this.user.uid ); // Current user already joined or not
+                    v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, v.members[ key ] ) ); // Convert members from Object to Array
+                }
                 this.push( 'parties', Object.assign( { uid: data.key }, v ) );
             } );
         } );
     }
 
-    // join
     join( e ) {
         console.log( 'join()', e.target.dataset.uid );
-        this.parties = [];
-        firebase.database().ref( `parties/${e.target.dataset.uid}/members` ).push( { uid: this.user.uid, displayName: this.user.displayName, email: this.user.email } );
+        firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( { displayName: this.user.displayName, email: this.user.email } );
+    }
+
+    cancel( e ) {
+        console.log( 'cancel()', e.target.dataset.uid );
+        firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( null );
     }
 
 }

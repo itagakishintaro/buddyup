@@ -44,12 +44,6 @@ class NewpartyView extends PolymerElement {
             place: this.$.place.value,
             members: userObj
         } );
-        // console.log( {
-        //     date: this.$.date.value,
-        //     name: this.$.name.value,
-        //     place: this.$.place.value,
-        //     members: userObj
-        // } );
     }
 
 }

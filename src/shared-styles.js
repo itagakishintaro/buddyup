@@ -43,7 +43,18 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
           border: none;
           color: #FFF;
           height: 3em;
-          width: 5em;
+          min-width: 5em;
+      }
+
+      .cancel-btn {
+          border-color: #50b1ff;
+          border-style: solid;
+          border-width: 2px;
+          margin-top: .5em;
+          background-color: #FFF;
+          color: #50b1ff;
+          height: 3em;
+          min-width: 5em;
       }
 
       .badge {

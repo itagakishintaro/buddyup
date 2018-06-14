@@ -16,7 +16,7 @@ class LoginView extends PolymerElement {
       }
 
       </style>
-      <button id="login" on-tap="login">Googleでログイン</button>
+      <button id="login" on-click="login">Googleでログイン</button>
 
     `;
     }
