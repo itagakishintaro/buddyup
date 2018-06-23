@@ -1,11 +1,13 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
+import '@polymer/paper-input/paper-input.js';
+import '@polymer/paper-button/paper-button.js';
 
 class NewpartyView extends PolymerElement {
     static get template() {
         return html `
       <style include="shared-styles">
-        #post {
+        .on {
           float: right;
         }
 
@@ -14,10 +16,10 @@ class NewpartyView extends PolymerElement {
       <div id="container">
           <form class="clearfix">
             <span class="badge">ランチ会の新規登録</span></br>
-            <input id="date" type="date">
-            <input id="name" type="text" placeholder="ランチ会の名前">
-            <input id="place" type="text" placeholder="ランチ会の場所">
-            <button id="post" type="button" class="post-btn" on-click="post">登録</button>
+            <paper-input id="date" type="date" label="日付"></paper-input>
+            <paper-input id="name" always-float-label label="名前"></paper-input>
+            <paper-input id="place" always-float-label label="場所"></paper-input>
+            <paper-button id="post" raised class="on" on-click="post">登録</paper-button>
           </form>
       </div>
     `;

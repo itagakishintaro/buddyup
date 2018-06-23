@@ -37,7 +37,12 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
         box-sizing: border-box;
       }
 
-      .post-btn {
+      paper-button.on {
+          background-color: #50b1ff;
+          color: #FFF;
+      }
+
+      /* .post-btn {
           margin-top: .5em;
           background-color: #50b1ff;
           border: none;
@@ -55,7 +60,7 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
           color: #50b1ff;
           height: 3em;
           min-width: 5em;
-      }
+      } */
 
       .badge {
         background-color: gray;
