@@ -5,18 +5,19 @@ class CommentsView extends PolymerElement {
     static get template() {
         return html `
       <style include="shared-styles">
-      #container {
+      .container {
           overflow: scroll;
           margin: 1em;
       }
 
-      #username {
+      .username {
           font-size: .5em;
 
       }
-      #text {
+      .text {
         vertical-align: text-top;
         display:table-cell;
+        white-space:pre-wrap;
       }
 
       .msg {
@@ -32,13 +33,13 @@ class CommentsView extends PolymerElement {
       }
       </style>
 
-      <div id="container">
+      <div class="container">
           <template is="dom-repeat" items="{{comments}}" on-dom-change="scroll">
             <div class="msg">
                 <div><img src="images/manifest/icon-48x48.png" class="icon"></div>
                 <div>
-                    <div id="username">{{item.username}}</div>
-                    <p id="text">{{item.text}}</p>
+                    <div class="username">{{item.username}}</div>
+                    <p class="text">{{item.text}}</p>
                 </div>
             </div>
           </template>

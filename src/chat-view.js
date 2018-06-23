@@ -10,34 +10,31 @@
 
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
-import './post-view.js';
+import './comment-post-view.js';
 import './comments-view.js';
 
 class ChatView extends PolymerElement {
     static get template() {
         return html `
       <style include="shared-styles">
-          #container{
-          }
-          #comments {
+          .comments {
               padding-bottom: 3.5em;
           }
-        #post{
+        .post{
             background-color: white;
             border-top: 1px solid rgba(0,0,0,.12);
-            height: 3.5em;
             position: fixed;
             bottom: 0;
             width: 100%;
             max-width: 384px;
         }
       </style>
-      <div id="container">
-        <div id="comments">
+      <div>
+        <div class="comments">
             <comments-view comments={{comments}}></comments-view>
         </div>
-        <div id="post">
-            <post-view user={{user}} talker={{talker}}></post-view>
+        <div class="post">
+            <comment-post-view user={{user}} talker={{talker}}></comment-post-view>
         </div>
         <div id="bottom"></div>
       </div>
@@ -68,6 +65,7 @@ class ChatView extends PolymerElement {
     // Function to add a data listener
     startListening( talker ) {
         console.log( 'startListening()', talker );
+        this.comments = [];
         firebase.database().ref( 'comments/user:' + talker ).on( 'child_added', snapshot => {
             this.push( 'comments', snapshot.val() );
         } );

@@ -37,7 +37,7 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
         box-sizing: border-box;
       }
 
-      .container{
+      .container {
         margin: 1em;
       }
 
@@ -50,11 +50,6 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
       paper-button.off {
           font-size: .8em;
       }
-
-      ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
-            color: gray;
-            opacity: 1; /* Firefox */
-        }
 
         .clearfix:after {
           content: "";
