@@ -15,9 +15,9 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
   <template>
     <style>
       h1 {
-        margin: 16px 0;
+        margin: 0;
         color: #212121;
-        font-size: 22px;
+        font-size: 1.2em;
       }
 
       input {
@@ -37,36 +37,18 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
         box-sizing: border-box;
       }
 
+      .container{
+        margin: 1em;
+      }
+
       paper-button.on {
           background-color: #50b1ff;
           color: #FFF;
+          font-size: .8em;
       }
 
-      /* .post-btn {
-          margin-top: .5em;
-          background-color: #50b1ff;
-          border: none;
-          color: #FFF;
-          height: 3em;
-          min-width: 5em;
-      }
-
-      .cancel-btn {
-          border-color: #50b1ff;
-          border-style: solid;
-          border-width: 2px;
-          margin-top: .5em;
-          background-color: #FFF;
-          color: #50b1ff;
-          height: 3em;
-          min-width: 5em;
-      } */
-
-      .badge {
-        background-color: gray;
-        color: white;
-        border-radius: .25rem;
-        padding: .25em .4em;
+      paper-button.off {
+          font-size: .8em;
       }
 
       ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */

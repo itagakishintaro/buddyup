@@ -10,12 +10,11 @@ class NewpartyView extends PolymerElement {
         .on {
           float: right;
         }
-
       </style>
 
-      <div id="container">
+      <div>
+      <h1>ランチ会の新規登録</h1>
           <form class="clearfix">
-            <span class="badge">ランチ会の新規登録</span></br>
             <paper-input id="date" type="date" label="日付"></paper-input>
             <paper-input id="name" always-float-label label="名前"></paper-input>
             <paper-input id="place" always-float-label label="場所"></paper-input>
@@ -35,7 +34,6 @@ class NewpartyView extends PolymerElement {
         }
     }
 
-    // post
     post() {
         console.log( 'post()', this.user );
         let userObj = {};

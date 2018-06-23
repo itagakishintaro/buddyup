@@ -1,46 +1,46 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
 import './newparty-view.js';
+import '@polymer/paper-button/paper-button.js';
 
 class PartiesView extends PolymerElement {
     static get template() {
         return html `
       <style include="shared-styles">
-        #container{
-          margin: 1em;
-        }
-        #party {
+        .party {
           display: flex;
           justify-content: space-between;
+          margin-bottom: 1em;
         }
 
-        #member{
+        .indent {
           margin-left: 1em;
         }
 
-        #join {
+        .on, .off {
           align-self: flex-end;
+          height: 2em;
         }
 
       </style>
 
-      <div id="container">
+      <div class="container">
           <template is="dom-repeat" items="{{parties}}">
-            <div id="party">
+            <div class="party">
               <div>
                 <div>{{item.date}}</div>
-                <div>{{item.name}}@{{item.place}}</div>
+                <div class="indent">{{item.name}}@{{item.place}}</div>
                 <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
-                  <div id="member">
+                  <div class="indent">
                     <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
                   </div>
                 </template>
               </div>
               <template is="dom-if" if="{{ item.joined }}">
-                <button id="join" class="cancel-btn" data-uid$="{{ item.uid }}" on-click="cancel">キャンセル</button>
+                <paper-button id="cancel" raised class="off" data-uid$="{{ item.uid }}" on-click="cancel">cancel</paper-button>
               </template>
               <template is="dom-if" if="{{ !item.joined }}">
-                <button id="join" class="post-btn" data-uid$="{{ item.uid }}" on-click="join">参加</button>
+                <paper-button id="join" raised class="on" data-uid$="{{ item.uid }}" on-click="join">参加</paper-button>
               </template>
             </div>
           </template>
