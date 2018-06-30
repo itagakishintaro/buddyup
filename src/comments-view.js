@@ -1,5 +1,8 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
+import '@polymer/paper-badge/paper-badge.js';
+import '@polymer/iron-icons/iron-icons.js';
+import '@polymer/paper-icon-button/paper-icon-button.js';
 
 class CommentsView extends PolymerElement {
     static get template() {
@@ -24,6 +27,26 @@ class CommentsView extends PolymerElement {
                 width: 100%;
                 display: flex;
             }
+
+            .like {
+                border : 1px solid var(--paper-blue-grey-200);
+                border-radius: .25em;
+                padding: .25em .5em;
+                width: 4em;
+            }
+
+            .like-icon {
+                width: 1.5em;
+                height: 1.5em;
+                color: var(--paper-blue-800);
+                vertical-align: middle;
+                padding: 0;
+            }
+
+            .like-number {
+                color: var(--paper-blue-grey-600);
+                font-size: .8em;
+            }
         </style>
 
         <div class="container">
@@ -35,6 +58,10 @@ class CommentsView extends PolymerElement {
                     <div>
                         <div class="username">{{item.username}}</div>
                         <p class="text">{{item.text}}</p>
+                        <div class="like">
+                            <paper-icon-button class="like-icon" icon="thumb-up" data-uid$="{{ item.uid }}" on-click="like"></paper-icon-button>
+                            <span class="like-number">999</span>
+                        </div>
                     </div>
                 </div>
             </template>
@@ -57,6 +84,10 @@ class CommentsView extends PolymerElement {
     scroll() {
         console.log( 'scroll()' );
         this.$.bottom.scrollIntoView( true );
+    }
+
+    like( e ) {
+        console.log( 'like()', e.target.dataset.uid );
     }
 
 }
