@@ -75,20 +75,18 @@ class ChatView extends PolymerElement {
         }
     }
 
-    _talkerChanged( newValue, oldValue ) {
-        console.log( '_talkerChanged', newValue );
+    _talkerChanged( newTalker, oldTalker ) {
+        console.log( '_talkerChanged', newTalker );
         this.comments = [];
-        this.startListening( newValue );
-    }
+        firebase.database().ref( 'comments/user:' + newTalker ).off( 'child_added' );
 
-    // Function to add a data listener
-    startListening( talker ) {
-        console.log( 'startListening()', talker );
-        this.comments = [];
-        firebase.database().ref( 'comments/user:' + talker ).on( 'child_added', snapshot => {
+        // get comments to the new talker
+        firebase.database().ref( 'comments/user:' + newTalker ).on( 'child_added', snapshot => {
+            // console.log( '-----', snapshot.val() );
             this.push( 'comments', snapshot.val() );
         } );
-        firebase.database().ref( 'profiles/' + talker ).once( 'value' ).then( snapshot => {
+        // get the new talker's profile
+        firebase.database().ref( 'profiles/' + newTalker ).once( 'value' ).then( snapshot => {
             this.talkerProfile = snapshot.val();
         } );
     }
