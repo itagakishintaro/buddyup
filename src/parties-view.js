@@ -64,16 +64,14 @@ class PartiesView extends PolymerElement {
 
     getMembers() {
         console.log( 'getMembers()' );
-        firebase.database().ref( 'parties' ).on( 'value', snapshot => {
-            this.parties = [];
-            snapshot.forEach( data => {
-                let v = data.val();
-                if ( v.members ) {
-                    v.joined = Object.keys( v.members ).includes( this.user.uid ); // Current user already joined or not
-                    v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, v.members[ key ] ) ); // Convert members from Object to Array
-                }
-                this.push( 'parties', Object.assign( { uid: data.key }, v ) );
-            } );
+        this.parties = [];
+        firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).on( 'child_added', snapshot => {
+            let v = snapshot.val();
+            if ( v.members ) {
+                v.joined = Object.keys( v.members ).includes( this.user.uid ); // Current user already joined or not
+                v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, v.members[ key ] ) ); // Convert members from Object to Array
+            }
+            this.push( 'parties', Object.assign( { uid: snapshot.key }, v ) );
         } );
     }
 
