@@ -65,6 +65,7 @@ class PartiesView extends PolymerElement {
     getMembers() {
         console.log( 'getMembers()' );
         this.parties = [];
+        firebase.database().ref( 'parties' ).off( 'child_added' );
         firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).on( 'child_added', snapshot => {
             let v = snapshot.val();
             if ( v.members ) {
@@ -78,11 +79,13 @@ class PartiesView extends PolymerElement {
     join( e ) {
         console.log( 'join()', e.target.dataset.uid );
         firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( { displayName: this.user.displayName } );
+        this.getMembers();
     }
 
     cancel( e ) {
         console.log( 'cancel()', e.target.dataset.uid );
         firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( null );
+        this.getMembers();
     }
 
 }
