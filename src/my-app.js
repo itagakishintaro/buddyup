@@ -143,7 +143,7 @@ class MyApp extends PolymerElement {
         // Show 'view1' in that case. And if the page doesn't exist, show 'view404'.
         console.log( '_routePageChanged', page );
         if ( !page ) {
-            this.page = 'chat-view';
+            this.page = 'login-view';
         } else if ( [ 'login-view', 'chat-view', 'parties-view' ].indexOf( page ) !== -1 ) {
             this.page = page;
         } else {

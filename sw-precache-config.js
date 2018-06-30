@@ -10,9 +10,9 @@
 
 module.exports = {
     staticFileGlobs: [
-        // 'src/**/*',
-        // 'manifest.json'
-        // '/index.html',
+        'src/**/*',
+        'manifest.json',
+        '/index.html',
         '/manifest.json',
         '/bower_components/webcomponentsjs/webcomponents-lite.js',
         '/images/*'
@@ -20,5 +20,7 @@ module.exports = {
     runtimeCaching: [ {
         urlPattern: /\/@webcomponents\/webcomponentsjs\//,
         handler: 'fastest'
-    } ]
+    } ],
+    navigateFallback: '/index.html',
+    navigateFallbackWhitelist: [ /^(?!\/__)/, /^\/[^\_]+\/?/ ]
 };
