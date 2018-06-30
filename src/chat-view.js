@@ -16,29 +16,48 @@ import './comments-view.js';
 class ChatView extends PolymerElement {
     static get template() {
         return html `
-      <style include="shared-styles">
-          .comments {
-              padding-bottom: 3.5em;
-          }
-        .post{
+        <style include="shared-styles">
+        .comments {
+            padding-top: 2em;
+            padding-bottom: 3em;
+        }
+        .post {
             background-color: white;
             border-top: 1px solid rgba(0,0,0,.12);
             position: fixed;
             bottom: 0;
+            height: 3.5em;
             width: 100%;
             max-width: 384px;
         }
-      </style>
-      <div>
-        <div class="comments">
-            <comments-view comments={{comments}}></comments-view>
-        </div>
-        <div class="post">
-            <comment-post-view user={{user}} talker={{talker}}></comment-post-view>
-        </div>
-        <div id="bottom"></div>
+        .profile {
+            background-color: #EEE;
+            padding: .25em;
+            height: 2em;
+            width: 100%;
+            position: fixed;
+            top: 64;
+        }
+            .profile .icon {
+                vertical-align: bottom;
+            }
+            .profile .name {
+                margin-right: .5em;
+            }
+        </style>
+        <div>
+            <div class="profile">
+                <img src="{{talkerProfile.photoURL}}" class="icon">
+                <span class="name">{{talkerProfile.displayName}}</span>へのコメント
+            </div>
+            <div class="comments">
+                <comments-view comments={{comments}}></comments-view>
+            </div>
+            <div class="post">
+                <comment-post-view user={{user}} talker={{talker}}></comment-post-view>
+            </div>
+            <div id="bottom"></div>
       </div>
-
     `;
     }
 
@@ -46,7 +65,7 @@ class ChatView extends PolymerElement {
         console.log( 'constructor()' );
         super();
         this.comments = [];
-        // this.startListening( this.talker );
+        this.talkerProfile = { displayName: '板垣真太郎', email: '', photo: 'images/manifest/icon-48x48.png' };
     }
 
     static get properties() {
@@ -68,6 +87,9 @@ class ChatView extends PolymerElement {
         this.comments = [];
         firebase.database().ref( 'comments/user:' + talker ).on( 'child_added', snapshot => {
             this.push( 'comments', snapshot.val() );
+        } );
+        firebase.database().ref( 'profiles/' + talker ).once( 'value' ).then( snapshot => {
+            this.talkerProfile = snapshot.val();
         } );
     }
 

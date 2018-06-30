@@ -203,6 +203,17 @@ class MyApp extends PolymerElement {
             if ( user ) {
                 console.log( 'LOGINED', user );
                 this.set( 'route.path', '/parties-view/' );
+                // profile existance check. if not, then register user profile
+                firebase.database().ref( 'profiles/' + user.uid ).once( 'value' ).then( ( snapshot ) => {
+                    if ( !snapshot.val() ) {
+                        console.log( 'profile does not exist' );
+                        firebase.database().ref( 'profiles/' + user.uid ).set( {
+                            displayName: this.user.displayName,
+                            email: this.user.email,
+                            photoURL: this.user.photoURL
+                        } );
+                    }
+                } );
             }
         } );
     }

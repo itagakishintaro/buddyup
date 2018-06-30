@@ -79,7 +79,7 @@ class PartiesView extends PolymerElement {
 
     join( e ) {
         console.log( 'join()', e.target.dataset.uid );
-        firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( { displayName: this.user.displayName, email: this.user.email } );
+        firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( { displayName: this.user.displayName } );
     }
 
     cancel( e ) {

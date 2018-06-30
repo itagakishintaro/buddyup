@@ -26,11 +26,6 @@ class CommentsView extends PolymerElement {
           display: flex;
       }
 
-      .icon {
-          width: 2em;
-          height: 2em;
-          margin-right: .5em;
-      }
       </style>
 
       <div class="container">
