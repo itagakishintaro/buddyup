@@ -64,7 +64,7 @@ class CommentsView extends PolymerElement {
               <p class="text">{{item.text}}</p>
               <div class="like">
                 <template is="dom-if" if="{{ _didLike(item.likes) }}">
-                  <paper-icon-button disabled class="like-icon" icon="thumb-up" data-uid$="{{ item.uid }}"></paper-icon-button>
+                  <paper-icon-button class="like-icon" icon="thumb-up" data-uid$="{{ item.uid }}" on-click="cancelLike"></paper-icon-button>
                 </template>
                 <template is="dom-if" if="{{ !_didLike(item.likes) }}">
                   <paper-icon-button class="like-icon like-not-yet" icon="thumb-up" data-uid$="{{ item.uid }}" on-click="like"></paper-icon-button>
@@ -95,32 +95,60 @@ class CommentsView extends PolymerElement {
       this.$.bottom.scrollIntoView( true );
     }
 
-    like( e ) {
+    like(e) {
       console.log( 'like()', e.target.dataset.uid );
-      this.comments.forEach( (c, i) => {
-        if(c.uid === e.target.dataset.uid){
-          let newLikes = {};
-          if(c.likes) {
-            newLikes = c.likes;
-          }
-          newLikes[this.user.uid] = { uid: this.user.uid, datetime: new Date().toISOString() };
-          this.set(`comments.${i}.likes`, newLikes);
-        }
-      } );
-
       firebase.database().ref( `comments/user:${this.talker}/${e.target.dataset.uid}/likes` ).push( {
           uid: this.user.uid, datetime: new Date().toISOString()
       } );
+
+      this._setLike(e.target.dataset.uid, { uid: this.user.uid, datetime: new Date().toISOString() });
     }
 
-    _countLikeNumber( likes ) {
+    cancelLike(e) {
+      console.log( 'cancelLike()', e.target.dataset.uid );
+
+      let targetComment = this.comments.filter( c => c.uid === e.target.dataset.uid )[0];
+      Object.keys(targetComment.likes).forEach( key => {
+        if( targetComment.likes[key].uid === this.user.uid ) {
+          firebase.database().ref( `comments/user:${this.talker}/${e.target.dataset.uid}/likes/${key}` ).set(null);
+        }
+      });
+
+      this._setLike(e.target.dataset.uid, null);
+    }
+
+    _setLike(targetCommentId, like) {
+      this.comments.forEach( (c, i) => {
+        // do nothing if the comment is not target
+        if(c.uid !== targetCommentId){
+          return;
+        }
+
+        let newLikes = c.likes? c.likes: {};
+        if(like){
+          newLikes[this.user.uid] = like;
+        } else {
+          Object.keys(newLikes).forEach( key => {
+            // delete like which this user did
+            if(newLikes[key].uid === this.user.uid){
+              delete newLikes[key];
+            }
+          });
+        }
+
+        this.set(`comments.${i}.likes`, newLikes);
+        this.notifyPath(`comments.${i}.likes`);
+      } );
+    }
+
+    _countLikeNumber(likes) {
       if(!likes) {
         return 0;
       }
       return Object.keys(likes).length;
     }
 
-    _didLike( likes ) {
+    _didLike(likes) {
       if(!likes) {
         return false;
       }

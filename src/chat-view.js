@@ -37,6 +37,7 @@ class ChatView extends PolymerElement {
             width: 100%;
             position: fixed;
             top: 64;
+            z-index: 9;
         }
             .profile .icon {
                 vertical-align: bottom;
