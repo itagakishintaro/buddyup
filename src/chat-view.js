@@ -51,7 +51,7 @@ class ChatView extends PolymerElement {
                 <span class="name">{{talkerProfile.displayName}}</span>へのコメント
             </div>
             <div class="comments">
-                <comments-view comments={{comments}}></comments-view>
+                <comments-view user={{user}} talker={{talker}} comments={{comments}}></comments-view>
             </div>
             <div class="post">
                 <comment-post-view user={{user}} talker={{talker}}></comment-post-view>

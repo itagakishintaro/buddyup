@@ -202,7 +202,10 @@ class MyApp extends PolymerElement {
             this.user = user;
             if ( user ) {
                 console.log( 'LOGINED', user );
-                this.set( 'route.path', '/parties-view/' );
+                if( this.page === "login-view" ){
+                  this.set( 'route.path', '/parties-view/' );
+                }
+
                 // profile existance check. if not, then register user profile
                 firebase.database().ref( 'profiles/' + user.uid ).once( 'value' ).then( ( snapshot ) => {
                     if ( !snapshot.val() ) {
