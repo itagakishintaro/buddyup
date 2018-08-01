@@ -62,6 +62,10 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
       clear: both;
       display: block;
     }
+
+    .error {
+      color: var(--paper-red-800);
+    }
     </style>
   </template>
 </dom-module>`;

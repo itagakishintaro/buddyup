@@ -47,17 +47,23 @@ class ChatView extends PolymerElement {
             }
         </style>
         <div>
-            <div class="profile">
-                <img src="{{talkerProfile.photoURL}}" class="icon">
-                <span class="name">{{talkerProfile.displayName}}</span>へのコメント
-            </div>
-            <div class="comments">
-                <comments-view user={{user}} talker={{talker}} comments={{comments}}></comments-view>
-            </div>
-            <div class="post">
-                <comment-post-view user={{user}} talker={{talker}}></comment-post-view>
-            </div>
-            <div id="bottom"></div>
+          <div class="profile">
+            <template is="dom-if" if="{{talkerProfile.photoURL}}">
+              <img src="{{talkerProfile.photoURL}}" class="icon">
+            </template>
+            <template is="dom-if" if="{{!talkerProfile.photoURL}}">
+              <img src="images/manifest/icon-48x48.png" class="icon">
+            </template>
+            <span class="name">{{talkerProfile.displayName}}</span>
+            <span>へのコメント</span>
+          </div>
+          <div class="comments">
+            <comments-view user={{user}} talker={{talker}} comments={{comments}}></comments-view>
+          </div>
+          <div class="post">
+            <comment-post-view user={{user}} talker={{talker}}></comment-post-view>
+          </div>
+          <div id="bottom"></div>
       </div>
     `;
     }

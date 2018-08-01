@@ -180,7 +180,7 @@ class MyApp extends PolymerElement {
     constructor() {
         console.log( 'constructor()' );
         super();
-        this.user = '';
+        this.user = {};
         this.initFirebase();
     }
 
@@ -199,7 +199,7 @@ class MyApp extends PolymerElement {
         firebase.initializeApp( config );
         firebase.auth().onAuthStateChanged( user => {
             console.log( 'onAuthStateChanged', user );
-            this.user = user;
+            // this.user = user;
             if ( user ) {
                 console.log( 'LOGINED', user );
                 if( this.page === "login-view" ){
@@ -208,13 +208,22 @@ class MyApp extends PolymerElement {
 
                 // profile existance check. if not, then register user profile
                 firebase.database().ref( 'profiles/' + user.uid ).once( 'value' ).then( ( snapshot ) => {
-                    if ( !snapshot.val() ) {
-                        console.log( 'profile does not exist' );
-                        firebase.database().ref( 'profiles/' + user.uid ).set( {
-                            displayName: this.user.displayName,
-                            email: this.user.email,
-                            photoURL: this.user.photoURL
-                        } );
+                    if ( snapshot.val() ) {
+                      this.user.uid = user.uid;
+                      this.user.displayName = snapshot.val().displayName;
+                      this.user.email = snapshot.val().email;
+                      this.user.photoURL = snapshot.val().photoURL;
+                    } else {
+                      console.log( 'profile does not exist' );
+                      let displayName = user.displayName ? user.displayName : user.email;
+                      let photoURL = user.photoURL ? user.photoURL : 'images/manifest/icon-48x48.png';
+                      let userInfo = {
+                        displayName: displayName,
+                        email: user.email,
+                        photoURL: photoURL
+                      }
+                      firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
+                      this.user = userInfo;
                     }
                 } );
             }

@@ -57,7 +57,12 @@ class CommentsView extends PolymerElement {
         <template is="dom-repeat" items="{{comments}}" on-dom-change="scroll">
           <div class="msg">
             <div>
-              <img src="{{item.photoURL}}" class="icon">
+              <template is="dom-if" if="{{item.photoURL}}">
+                <img src="{{item.photoURL}}" class="icon">
+              </template>
+              <template is="dom-if" if="{{!item.photoURL}}">
+                <img src="images/manifest/icon-48x48.png" class="icon">
+              </template>
             </div>
             <div>
               <div class="username">{{item.username}}</div>
