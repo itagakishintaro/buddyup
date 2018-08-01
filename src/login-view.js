@@ -71,7 +71,7 @@ class LoginView extends PolymerElement {
       let password = this.$.password.value;
       this.$.email.value = "";
       this.$.password.value = "";
-      firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+      firebase.auth().signInWithEmailAndPassword(email, password).catch( error => {
         this.$.error.textContent = error.message;
         console.error(error.code, error.message);
       });

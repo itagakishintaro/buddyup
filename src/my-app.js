@@ -199,7 +199,6 @@ class MyApp extends PolymerElement {
         firebase.initializeApp( config );
         firebase.auth().onAuthStateChanged( user => {
             console.log( 'onAuthStateChanged', user );
-            // this.user = user;
             if ( user ) {
                 console.log( 'LOGINED', user );
                 if( this.page === "login-view" ){
@@ -210,6 +209,7 @@ class MyApp extends PolymerElement {
                 firebase.database().ref( 'profiles/' + user.uid ).once( 'value' ).then( ( snapshot ) => {
                     if ( snapshot.val() ) {
                       this.user.uid = user.uid;
+                      this.user.providerId = user.providerData[0].providerId;
                       this.user.displayName = snapshot.val().displayName;
                       this.user.email = snapshot.val().email;
                       this.user.photoURL = snapshot.val().photoURL;
@@ -218,6 +218,7 @@ class MyApp extends PolymerElement {
                       let displayName = user.displayName ? user.displayName : user.email;
                       let photoURL = user.photoURL ? user.photoURL : 'images/manifest/icon-48x48.png';
                       let userInfo = {
+                        providerId: user.providerData[0].providerId,
                         displayName: displayName,
                         email: user.email,
                         photoURL: photoURL
