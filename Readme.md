@@ -5,6 +5,16 @@
 
 # Contribute
 
+## Setup
+
+```
+npm install -g polymer-cli@next --unsafe-perm
+npm install -g firebase-tools
+npm install
+```
+
+## build & deploy
+
 ```
 polymer serve // local check
 polymer build // JS transpile etc
