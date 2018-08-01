@@ -5,7 +5,7 @@ import '@polymer/paper-button/paper-button.js';
 
 class PartiesView extends PolymerElement {
     static get template() {
-        return html `
+      return html `
       <style include="shared-styles">
         .party {
           display: flex;
@@ -21,31 +21,36 @@ class PartiesView extends PolymerElement {
           align-self: flex-end;
           height: 2em;
         }
-
+        .date {
+          font-size: 1.1em;
+          margin-right: .5em;
+        }
       </style>
 
       <div class="container">
-          <template is="dom-repeat" items="{{parties}}">
-            <div class="party">
+        <template is="dom-repeat" items="{{parties}}">
+          <div class="party">
+            <div>
               <div>
-                <div>{{item.date}}</div>
-                <div class="indent">{{item.name}}@{{item.place}}</div>
-                <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
-                  <div class="indent">
-                    <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
-                  </div>
-                </template>
+                <span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span>
               </div>
-              <template is="dom-if" if="{{ item.joined }}">
-                <paper-button id="cancel" raised class="off" data-uid$="{{ item.uid }}" on-click="cancel">cancel</paper-button>
-              </template>
-              <template is="dom-if" if="{{ !item.joined }}">
-                <paper-button id="join" raised class="on" data-uid$="{{ item.uid }}" on-click="join">参加</paper-button>
+              <div class="indent">{{item.name}}@{{item.place}}</div>
+              <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
+                <div class="indent">
+                  <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
+                </div>
               </template>
             </div>
-          </template>
-          <hr>
-          <newparty-view user={{user}}></newparty-view>
+            <template is="dom-if" if="{{ item.joined }}">
+              <paper-button id="cancel" raised class="off" data-uid$="{{ item.uid }}" on-click="cancel">cancel</paper-button>
+            </template>
+            <template is="dom-if" if="{{ !item.joined }}">
+              <paper-button id="join" raised class="on" data-uid$="{{ item.uid }}" on-click="join">参加</paper-button>
+            </template>
+          </div>
+        </template>
+        <hr>
+        <newparty-view user={{user}}></newparty-view>
       </div>
     `;
     }
