@@ -219,7 +219,7 @@ class MyApp extends PolymerElement {
 
             // profile existance check. if not, then register user profile
             firebase.database().ref( 'profiles/' + user.uid ).once( 'value' ).then( snapshot => {
-                let userInfo = { uid: user.uid };
+                let userInfo = {};
                 if ( snapshot.val() ) {
                     userInfo = {
                         providerId: user.providerData[0].providerId,
@@ -240,6 +240,7 @@ class MyApp extends PolymerElement {
                     firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
                 }
                 this.set( 'user', userInfo );
+                this.set( 'user.uid', user.uid );
                 if ( userInfo.providerId === 'password' ){
                     this.set( 'user.isPasswordAuth', true );
                 } else {

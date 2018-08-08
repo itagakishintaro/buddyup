@@ -1,5 +1,5 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
-import handleImage from './ImageHandler.js';
+import handleImage from './util/ImageHandler.js';
 import './shared-styles.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
@@ -12,7 +12,7 @@ class ProfileView extends PolymerElement {
         <style include="shared-styles">
         .camera {
             position: absolute;
-            left: 1em;
+            left: 1.5em;
             bottom: 0;
         }
         .display {
@@ -38,13 +38,13 @@ class ProfileView extends PolymerElement {
         <div class="container">
             <div class="display">
                 <div class="photo">
-                    <paper-icon-button icon="camera-enhance" class="camera"></paper-icon-button>
                     <label htmlFor="file">
-                        <image id="icon" src="{{user.photoURL}}">
+                        <paper-icon-button icon="camera-enhance" class="camera"></paper-icon-button>
+                        <image id="icon" src="[[user.photoURL]]">
                         <input id="file" class="file" type="file" accept="image/*" on-change="capture"></input>
                     </label>
                 </div>
-                <paper-input id="displayName" class="displayName" always-float-label label="表示名" value="{{user.displayName}}"></paper-input>
+                <paper-input id="displayName" class="displayName" always-float-label label="表示名" value="[[user.displayName]]"></paper-input>
             </div>
 
             <paper-button raised class="on" on-click="update">更新</paper-button>
@@ -64,31 +64,23 @@ class ProfileView extends PolymerElement {
     }
 
     capture() {
-        console.log('capture()');
         let file = this.$.file.files[0];
-        console.log('file', file);
         handleImage( file, 48, dataURL => {
-            console.log(dataURL);
-          this.$.icon.src = dataURL
+            this.$.icon.src = dataURL;
         } )
     }
 
     update() {
-        console.log( 'update()' );
-        let user = firebase.auth().currentUser;
-        if( this.$.photoURL.value && this.$.photoURL.value != this.user.photoURL ){
-            _updatephotoURL( user );
-        }
-    }
+        console.log( 'update()', this.$.displayName.value, this.user.displayName );
 
-    _updatephotoURL( user ) {
-        console.log( '_updatephotoURL( user )' );
-        // user.updateEmail().then( () => {
-        //   // Update successful.
-        //   console.log('email update');
-        // }).catch(function(error) {
-        //   // An error happened.
-        // });
+        if( this.$.icon.src && this.$.icon.src !== this.user.photoURL ){
+            firebase.database().ref( 'profiles/' + this.user.uid + '/photoURL' ).set( this.$.icon.src );
+        }
+
+        if( this.$.displayName.value && this.$.displayName.value !== this.user.displayName ){
+            firebase.database().ref( 'profiles/' + this.user.uid + '/displayName' ).set( this.$.displayName.value );
+        }
+
     }
 
 }

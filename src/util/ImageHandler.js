@@ -22,12 +22,12 @@ const handleImage = ( file, max = 200, func ) =>{
       canvas.height = height
       let ctx = canvas.getContext( '2d' )
       ctx.save()
-      if( height < width ){
-        canvas.height = width
-        canvas.width = height
-        ctx.rotate( 90 * Math.PI / 180 )
-        ctx.translate( 0, -height )
-      }
+      // if( height < width ){
+      //   canvas.height = width
+      //   canvas.width = height
+      //   ctx.rotate( 90 * Math.PI / 180 )
+      //   ctx.translate( 0, -height )
+      // }
       ctx.drawImage( image, 0, 0, width, height )
       ctx.restore()
       func( canvas.toDataURL( 'image/png' ) )
