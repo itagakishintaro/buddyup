@@ -36,8 +36,6 @@ class AuthView extends PolymerElement {
     update() {
         console.log( 'update()' );
         let user = firebase.auth().currentUser;
-        console.log( document.getElementById('email') );
-        console.log( this.$.email );
         if( this.$.email.value && this.$.email.value != this.user.email ){
             _updateEmail( user );
         }

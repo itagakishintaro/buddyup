@@ -5,6 +5,7 @@ import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
+import '@polymer/paper-toast/paper-toast.js';
 
 class ProfileView extends PolymerElement {
     static get template() {
@@ -21,7 +22,7 @@ class ProfileView extends PolymerElement {
         }
         .displayName {
             width: 20em;
-            margin-left: 1em;
+            margin-left: 1.5em;
         }
         .file {
           display: none;
@@ -36,6 +37,7 @@ class ProfileView extends PolymerElement {
         </style>
 
         <div class="container">
+            <paper-toast id="toast" text="更新しました!"></paper-toast>
             <div class="display">
                 <div class="photo">
                     <label htmlFor="file">
@@ -71,15 +73,23 @@ class ProfileView extends PolymerElement {
     }
 
     update() {
-        console.log( 'update()', this.$.displayName.value, this.user.displayName );
+        console.log( 'update()' );
+        let photoURLPromise = firebase.database().ref( 'profiles/' + this.user.uid + '/photoURL' ).set( this.$.icon.src );
+        let displayNamePromise = firebase.database().ref( 'profiles/' + this.user.uid + '/displayName' ).set( this.$.displayName.value );
+        let promises = [];
 
         if( this.$.icon.src && this.$.icon.src !== this.user.photoURL ){
-            firebase.database().ref( 'profiles/' + this.user.uid + '/photoURL' ).set( this.$.icon.src );
+            promises.push(photoURLPromise);
         }
 
         if( this.$.displayName.value && this.$.displayName.value !== this.user.displayName ){
-            firebase.database().ref( 'profiles/' + this.user.uid + '/displayName' ).set( this.$.displayName.value );
+            promises.push(displayNamePromise);
         }
+
+        Promise.all( promises ).then( v => {
+            console.log(v);
+            this.$.toast.open();
+        });
 
     }
 
