@@ -86,7 +86,7 @@ class ProfileView extends PolymerElement {
         }
 
         Promise.all( promises ).then( v => {
-            console.log(v);
+            this.user.displayName = this.$.displayName.value;
             this.$.toast.open();
         });
     }
