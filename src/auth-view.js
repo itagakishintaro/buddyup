@@ -2,6 +2,7 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
+import '@polymer/paper-toast/paper-toast.js';
 
 class AuthView extends PolymerElement {
     static get template() {
@@ -14,10 +15,12 @@ class AuthView extends PolymerElement {
         </style>
 
         <div class="container">
-            <paper-input id="email" type="email" always-float-label label="email" value="[[user.email]]"></paper-input>
-            <paper-input id="password" type="password" always-float-label label="password" value="[[user.password]]"></paper-input>
-
+            <div id="error" class="error"></div>
+            <paper-input id="oldPassword" type="password" always-float-label label="現在のパスワード"></paper-input>
+            <paper-input id="newPassword" type="password" always-float-label label="新しいパスワード"></paper-input>
+            <paper-input id="comfirmPassword" type="password" always-float-label label="新しいパスワード（確認）"></paper-input>
             <paper-button raised class="on" on-click="update">更新</paper-button>
+            <paper-toast id="toast" text="更新しました!"></paper-toast>
         </div>
         `;
     }
@@ -35,22 +38,31 @@ class AuthView extends PolymerElement {
 
     update() {
         console.log( 'update()' );
+        this.$.error.textContent = '';
         let user = firebase.auth().currentUser;
-        if( this.$.email.value && this.$.email.value != this.user.email ){
-            _updateEmail( user );
+        let oldPassword = this.$.oldPassword.value;
+        let newPassword = this.$.newPassword.value;
+        let comfirmPassword = this.$.comfirmPassword.value;
+        this.$.oldPassword.value = '';
+        this.$.newPassword.value = '';
+        this.$.comfirmPassword.value = '';
+        let credential = firebase.auth.EmailAuthProvider.credential( this.user.email, oldPassword );
+
+        if( newPassword !== comfirmPassword ) {
+            this.$.error.textContent = '新しいパスワードと新しいパスワード（確認）が異なります。';
+            return;
         }
-    }
+        user.reauthenticateWithCredential( credential ).then( () => {
+            user.updatePassword( newPassword ).then( () => {
+                this.$.toast.open();
+            }).catch( error => {
+                this.$.error.textContent = error.message;
+            });
+        }).catch( error => {
+            this.$.error.textContent = error.message;
+        });
 
-    _updateEmail( user ) {
-        console.log( '_updateEmail( user )' );
-        // user.updateEmail().then( () => {
-        //   // Update successful.
-        //   console.log('email update');
-        // }).catch(function(error) {
-        //   // An error happened.
-        // });
     }
-
 }
 
 window.customElements.define( 'auth-view', AuthView );

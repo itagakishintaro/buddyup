@@ -37,7 +37,6 @@ class ProfileView extends PolymerElement {
         </style>
 
         <div class="container">
-            <paper-toast id="toast" text="更新しました!"></paper-toast>
             <div class="display">
                 <div class="photo">
                     <label htmlFor="file">
@@ -50,6 +49,7 @@ class ProfileView extends PolymerElement {
             </div>
 
             <paper-button raised class="on" on-click="update">更新</paper-button>
+            <paper-toast id="toast" text="更新しました!"></paper-toast>
         </div>
         `;
     }
@@ -81,7 +81,6 @@ class ProfileView extends PolymerElement {
         if( this.$.icon.src && this.$.icon.src !== this.user.photoURL ){
             promises.push(photoURLPromise);
         }
-
         if( this.$.displayName.value && this.$.displayName.value !== this.user.displayName ){
             promises.push(displayNamePromise);
         }
@@ -90,7 +89,6 @@ class ProfileView extends PolymerElement {
             console.log(v);
             this.$.toast.open();
         });
-
     }
 
 }
