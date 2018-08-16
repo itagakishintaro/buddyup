@@ -94,6 +94,7 @@ class MyApp extends PolymerElement {
               </template>
               <template is="dom-if" if="{{user}}">
                 <a name="profile-view" href="[[rootPath]]profile-view/">プロフィール設定</a>
+                <a name="skill-view" href="[[rootPath]]skill-view/">スキル</a>
                 <a name="parties-view" href="[[rootPath]]parties-view/">ランチ会一覧</a>
                 <a name="logout" on-tap="logout">ログアウト</a>
               </template>
@@ -113,9 +114,10 @@ class MyApp extends PolymerElement {
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <login-view name="login-view" user="{{user}}"></login-view>
             <auth-view name="auth-view" user="{{user}}"></auth-view>
-            <profile-view name="profile-view" user="{{user}}"></profile-view>
             <chat-view name="chat-view" user="{{user}}" talker={{routeData.talker}}></chat-view>
             <parties-view name="parties-view" user="{{user}}"></parties-view>
+            <profile-view name="profile-view" user="{{user}}"></profile-view>
+            <skill-view name="skill-view" user="{{user}}"></skill-view>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
         </app-header-layout>
@@ -149,7 +151,7 @@ class MyApp extends PolymerElement {
         console.log( '_routePageChanged', page );
         if ( !page ) {
             this.page = 'login-view';
-        } else if ( [ 'login-view', 'auth-view', 'profile-view', 'chat-view', 'parties-view' ].indexOf( page ) !== -1 ) {
+        } else if ( [ 'login-view', 'auth-view', 'chat-view', 'parties-view', 'profile-view', 'skill-view' ].indexOf( page ) !== -1 ) {
             this.page = page;
         } else {
             this.page = 'view404';
@@ -173,14 +175,17 @@ class MyApp extends PolymerElement {
             case 'auth-view':
                 import ( './auth-view.js' );
                 break;
-            case 'profile-view':
-                import ( './profile-view.js' );
-                break;
             case 'chat-view':
                 import ( './chat-view.js' );
                 break;
             case 'parties-view':
                 import ( './parties-view.js' );
+                break;
+            case 'profile-view':
+                import ( './profile-view.js' );
+                break;
+            case 'skill-view':
+                import ( './skill-view.js' );
                 break;
             case 'view404':
                 import ( './my-view404.js' );
