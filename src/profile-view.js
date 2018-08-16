@@ -34,6 +34,10 @@ class ProfileView extends PolymerElement {
         .photo {
             position: relative;
         }
+        .preview {
+            width: 3em;
+            height: 3em;
+        }
         </style>
 
         <div class="container">
@@ -41,7 +45,7 @@ class ProfileView extends PolymerElement {
                 <div class="photo">
                     <label htmlFor="file">
                         <paper-icon-button icon="camera-enhance" class="camera"></paper-icon-button>
-                        <image id="icon" src="[[user.photoURL]]">
+                        <image id="icon" class="preview" src="[[user.photoURL]]">
                         <input id="file" class="file" type="file" accept="image/*" on-change="capture"></input>
                     </label>
                 </div>
