@@ -1,28 +1,43 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import handleImage from './util/ImageHandler.js';
+import skills from './util/Skills.js';
 import './shared-styles.js';
 import '@polymer/paper-button/paper-button.js';
-import skills from './util/Skills.js';
+import '@polymer/paper-dialog/paper-dialog.js';
 
 class SkillView extends PolymerElement {
     static get template() {
         return html `
         <style include="shared-styles">
+            .on {
+                margin-bottom: 2em;
+            }
+
+            .tag {
+                border-radius: 10%;
+                border: 1px solid var(--paper-blue-grey-200);
+                color: var(--paper-blue-900);
+                margin-right: .5em;
+                padding: .5em
+            }
         </style>
 
         <div class="container">
             <paper-button raised class="on" on-click="getMySkills">スキル抽出</paper-button>
 
-            <template is="dom-repeat" items="{{relatedComments}}">
-                <ul>
-                    <li>{{item}}</li>
-                </ul>
-            </template>
-            <template is="dom-repeat" items="{{mySkills}}">
-                <ul>
-                    <li on-click="showComments">{{item}}</li>
-                </ul>
-            </template>
+            <paper-dialog id="dialog">
+                <template is="dom-repeat" items="{{relatedComments}}">
+                    <ul>
+                        <li>{{item}}</li>
+                    </ul>
+                </template>
+            </paper-dialog>
+
+            <div>
+                <template is="dom-repeat" items="{{mySkills}}">
+                    <span class="tag" on-click="showComments">{{item}}</span>
+                </template>
+            </div>
         </div>
         `;
     }
@@ -45,6 +60,7 @@ class SkillView extends PolymerElement {
         this.relatedComments = Object.keys( this.comments )
             .map( key => this.comments[key].text.toLowerCase() )
             .filter( v => v.indexOf( e.target.innerText ) >= 0 );
+        this.$.dialog.open();
     }
 
     getMySkills() {
