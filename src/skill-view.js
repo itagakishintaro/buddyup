@@ -13,9 +13,14 @@ class SkillView extends PolymerElement {
         <div class="container">
             <paper-button raised class="on" on-click="getMySkills">スキル抽出</paper-button>
 
-            <template is="dom-repeat" items="{{mySkills}}">
+            <template is="dom-repeat" items="{{relatedComments}}">
                 <ul>
                     <li>{{item}}</li>
+                </ul>
+            </template>
+            <template is="dom-repeat" items="{{mySkills}}">
+                <ul>
+                    <li on-click="showComments">{{item}}</li>
                 </ul>
             </template>
         </div>
@@ -26,12 +31,20 @@ class SkillView extends PolymerElement {
         console.log( 'constructor()' );
         super();
         this.mySkills = [];
+        this.comments = {};
+        this.relatedComments = [];
     }
 
     static get properties() {
         return {
             user: Object
         }
+    }
+
+    showComments( e ) {
+        this.relatedComments = Object.keys( this.comments )
+            .map( key => this.comments[key].text.toLowerCase() )
+            .filter( v => v.indexOf( e.target.innerText ) >= 0 );
     }
 
     getMySkills() {
@@ -43,10 +56,10 @@ class SkillView extends PolymerElement {
 
     getCommentsText() {
         return firebase.database().ref( 'comments/user:' + this.user.uid ).once( 'value' ).then( snapshot => {
-            let comments = snapshot.val();
+            this.comments = snapshot.val();
             let text = '';
-            Object.keys( comments ).forEach( key => {
-                text = text + '\n' + comments[key].text;
+            Object.keys( this.comments ).forEach( key => {
+                text = text + '\n' + this.comments[key].text.toLowerCase();
             });
             return text;
         } );
@@ -65,8 +78,8 @@ class SkillView extends PolymerElement {
 
     extractSkills( tokens ) {
         let nouns = tokens
-            .filter( v => v.partOfSpeech.tag === 'NOUN' ) // 名詞のみにフィルター
-            .map( v => v.lemma.toLowerCase() ) // 語幹を抽出（英語のときの活用などが原型になる）
+            .filter( v => [ 'NOUN', 'X' ].includes(v.partOfSpeech.tag)  ) // 名詞とその他のみにフィルター
+            .map( v => v.lemma ) // 語幹を抽出（英語のときの活用などが原型になる）
             .filter( (x, i, self) => self.indexOf(x) === i ); // 重複排除
         return nouns.filter( v => skills.includes( v ) );
     }
