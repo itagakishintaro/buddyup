@@ -11,7 +11,7 @@ class SkillView extends PolymerElement {
         </style>
 
         <div class="container">
-            <paper-button raised class="on" on-click="getWords">スキル抽出</paper-button>
+            <paper-button raised class="on" on-click="getMySkills">スキル抽出</paper-button>
 
             <template is="dom-repeat" items="{{mySkills}}">
                 <ul>
@@ -34,36 +34,41 @@ class SkillView extends PolymerElement {
         }
     }
 
-    getWords() {
-        firebase.database().ref( 'comments/user:' + this.user.uid ).once( 'value' ).then( snapshot => {
+    getMySkills() {
+        this.getCommentsText()
+        .then( text => this.callNLPSyntax( text ) )
+        .then( tokens => this.extractSkills( tokens ) )
+        .then( mySkills => { this.mySkills = mySkills; } );
+    }
+
+    getCommentsText() {
+        return firebase.database().ref( 'comments/user:' + this.user.uid ).once( 'value' ).then( snapshot => {
             let comments = snapshot.val();
             let text = '';
             Object.keys( comments ).forEach( key => {
                 text = text + '\n' + comments[key].text;
             });
-            this.callNLPSyntax( text );
+            return text;
         } );
     }
 
     callNLPSyntax( text ) {
         const url = 'https://us-central1-buddyup-204005.cloudfunctions.net/NLP-syntax';
         let data = { message: text };
-        fetch(url, {
+        return fetch(url, {
             body: JSON.stringify(data),
             method: 'POST'
-        }).then( response => {
-            return response.json();
-        }).then( json => {
-            this.getSkills(json[0].tokens);
-        });
+        })
+        .then( response => response.json() )
+        .then( json => json[0].tokens );
     }
 
-    getSkills( tokens ) {
+    extractSkills( tokens ) {
         let nouns = tokens
             .filter( v => v.partOfSpeech.tag === 'NOUN' ) // 名詞のみにフィルター
             .map( v => v.lemma.toLowerCase() ) // 語幹を抽出（英語のときの活用などが原型になる）
             .filter( (x, i, self) => self.indexOf(x) === i ); // 重複排除
-        this.mySkills = nouns.filter( v => skills.includes( v ) );
+        return nouns.filter( v => skills.includes( v ) );
     }
 
 }
