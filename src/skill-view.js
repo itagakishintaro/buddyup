@@ -9,17 +9,19 @@ class SkillView extends PolymerElement {
     static get template() {
         return html `
         <style include="shared-styles">
-            .on {
-                margin-bottom: 2em;
-            }
+          .on {
+            margin-bottom: 1em;
+          }
 
-            .tag {
-                border-radius: 10%;
-                border: 1px solid var(--paper-blue-grey-200);
-                color: var(--paper-blue-900);
-                margin-right: .5em;
-                padding: .5em
-            }
+          .tag {
+              border-radius: 10%;
+              border: 1px solid var(--paper-blue-grey-200);
+              color: var(--paper-blue-900);
+              display: inline-block;
+              margin-top: .4em;
+              margin-right: .2em;
+              padding: 0 .5em
+          }
         </style>
 
         <div class="container">
@@ -96,6 +98,7 @@ class SkillView extends PolymerElement {
         let nouns = tokens
             .filter( v => [ 'NOUN', 'X' ].includes(v.partOfSpeech.tag)  ) // 名詞とその他のみにフィルター
             .map( v => v.lemma ) // 語幹を抽出（英語のときの活用などが原型になる）
+            .filter( x => x.length > 1 ) // 1文字を排除
             .filter( (x, i, self) => self.indexOf(x) === i ); // 重複排除
         return nouns.filter( v => skills.includes( v ) );
     }
