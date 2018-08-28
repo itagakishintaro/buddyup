@@ -74,6 +74,9 @@ class SkillView extends PolymerElement {
 
     getCommentsText() {
         return firebase.database().ref( 'comments/' + this.user.uid ).once( 'value' ).then( snapshot => {
+            if( !snapshot.val() ){
+              return;
+            }
             this.comments = snapshot.val();
             let text = '';
             Object.keys( this.comments ).forEach( key => {
@@ -84,6 +87,9 @@ class SkillView extends PolymerElement {
     }
 
     callNLPSyntax( text ) {
+        if( !text ){
+          return;
+        }
         const url = 'https://us-central1-buddyup-204005.cloudfunctions.net/NLP-syntax';
         let data = { message: text };
         return fetch(url, {
@@ -95,6 +101,9 @@ class SkillView extends PolymerElement {
     }
 
     extractSkills( tokens ) {
+        if( !tokens ){
+          return;
+        }
         let nouns = tokens
             .filter( v => [ 'NOUN', 'X' ].includes(v.partOfSpeech.tag)  ) // 名詞とその他のみにフィルター
             .map( v => v.lemma ) // 語幹を抽出（英語のときの活用などが原型になる）

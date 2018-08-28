@@ -32,9 +32,9 @@ class UsersView extends PolymerElement {
 
     getFriends() {
       console.log(this.user.uid);
-      firebase.database().ref('parties').once('value').then( snapshot => {
+      firebase.database().ref( 'comments/' + this.usr.uid ).once('value').then( snapshot => {
         console.log( snapshot.val() );
-        // let friends = 
+        let friends =
 
         // let friends = Object.keys( snapshot.val() )
         //   .map( v => snapshot.val()[v].members ) // membersオブジェクトの配列を取得
