@@ -13,7 +13,7 @@ class CommentsView extends PolymerElement {
           margin: 1em;
         }
 
-        .username {
+        .displayName {
           font-size: .5em;
         }
         .text {
@@ -65,7 +65,7 @@ class CommentsView extends PolymerElement {
               </template>
             </div>
             <div>
-              <div class="username">{{item.username}}</div>
+              <div class="displayName">{{item.displayName}}</div>
               <p class="text">{{item.text}}</p>
               <div class="like">
                 <template is="dom-if" if="{{ _didLike(item.likes) }}">

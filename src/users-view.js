@@ -30,24 +30,19 @@ class UsersView extends PolymerElement {
         }
     }
 
+    // 知り合い(friend)の定義は自分にコメントしてくれた人
     getFriends() {
       console.log(this.user.uid);
-      firebase.database().ref( 'comments/' + this.usr.uid ).once('value').then( snapshot => {
-        console.log( snapshot.val() );
-        let friends =
-
-        // let friends = Object.keys( snapshot.val() )
-        //   .map( v => snapshot.val()[v].members ) // membersオブジェクトの配列を取得
-        //   .filter( membersObjects => Object.keys( membersObjects ).includes( this.user.uid ) ) // 自分が含まれるmembersオブジェクトに絞り込み
-        //   .map( membersObjects => { // 自分を削除
-        //     delete membersObjects[ this.user.uid ];
-        //     return membersObjects;
-        //   })
-        //   .map( membersObjects => Object.keys( membersObjects ).map( uid => { // membersオブジェクトを配列にして、出力を整形
-        //       return { uid: uid, displayName: membersObjects[uid].displayName };
-        //     })
-        //   )
-        //   .reduce( ( p, c ) => p.concat( c ) ) // 分割した配列を１つにまとめる
+      firebase.database().ref( 'comments/' + this.user.uid ).once('value').then( snapshot => {
+        let friendUIDs = [];
+        let friends = [];
+        Object.keys( snapshot.val() ).forEach( key => {
+          if( friendUIDs.includes( snapshot.val()[key].uid ) || snapshot.val()[key].uid === this.user.uid ){ // すでに取得済み or 自分なら何もしない
+            return;
+          }
+          friendUIDs.push( snapshot.val()[key].uid );
+          friends.push( snapshot.val()[key] );
+        });
         this.friends = friends;
       });
     }
