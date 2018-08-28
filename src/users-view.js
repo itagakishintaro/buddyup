@@ -1,5 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
+import './loading-view.js';
 import '@polymer/paper-button/paper-button.js';
 
 class UsersView extends PolymerElement {
@@ -16,12 +17,14 @@ class UsersView extends PolymerElement {
             </ul>
           </template>
         </div>
+        <loading-view display="{{loadingDisplay}}"></loading-view>
         `;
     }
 
     constructor() {
         console.log( 'constructor()' );
         super();
+        this.loadingDisplay = 'none';
     }
 
     static get properties() {
@@ -33,6 +36,7 @@ class UsersView extends PolymerElement {
     // 知り合い(friend)の定義は自分にコメントしてくれた人
     getFriends() {
       console.log(this.user.uid);
+      this.loadingDisplay = 'block';
       firebase.database().ref( 'comments/' + this.user.uid ).once('value').then( snapshot => {
         let friendUIDs = [];
         let friends = [];
@@ -44,7 +48,9 @@ class UsersView extends PolymerElement {
           friends.push( snapshot.val()[key] );
         });
         this.friends = friends;
-      });
+      }).finally( () => {
+        this.loadingDisplay = 'none';
+      } );
     }
 }
 

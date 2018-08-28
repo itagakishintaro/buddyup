@@ -1,13 +1,3 @@
-/**
- * @license
- * Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
- * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
- * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
- * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
- * Code distributed by Google as part of the polymer project is also
- * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
- */
-
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import { setPassiveTouchGestures, setRootPath } from '@polymer/polymer/lib/utils/settings.js';
 import '@polymer/app-layout/app-drawer/app-drawer.js';
@@ -113,7 +103,7 @@ class MyApp extends PolymerElement {
           </app-header>
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
-            <login-view name="login-view" user="{{user}}"></login-view>
+            <login-view name="login-view" user="{{user}}" loadingDisplay="{{loadingDisplay}}"></login-view>
             <auth-view name="auth-view" user="{{user}}"></auth-view>
             <profile-view name="profile-view" user="{{user}}"></profile-view>
             <skill-view name="skill-view" user="{{user}}"></skill-view>
@@ -220,6 +210,7 @@ class MyApp extends PolymerElement {
         firebase.initializeApp( config );
         firebase.auth().onAuthStateChanged( user => {
             console.log( 'onAuthStateChanged', user );
+
             if ( !user ) {
                 return;
             }

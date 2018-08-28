@@ -1,5 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
+import './loading-view.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
 
@@ -42,27 +43,39 @@ class LoginView extends PolymerElement {
           <paper-button raised class="on" on-click="signup">ユーザー登録</paper-button>
         </div>
       </div>
-
+      <loading-view display="{{loadingDisplay}}"></loading-view>
     `;
+    }
+
+    constructor() {
+        console.log( 'constructor()' );
+        super();
+        this.loadingDisplay = 'none';
     }
 
     static get properties() {
         return {
-            user: Object
+            user: Object,
+            loadingDisplay: String
         }
     }
 
     // authentication
     signup() {
+      this.loadingDisplay = 'block';
       this.$.error.textContent = "";
       let email = this.$.signupEmail.value;
       let password = this.$.signupPassword.value;
       this.$.signupEmail.value = "";
       this.$.signupPassword.value = "";
-      firebase.auth().createUserWithEmailAndPassword(email, password).catch( error => {
-        this.$.error.textContent = error.message;
-        console.error(error.code, error.message);
-      });
+      firebase.auth().createUserWithEmailAndPassword(email, password)
+        .catch( error => {
+          this.$.error.textContent = error.message;
+          console.error(error.code, error.message);
+        })
+        .finally( () => {
+          this.loadingDisplay='none';
+        });
     }
 
     login(){
@@ -71,15 +84,22 @@ class LoginView extends PolymerElement {
       let password = this.$.password.value;
       this.$.email.value = "";
       this.$.password.value = "";
-      firebase.auth().signInWithEmailAndPassword(email, password).catch( error => {
-        this.$.error.textContent = error.message;
-        console.error(error.code, error.message);
-      });
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .catch( error => {
+          this.$.error.textContent = error.message;
+          console.error(error.code, error.message);
+        })
+        .finally( () => {
+          this.loadingDisplay='none';
+        });
     }
 
     googleLogin() {
-        let provider = new firebase.auth.GoogleAuthProvider();
-        firebase.auth().signInWithRedirect( provider );
+      let provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithRedirect( provider )
+        .finally( () => {
+          this.loadingDisplay='none';
+        });
     }
 
 }

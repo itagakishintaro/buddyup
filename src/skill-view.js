@@ -2,6 +2,7 @@ import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import handleImage from './util/ImageHandler.js';
 import skills from './util/Skills.js';
 import './shared-styles.js';
+import './loading-view.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 
@@ -41,6 +42,7 @@ class SkillView extends PolymerElement {
                 </template>
             </div>
         </div>
+        <loading-view display="{{loadingDisplay}}"></loading-view>
         `;
     }
 
@@ -50,6 +52,7 @@ class SkillView extends PolymerElement {
         this.mySkills = [];
         this.comments = {};
         this.relatedComments = [];
+        this.loadingDisplay = 'none';
     }
 
     static get properties() {
@@ -66,10 +69,14 @@ class SkillView extends PolymerElement {
     }
 
     getMySkills() {
+        this.loadingDisplay = 'block';
         this.getCommentsText()
         .then( text => this.callNLPSyntax( text ) )
         .then( tokens => this.extractSkills( tokens ) )
-        .then( mySkills => { this.mySkills = mySkills; } );
+        .then( mySkills => { this.mySkills = mySkills; } )
+        .finally( () => {
+          this.loadingDisplay = 'none';
+        } );
     }
 
     getCommentsText() {
