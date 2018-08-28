@@ -85,10 +85,10 @@ class ChatView extends PolymerElement {
     _talkerChanged( newTalker, oldTalker ) {
         console.log( '_talkerChanged', newTalker );
         this.comments = [];
-        firebase.database().ref( 'comments/user:' + newTalker ).off( 'child_added' );
+        firebase.database().ref( 'comments/' + newTalker ).off( 'child_added' );
 
         // get comments to the new talker
-        firebase.database().ref( 'comments/user:' + newTalker ).on( 'child_added', ( snapshot ) => {
+        firebase.database().ref( 'comments/' + newTalker ).on( 'child_added', ( snapshot ) => {
             let comment = snapshot.val();
             comment.uid = snapshot.key;
             this.push( 'comments', comment );

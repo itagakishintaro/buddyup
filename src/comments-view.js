@@ -102,7 +102,7 @@ class CommentsView extends PolymerElement {
 
     like(e) {
       console.log( 'like()', e.target.dataset.uid );
-      firebase.database().ref( `comments/user:${this.talker}/${e.target.dataset.uid}/likes` ).push( {
+      firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes` ).push( {
           uid: this.user.uid, datetime: new Date().toISOString()
       } );
 
@@ -115,7 +115,7 @@ class CommentsView extends PolymerElement {
       let targetComment = this.comments.filter( c => c.uid === e.target.dataset.uid )[0];
       Object.keys(targetComment.likes).forEach( key => {
         if( targetComment.likes[key].uid === this.user.uid ) {
-          firebase.database().ref( `comments/user:${this.talker}/${e.target.dataset.uid}/likes/${key}` ).set(null);
+          firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes/${key}` ).set(null);
         }
       });
 

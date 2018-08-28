@@ -73,7 +73,7 @@ class SkillView extends PolymerElement {
     }
 
     getCommentsText() {
-        return firebase.database().ref( 'comments/user:' + this.user.uid ).once( 'value' ).then( snapshot => {
+        return firebase.database().ref( 'comments/' + this.user.uid ).once( 'value' ).then( snapshot => {
             this.comments = snapshot.val();
             let text = '';
             Object.keys( this.comments ).forEach( key => {
