@@ -29,25 +29,32 @@ class PartiesView extends PolymerElement {
 
       <div class="container">
         <template is="dom-repeat" items="{{parties}}">
-          <div class="party">
-            <div>
+          <template is="dom-if" if="{{ item.invited.indexOf(item.uid) >= 0 }}">
+            <div class="party">
               <div>
-                <span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span>
-              </div>
-              <div class="indent">{{item.name}}@{{item.place}}</div>
-              <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
-                <div class="indent">
-                  <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
+                <div>
+                  <span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span>
                 </div>
+                <template is="dom-if" if="{{ item.placeUrl }}">
+                  <div class="indent">{{item.name}}@<a href="{{item.placeUrl}}" target="_blank">{{item.place}}</a></div>
+                </template>
+                <template is="dom-if" if="{{ !item.placeUrl }}">
+                  <div class="indent">{{item.name}}@{{item.place}}</div>
+                </template>
+                <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
+                  <div class="indent">
+                    <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
+                  </div>
+                </template>
+              </div>
+              <template is="dom-if" if="{{ item.joined }}">
+                <paper-button id="cancel" raised class="off" data-uid$="{{ item.uid }}" on-click="cancel">cancel</paper-button>
+              </template>
+              <template is="dom-if" if="{{ !item.joined }}">
+                <paper-button id="join" raised class="on" data-uid$="{{ item.uid }}" on-click="join">参加</paper-button>
               </template>
             </div>
-            <template is="dom-if" if="{{ item.joined }}">
-              <paper-button id="cancel" raised class="off" data-uid$="{{ item.uid }}" on-click="cancel">cancel</paper-button>
-            </template>
-            <template is="dom-if" if="{{ !item.joined }}">
-              <paper-button id="join" raised class="on" data-uid$="{{ item.uid }}" on-click="join">参加</paper-button>
-            </template>
-          </div>
+          </template>
         </template>
         <hr>
         <newparty-view user={{user}}></newparty-view>
@@ -76,9 +83,13 @@ class PartiesView extends PolymerElement {
             if ( v.members ) {
                 v.joined = Object.keys( v.members ).includes( this.user.uid ); // Current user already joined or not
                 v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, v.members[ key ] ) ); // Convert members from Object to Array
+                v.invited = (Object.keys(v).includes("invited"))?Object.keys(v.invited).includes(this.user.uid):false;
+                console.log(this.user.uid)
             }
             this.push( 'parties', Object.assign( { uid: snapshot.key }, v ) );
         } );
+        console.log(this.parties);
+//        console.log(this.user.uid);
     }
 
     join( e ) {
