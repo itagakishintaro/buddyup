@@ -58,7 +58,9 @@ class PartiesView extends PolymerElement {
     constructor() {
         super();
         this.parties = [];
-        this.getMembers();
+        firebase.auth().onAuthStateChanged( () => {
+          this.getMembers();
+        });
     }
 
     static get properties() {

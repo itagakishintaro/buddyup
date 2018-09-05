@@ -9,8 +9,8 @@ class CommentsView extends PolymerElement {
     return html `
       <style include="shared-styles">
         .container {
-          overflow: scroll;
-          margin: 1em;
+          /* overflow: scroll; */
+          /* margin: 1em; */
         }
 
         .displayName {
@@ -23,14 +23,11 @@ class CommentsView extends PolymerElement {
         }
 
         .msg {
-          margin-bottom: 1em;
           width: 100%;
           display: flex;
         }
 
         .like {
-          border : 1px solid var(--paper-blue-grey-200);
-          border-radius: .25em;
           padding: .25em .5em;
           width: 4em;
         }
@@ -51,10 +48,14 @@ class CommentsView extends PolymerElement {
           color: var(--paper-blue-grey-600);
           font-size: .8em;
         }
+
+        .separater {
+          border: .5px solid var(--paper-blue-grey-100);
+        }
       </style>
 
       <div class="container">
-        <template is="dom-repeat" items="{{comments}}" on-dom-change="scroll">
+        <template is="dom-repeat" items="{{comments}}">
           <div class="msg">
             <div>
               <template is="dom-if" if="{{item.photoURL}}">
@@ -67,37 +68,39 @@ class CommentsView extends PolymerElement {
             <div>
               <div class="displayName">{{item.displayName}}</div>
               <p class="text">{{item.text}}</p>
-              <div class="like">
                 <template is="dom-if" if="{{ _didLike(item.likes) }}">
-                  <paper-icon-button class="like-icon" icon="thumb-up" data-uid$="{{ item.uid }}" on-click="cancelLike"></paper-icon-button>
+                  <div id="like" class="like" on-click="cancelLike">
+                    <paper-icon-button class="like-icon" icon="thumb-up" data-uid$="{{ item.uid }}"></paper-icon-button>
+                    <span class="like-number">{{ _countLikeNumber(item.likes) }}</span>
+                　</div>
                 </template>
                 <template is="dom-if" if="{{ !_didLike(item.likes) }}">
-                  <paper-icon-button class="like-icon like-not-yet" icon="thumb-up" data-uid$="{{ item.uid }}" on-click="like"></paper-icon-button>
+                  <div id="like" class="like" on-click="like">
+                    <paper-icon-button class="like-icon like-not-yet" icon="thumb-up" data-uid$="{{ item.uid }}"></paper-icon-button>
+                    <span class="like-number">{{ _countLikeNumber(item.likes) }}</span>
+              　   </div>
                 </template>
-                <span class="like-number">{{ _countLikeNumber(item.likes) }}</span>
-            　</div>
+
             </div>
           </div>
+          <hr class="separater">
         </template>
         <div id="bottom"></div>
       </div>
+      <loading-view display="{{loadingDisplay}}"></loading-view>
     `;
     }
 
     constructor() {
       super();
       this.comments = [];
+      this.loadingDisplay = 'none';
     }
 
     static get properties() {
       return {
         comments: Array
       }
-    }
-
-    scroll() {
-      console.log( 'scroll()' );
-      this.$.bottom.scrollIntoView( true );
     }
 
     like(e) {
@@ -111,7 +114,6 @@ class CommentsView extends PolymerElement {
 
     cancelLike(e) {
       console.log( 'cancelLike()', e.target.dataset.uid );
-
       let targetComment = this.comments.filter( c => c.uid === e.target.dataset.uid )[0];
       Object.keys(targetComment.likes).forEach( key => {
         if( targetComment.likes[key].uid === this.user.uid ) {

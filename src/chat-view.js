@@ -7,34 +7,34 @@ class ChatView extends PolymerElement {
     static get template() {
         return html `
         <style include="shared-styles">
-        .comments {
-            padding-top: 2em;
-            padding-bottom: 3em;
-        }
-        .post {
-            background-color: white;
-            border-top: 1px solid rgba(0,0,0,.12);
-            position: fixed;
-            bottom: 0;
-            height: 3.5em;
-            width: 100%;
-            max-width: 384px;
-        }
-        .profile {
-            background-color: #EEE;
-            padding: .25em;
-            height: 2em;
-            width: 100%;
-            position: fixed;
-            top: 64;
-            z-index: 9;
-        }
-            .profile .icon {
-                vertical-align: bottom;
-            }
-            .profile .name {
-                margin-right: .5em;
-            }
+          .comments {
+              padding-top: 2em;
+              /* padding-bottom: 3em; */
+          }
+          .post {
+              background-color: white;
+              border-top: 1px solid rgba(0,0,0,.12);
+              /* position: fixed;
+              bottom: .5em; */
+              height: 3.5em;
+              width: 100%;
+              max-width: 384px;
+          }
+          .profile {
+              background-color: #EEE;
+              padding: .25em;
+              height: 2em;
+              width: 100%;
+              position: fixed;
+              top: 64;
+              z-index: 9;
+          }
+          .profile .icon {
+              vertical-align: bottom;
+          }
+          .profile .name {
+              margin-right: .5em;
+          }
         </style>
         <div>
           <div class="profile">
@@ -47,7 +47,7 @@ class ChatView extends PolymerElement {
             <span class="name">{{talkerProfile.displayName}}</span>
             <span>へのコメント</span>
           </div>
-          <div class="comments">
+          <div class="comments" on-dom-change="scroll">
             <comments-view user={{user}} talker={{talker}} comments={{comments}}></comments-view>
           </div>
           <div class="post">
@@ -72,6 +72,11 @@ class ChatView extends PolymerElement {
         }
     }
 
+    scroll() {
+      console.log( 'scroll()' );
+      this.$.bottom.scrollIntoView( true );
+    }
+    
     _talkerChanged( newTalker, oldTalker ) {
         console.log( '_talkerChanged', newTalker );
         this.comments = [];

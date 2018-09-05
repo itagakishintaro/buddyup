@@ -7,27 +7,26 @@ class CommentPostView extends PolymerElement {
     static get template() {
         return html `
       <style include="shared-styles">
-      .custom-container {
-          display: flex;
-          justify-content: space-between;
-          margin: .5em 0 .5em 0;
-          background-color: white;
-      }
+        .custom-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: .5em;
+            background-color: white;
+        }
 
         .text {
-            margin-left: .5em;
-            /* padding: .5em 1em; */
             resize: none;
-            width: calc(100% - 8em);
-            border-top: none;
-            border-left: none;
-            border-right: none;
-            border-bottom: thin solid gray;
+            width: 100%;
+            border: thin solid gray;
+            /* iphoneでテキスト入力で拡大する問題対策 */
+            font-size: 16px;
+            margin-left: .5em;
         }
 
         ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
               color: gray;
               opacity: 1; /* Firefox */
+              font-size: 12px;
           }
 
       </style>
