@@ -62,6 +62,7 @@ class ChatView extends PolymerElement {
         console.log( 'constructor()' );
         super();
         this.comments = [];
+        this.oldCommentsLength = 0;
         this.talkerProfile = { displayName: '板垣真太郎', email: '', photo: 'images/manifest/icon-48x48.png' };
     }
 
@@ -73,10 +74,14 @@ class ChatView extends PolymerElement {
     }
 
     scroll() {
-      console.log( 'scroll()' );
-      this.$.bottom.scrollIntoView( true );
+      if( this.comments.length !== this.oldCommentsLength ){
+        this.$.bottom.scrollIntoView( true );
+        setTimeout( () => {
+          this.oldCommentsLength = this.comments.length;
+        }, 500);
+      }
     }
-    
+
     _talkerChanged( newTalker, oldTalker ) {
         console.log( '_talkerChanged', newTalker );
         this.comments = [];
