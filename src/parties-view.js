@@ -29,11 +29,16 @@ class PartiesView extends PolymerElement {
 
       <div class="container">
         <template is="dom-repeat" items="{{parties}}">
-          <template is="dom-if" if="{{ item.invited.indexOf(item.uid) >= 0 }}">
+          <template is="dom-if" if="{{ item.invited }}">
             <div class="party">
               <div>
                 <div>
-                  <span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span>
+                  <template is="dom-if" if="{{ item.partyInfo }}">
+                    <a href="{{item.partyInfo}}"><span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span></a>
+                  </template>
+                  <template is="dom-if" if="{{ !item.partyInfo }}">
+                    <span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span>
+                  </template>
                 </div>
                 <template is="dom-if" if="{{ item.placeUrl }}">
                   <div class="indent">{{item.name}}@<a href="{{item.placeUrl}}" target="_blank">{{item.place}}</a></div>
@@ -66,6 +71,11 @@ class PartiesView extends PolymerElement {
         super();
         this.parties = [];
         this.getMembers();
+        var self = this;
+        // XXX TODO: setTimeout使わない方法を知りたい
+        setTimeout(function(){
+          self.getMembers();
+        },500)
     }
 
     static get properties() {
@@ -83,13 +93,15 @@ class PartiesView extends PolymerElement {
             if ( v.members ) {
                 v.joined = Object.keys( v.members ).includes( this.user.uid ); // Current user already joined or not
                 v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, v.members[ key ] ) ); // Convert members from Object to Array
-                v.invited = (Object.keys(v).includes("invited"))?Object.keys(v.invited).includes(this.user.uid):false;
-                console.log(this.user.uid)
             }
+            // XXX TODO: フィルタがうまく効いていないのを直す
+            // v.invited = (Object.keys(v).includes("invitedMembers")) ? (v.invitedMembers.indexOf(this.user.uid) >= 0) : true;
+            v.invited = true;
+            console.log(v.invitedMembers)
+            console.log(v.invited)
+            console.log(this.user.uid)
             this.push( 'parties', Object.assign( { uid: snapshot.key }, v ) );
         } );
-        console.log(this.parties);
-//        console.log(this.user.uid);
     }
 
     join( e ) {

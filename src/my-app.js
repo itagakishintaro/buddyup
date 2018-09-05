@@ -199,13 +199,22 @@ class MyApp extends PolymerElement {
     initFirebase() {
         console.log( 'initFirebase()' );
         // Initialize Firebase
+        // var config = {
+        //     apiKey: "AIzaSyAGW3s4tqAe8wAZY65hrM6YKpvKHj2dNjM",
+        //     authDomain: "buddyup-204005.firebaseapp.com",
+        //     databaseURL: "https://buddyup-204005.firebaseio.com",
+        //     projectId: "buddyup-204005",
+        //     storageBucket: "buddyup-204005.appspot.com",
+        //     messagingSenderId: "541079223817"
+        // };
+
         var config = {
-            apiKey: "AIzaSyAGW3s4tqAe8wAZY65hrM6YKpvKHj2dNjM",
-            authDomain: "buddyup-204005.firebaseapp.com",
-            databaseURL: "https://buddyup-204005.firebaseio.com",
-            projectId: "buddyup-204005",
-            storageBucket: "buddyup-204005.appspot.com",
-            messagingSenderId: "541079223817"
+          apiKey: "AIzaSyCC5ueEo_JfNcV23rjYO36i6oAG5ZZe2HQ",
+          authDomain: "buddyup-1424c.firebaseapp.com",
+          databaseURL: "https://buddyup-1424c.firebaseio.com",
+          projectId: "buddyup-1424c",
+          storageBucket: "buddyup-1424c.appspot.com",
+          messagingSenderId: "726570403179"
         };
         firebase.initializeApp( config );
         firebase.auth().onAuthStateChanged( user => {
