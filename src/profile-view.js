@@ -35,18 +35,27 @@ class ProfileView extends PolymerElement {
             position: relative;
         }
         .preview {
-            width: 3em;
-            height: 3em;
+            width: 4em;
+            height: 4em;
+            margin-bottom: .2em;
         }
+        .change {
+          border-radius: 1em;
+          border: .5px solid var(--paper-blue-grey-100);
+          font-size: .8em;
+          padding: 1em .8em;
+          width: 4em;
+        }
+
         </style>
 
         <div class="container">
             <div class="display">
                 <div class="photo">
-                    <label htmlFor="file">
-                        <paper-icon-button icon="camera-enhance" class="camera"></paper-icon-button>
-                        <image id="icon" class="preview" src="[[user.photoURL]]">
-                        <input id="file" class="file" type="file" accept="image/*" on-change="capture"></input>
+                    <image id="icon" class="preview" src="[[user.photoURL]]">
+                    <label class="change" htmlFor="file">
+                      Change
+                      <input id="file" class="file" type="file" accept="image/*" on-change="capture"></input>
                     </label>
                 </div>
                 <paper-input id="displayName" class="displayName" always-float-label label="表示名" value="[[user.displayName]]"></paper-input>
