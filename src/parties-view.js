@@ -61,7 +61,17 @@ class PartiesView extends PolymerElement {
         super();
         this.parties = [];
         firebase.auth().onAuthStateChanged( () => {
-          this.getPartis();
+          // 初期処理
+          let getPartiesPromise = new Promise( (resolve, reject) => {
+            // partyを取得する
+            this.getParties( resolve, reject );
+          });
+          // 初期処理が終わった後の処理
+          getPartiesPromise.then( () => {
+            // partyを取得して初期処理が終わった後、他の人がpartyのmemberを変更したときのイベント処理を設定
+            this.updateMembers();
+          });
+
         });
     }
 
@@ -81,57 +91,53 @@ class PartiesView extends PolymerElement {
       return 0;
     }
 
-    getPartis() {
-        console.log( 'getPartis()' );
+    getParties(resolve, reject) {
+        console.log( 'getParties()' );
         this.parties = [];
         firebase.database().ref( 'profiles' ).once( 'value', snapshot => {
-          let profiles = snapshot.val();
+          this.profiles = snapshot.val();
 
           firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).on( 'child_added', snapshot => {
               let party = snapshot.val();
               let partyKey = snapshot.key;
               if ( party.members ) {
                   party.joined = Object.keys( party.members ).includes( this.user.uid ); // Current user already joined or not
-                  party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, profiles[key] ) ); // Convert members from Object to Array
+                  party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, this.profiles[key] ) ); // Convert members from Object to Array
               }
               this.push( 'parties', Object.assign( { uid: partyKey }, party ) );
-
-              // partyのmemberが更新された場合はとりなおし
-              let _updateMembers = ( snapshot, add ) => {
-                firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).once( 'value', snapshot => {
-                  let parties = snapshot.val();
-                  let tmp = Object.keys( parties ).map( key => Object.assign( { uid: key }, parties[key] ) );
-
-                  tmp = tmp.map( party => {
-                    party.joined = Object.keys( party.members ).includes( this.user.uid );
-                    party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, profiles[key] ) );
-                    return party;
-                  });
-                  this.parties = tmp;
-                });
-              };
-
-              // 初回の表示のときは何もしないで、他の人が操作したときに処理する
-              let init = true;　
-              firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_added', snapshot => {
-                console.log('added', snapshot.val(), snapshot.key);
-                if( !init ){
-                  _updateMembers(snapshot, true);
-                }
-              } );
-
-              firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_removed', snapshot => {
-                console.log('removed', snapshot.val(), snapshot.key);
-                if( !init ){
-                  _updateMembers(snapshot, false);
-                }
-              } );
-              init = false;
-
+              resolve('success');
           } );
-
           this.loadingDisplay = 'none';
         } );
+    }
+
+    updateMembers() {
+      // 共通処理
+      let _update = ( snapshot, add ) => {
+        firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).once( 'value', snapshot => {
+          let parties = snapshot.val();
+          let tmp = Object.keys( parties ).map( key => Object.assign( { uid: key }, parties[key] ) );
+
+          tmp = tmp.map( party => {
+            party.joined = Object.keys( party.members ).includes( this.user.uid );
+            party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, this.profiles[key] ) );
+            return party;
+          });
+          this.parties = tmp;
+        });
+      };
+
+      // membersがaddされたときとremoveされたときのイベントを設定
+      let partyUIDs = this.parties.map( p => p.uid );
+      partyUIDs.forEach( partyKey => {
+        firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_added', snapshot => {
+          _update(snapshot, true);
+        } );
+
+        firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_removed', snapshot => {
+          _update(snapshot, false);
+        } );
+      });
     }
 
     join( e, index ) {
