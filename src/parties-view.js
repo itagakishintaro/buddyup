@@ -29,7 +29,7 @@ class PartiesView extends PolymerElement {
       </style>
 
       <div class="container">
-        <template is="dom-repeat" items="{{parties}}">
+        <template is="dom-repeat" items="{{parties}}" sort="_sort">
           <div class="party">
             <div>
               <div>
@@ -61,7 +61,7 @@ class PartiesView extends PolymerElement {
         super();
         this.parties = [];
         firebase.auth().onAuthStateChanged( () => {
-          this.getMembers();
+          this.getPartis();
         });
     }
 
@@ -71,36 +71,77 @@ class PartiesView extends PolymerElement {
         }
     }
 
-    getMembers() {
-        console.log( 'getMembers()' );
+    _sort(a, b) {
+      if(a.date + a.timeFrom < b.date + b.timeFrom){
+        return -1;
+      }
+      if(a.date + a.timeFrom > b.date + b.timeFrom){
+        return 1;
+      }
+      return 0;
+    }
+
+    getPartis() {
+        console.log( 'getPartis()' );
         this.parties = [];
-        firebase.database().ref( 'parties' ).off( 'child_added' );
         firebase.database().ref( 'profiles' ).once( 'value', snapshot => {
           let profiles = snapshot.val();
 
           firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).on( 'child_added', snapshot => {
-              let v = snapshot.val();
-              if ( v.members ) {
-                  v.joined = Object.keys( v.members ).includes( this.user.uid ); // Current user already joined or not
-                  v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, profiles[key] ) ); // Convert members from Object to Array
+              let party = snapshot.val();
+              let partyKey = snapshot.key;
+              if ( party.members ) {
+                  party.joined = Object.keys( party.members ).includes( this.user.uid ); // Current user already joined or not
+                  party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, profiles[key] ) ); // Convert members from Object to Array
               }
-              this.push( 'parties', Object.assign( { uid: snapshot.key }, v ) );
+              this.push( 'parties', Object.assign( { uid: partyKey }, party ) );
+
+              // partyのmemberが更新された場合はとりなおし
+              let _updateMembers = ( snapshot, add ) => {
+                firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).once( 'value', snapshot => {
+                  let parties = snapshot.val();
+                  let tmp = Object.keys( parties ).map( key => Object.assign( { uid: key }, parties[key] ) );
+
+                  tmp = tmp.map( party => {
+                    party.joined = Object.keys( party.members ).includes( this.user.uid );
+                    party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, profiles[key] ) );
+                    return party;
+                  });
+                  this.parties = tmp;
+                });
+              };
+
+              // 初回の表示のときは何もしないで、他の人が操作したときに処理する
+              let init = true;　
+              firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_added', snapshot => {
+                console.log('added', snapshot.val(), snapshot.key);
+                if( !init ){
+                  _updateMembers(snapshot, true);
+                }
+              } );
+
+              firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_removed', snapshot => {
+                console.log('removed', snapshot.val(), snapshot.key);
+                if( !init ){
+                  _updateMembers(snapshot, false);
+                }
+              } );
+              init = false;
+
           } );
 
           this.loadingDisplay = 'none';
         } );
     }
 
-    join( e ) {
+    join( e, index ) {
         console.log( 'join()', e.target.dataset.uid );
         firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( this.user );
-        this.getMembers();
     }
 
-    cancel( e ) {
+    cancel( e, index ) {
         console.log( 'cancel()', e.target.dataset.uid );
         firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( null );
-        this.getMembers();
     }
 
 }
