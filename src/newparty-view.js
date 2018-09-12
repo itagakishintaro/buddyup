@@ -47,7 +47,7 @@ class NewpartyView extends PolymerElement {
     post() {
         console.log( 'post()', this.user );
         let userObj = {};
-        userObj[ this.user.uid ] = { displayName: this.user.displayName, email: this.user.email };
+        userObj[ this.user.uid ] = this.user;
         firebase.database().ref( 'parties' ).push( {
             date: this.$.date.value,
             timeFrom: this.$.timeFrom.value,
