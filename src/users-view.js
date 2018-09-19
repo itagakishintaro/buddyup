@@ -41,12 +41,25 @@ class UsersView extends PolymerElement {
                   </ul>
               </template>
           </paper-dialog>
+
+          <!-- target user -->
+          <div class="user">
+            <template is="dom-if" if="{{target.photoURL}}">
+              <img src="{{target.photoURL}}" class="icon">
+            </template>
+            <span>{{target.displayName}}</span>
+          </div>
+
+          <!-- skills -->
           <div class="skill">
               <template is="dom-repeat" items="{{skills}}">
                   <span class="tag" on-click="showComments">{{item}}</span>
               </template>
           </div>
 
+          <hr>
+
+          <!-- friends -->
           <template is="dom-repeat" items="{{friends}}">
             <div class="user">
               <template is="dom-if" if="{{item.photoURL}}">
@@ -55,7 +68,7 @@ class UsersView extends PolymerElement {
               <template is="dom-if" if="{{!item.photoURL}}">
                 <img src="images/manifest/icon-48x48.png" class="icon">
               </template>
-              <span on-click="showSkills" data-uid$="{{item.uid}}" class="username">{{item.displayName}}</span>
+              <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
             </div>
           </template>
         </div>
@@ -69,6 +82,8 @@ class UsersView extends PolymerElement {
         this.skills = [];
         this.getFriends();
         this.loadingDisplay = 'none';
+        this.target = {};
+        this.targetDisplayName = '';
     }
 
     static get properties() {
@@ -102,7 +117,15 @@ class UsersView extends PolymerElement {
 
     showSkills( e ){
       this.skills = [];
-      this.targetUID = e.target.dataset.uid
+      // this.targetUID = e.target.dataset.uid;
+      this.target.uid = e.target.dataset.uid;
+      this.target.photoURL = e.target.dataset.photo;
+      this.target.displayName = e.target.dataset.name;
+      console.log(this.target);
+      // this.targetDisplayName = e.target.dataset.displayName;
+      // console.log(e.target.dataset.name);
+      this.notifyPath('target.photoURL');
+      this.notifyPath('target.displayName');
       this.getSkills();
     }
 
@@ -120,7 +143,7 @@ class UsersView extends PolymerElement {
         .then( tokens => this._extractSkills( tokens ) )
         .then( skills => {
           this.skills = skills;
-          firebase.database().ref( 'profiles/' + this.targetUID + '/skills' ).push( skills );
+          firebase.database().ref( 'profiles/' + this.target.uid + '/skills' ).push( skills );
         })
         .finally( () => {
           this.loadingDisplay = 'none';
@@ -128,7 +151,7 @@ class UsersView extends PolymerElement {
     }
 
     _getCommentsText() {
-        return firebase.database().ref( 'comments/' + this.targetUID ).once( 'value' ).then( snapshot => {
+        return firebase.database().ref( 'comments/' + this.target.uid ).once( 'value' ).then( snapshot => {
             if( !snapshot.val() ){
               return;
             }
