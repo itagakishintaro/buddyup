@@ -13,16 +13,6 @@ class SkillView extends PolymerElement {
           .on {
             margin-bottom: 1em;
           }
-
-          .tag {
-              border-radius: 10%;
-              border: 1px solid var(--paper-blue-grey-200);
-              color: var(--paper-blue-900);
-              display: inline-block;
-              margin-top: .4em;
-              margin-right: .2em;
-              padding: 0 .5em
-          }
         </style>
 
         <div class="container">

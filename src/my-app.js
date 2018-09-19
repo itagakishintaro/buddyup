@@ -86,7 +86,7 @@ class MyApp extends PolymerElement {
                 <a name="profile-view" href="[[rootPath]]profile-view/">プロフィール設定</a>
                 <a name="skill-view" href="[[rootPath]]skill-view/">スキル</a>
                 <a name="parties-view" href="[[rootPath]]parties-view/">ランチ会一覧</a>
-                <a name="users-view" href="[[rootPath]]users-view/">知り合い検索</a>
+                <a name="users-view" href="[[rootPath]]users-view/">知り合い一覧</a>
                 <a name="logout" on-tap="logout">ログアウト</a>
               </template>
           </iron-selector>
