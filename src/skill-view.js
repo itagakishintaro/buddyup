@@ -62,9 +62,9 @@ class SkillView extends PolymerElement {
     }
 
     showComments( e ) {
-        this.relatedComments = Object.keys( this.comments )
-            .map( key => this.comments[key].text.toLowerCase() )
-            .filter( v => v.indexOf( e.target.innerText ) >= 0 );
+        this.relatedComments = this.comments
+            .map( c => c.text.toLowerCase() )
+            .filter( text => text.indexOf( e.target.innerText ) >= 0 );
         this.$.dialog.open();
     }
 
@@ -84,10 +84,12 @@ class SkillView extends PolymerElement {
             if( !snapshot.val() ){
               return;
             }
-            this.comments = snapshot.val();
+            this.comments = Object.keys( snapshot.val() )
+              .map( key => snapshot.val()[key] ) // Objectから配列に経間
+              .filter( comment => comment.text ); // 空のコメントを削除
             let text = '';
-            Object.keys( this.comments ).forEach( key => {
-                text = text + '\n' + this.comments[key].text.toLowerCase();
+            this.comments.forEach( c => {
+                text = text + '\n' + c.text.toLowerCase();
             });
             return text;
         } );
