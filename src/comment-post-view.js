@@ -51,12 +51,12 @@ class CommentPostView extends PolymerElement {
 
     // post
     post() {
-        console.log( 'post()', this.$.text.value );
         firebase.database().ref( 'comments/' + this.talker ).push( {
             uid: this.user.uid,
             displayName: this.user.displayName,
             text: this.$.text.value,
-            photoURL: this.user.photoURL
+            photoURL: this.user.photoURL,
+            datetime: new Date().toISOString()
         } );
         this.$.text.value = '';
     }

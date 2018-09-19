@@ -13,9 +13,10 @@ class CommentsView extends PolymerElement {
           /* margin: 1em; */
         }
 
-        .displayName {
+        .meta-info {
           font-size: .5em;
         }
+
         .text {
           vertical-align: text-top;
           display:table-cell;
@@ -65,8 +66,9 @@ class CommentsView extends PolymerElement {
                 <img src="images/manifest/icon-48x48.png" class="icon">
               </template>
             </div>
+
             <div>
-              <div class="displayName">{{item.displayName}}</div>
+              <div class="meta-info">{{item.displayName}} [ {{ _dateFormat(item.datetime) }} ]</div>
               <p class="text">{{item.text}}</p>
                 <template is="dom-if" if="{{ _didLike(item.likes) }}">
                   <div id="like" class="like" on-click="cancelLike">
@@ -161,6 +163,14 @@ class CommentsView extends PolymerElement {
       }
       let usersDidLike = Object.keys(likes).map( key => likes[key].uid );
       return usersDidLike.includes( this.user.uid );
+    }
+
+    _dateFormat( ISO ) {
+      if( !ISO ){
+        return;
+      }
+      console.log(ISO);
+      return ISO.substring( 5, 10 ) + ' ' + ISO.substring( 11, 16);
     }
 
 }
