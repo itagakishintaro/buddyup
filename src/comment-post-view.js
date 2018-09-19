@@ -53,9 +53,7 @@ class CommentPostView extends PolymerElement {
     post() {
         firebase.database().ref( 'comments/' + this.talker ).push( {
             uid: this.user.uid,
-            displayName: this.user.displayName,
             text: this.$.text.value,
-            photoURL: this.user.photoURL,
             datetime: new Date().toISOString()
         } );
         this.$.text.value = '';
