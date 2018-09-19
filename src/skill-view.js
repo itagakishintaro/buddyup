@@ -53,12 +53,21 @@ class SkillView extends PolymerElement {
         this.comments = {};
         this.relatedComments = [];
         this.loadingDisplay = 'none';
+        this.loadSkills();
+        this.getCommentsText();
     }
 
     static get properties() {
         return {
             user: Object
         }
+    }
+
+    loadSkills() {
+      firebase.database().ref( 'profiles/' + this.user.uid ).once( 'value' ).then( snapshot => {
+          console.log( 'profiles/' + this.user.uid, snapshot.val() );
+          this.mySkills = snapshot.val().skills;
+      } );
     }
 
     showComments( e ) {
@@ -73,7 +82,11 @@ class SkillView extends PolymerElement {
         this.getCommentsText()
         .then( text => this.callNLPSyntax( text ) )
         .then( tokens => this.extractSkills( tokens ) )
-        .then( mySkills => { this.mySkills = mySkills; } )
+        .then( mySkills => {
+          this.mySkills = mySkills;
+          console.log('profiles/' + this.user.uid + '/skills');
+          firebase.database().ref( 'profiles/' + this.user.uid + '/skills' ).push( mySkills );
+        })
         .finally( () => {
           this.loadingDisplay = 'none';
         } );
