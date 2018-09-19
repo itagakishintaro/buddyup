@@ -1,6 +1,7 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import handleImage from './util/ImageHandler.js';
 import './shared-styles.js';
+import './loading-view.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/iron-icons/iron-icons.js';
@@ -38,6 +39,7 @@ class SettingView extends PolymerElement {
             width: 4em;
             height: 4em;
             margin-bottom: .2em;
+            object-fit: contain;
         }
         .change {
           border-radius: 1em;
@@ -64,12 +66,14 @@ class SettingView extends PolymerElement {
             <paper-button raised class="on" on-click="update">更新</paper-button>
             <paper-toast id="toast" text="更新しました!"></paper-toast>
         </div>
+        <loading-view display="{{loadingDisplay}}"></loading-view>
         `;
     }
 
     constructor() {
         console.log( 'constructor()' );
         super();
+        this.loadingDisplay = 'none';
     }
 
     static get properties() {
@@ -79,9 +83,11 @@ class SettingView extends PolymerElement {
     }
 
     capture() {
+        this.loadingDisplay = 'block';
         let file = this.$.file.files[0];
-        handleImage( file, 48, dataURL => {
+        handleImage( file, 480, dataURL => {
             this.$.icon.src = dataURL;
+            this.loadingDisplay = 'none';
         } )
     }
 

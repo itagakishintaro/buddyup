@@ -45,6 +45,7 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
       width: 2em;
       height: 2em;
       margin-right: .5em;
+      object-fit: contain;
     }
 
     .clearfix:after {
