@@ -14,11 +14,18 @@ class UsersView extends PolymerElement {
           }
 
           .user {
+            margin-bottom: .5em;
+          }
+          .username {
             color: var(--paper-blue-500);
           }
 
           .skill {
             margin-bottom: 1em;
+          }
+
+          .icon {
+            vertical-align: bottom;
           }
         </style>
 
@@ -41,7 +48,15 @@ class UsersView extends PolymerElement {
           </div>
 
           <template is="dom-repeat" items="{{friends}}">
-            <div on-click="showSkills" data-uid$="{{item.uid}}" class="user">{{item.displayName}}</div>
+            <div class="user">
+              <template is="dom-if" if="{{item.photoURL}}">
+                <img src="{{item.photoURL}}" class="icon">
+              </template>
+              <template is="dom-if" if="{{!item.photoURL}}">
+                <img src="images/manifest/icon-48x48.png" class="icon">
+              </template>
+              <span on-click="showSkills" data-uid$="{{item.uid}}" class="username">{{item.displayName}}</span>
+            </div>
           </template>
         </div>
         <loading-view display="{{loadingDisplay}}"></loading-view>

@@ -21,7 +21,7 @@ class NewpartyView extends PolymerElement {
       </style>
 
       <div>
-      <h1>ランチ会の新規登録</h1>
+      <h1>交流会の新規登録</h1>
           <form class="clearfix">
             <label class="label" for="date">日時</label><input id="date" type="date"></input>
             <input id="timeFrom" class="time" type="time" label="開始時刻"></input>

@@ -79,14 +79,14 @@ class MyApp extends PolymerElement {
               <template is="dom-if" if="{{!user}}">
                 <a name="login-view" href="[[rootPath]]login-view/">ログイン</a>
               </template>
-              <template is="dom-if" if="{{user.isPasswordAuth}}">
-                <a name="auth-view" href="[[rootPath]]auth-view/">パスワード変更</a>
-              </template>
+
               <template is="dom-if" if="{{user}}">
-                <a name="profile-view" href="[[rootPath]]profile-view/">プロフィール設定</a>
-                <a name="skill-view" href="[[rootPath]]skill-view/">スキル</a>
-                <a name="parties-view" href="[[rootPath]]parties-view/">ランチ会一覧</a>
-                <a name="users-view" href="[[rootPath]]users-view/">知り合い一覧</a>
+                <a name="parties-view" href="[[rootPath]]parties-view/">交流会一覧</a>
+                <a name="users-view" href="[[rootPath]]users-view/">みんなのプロフィール</a>
+                <template is="dom-if" if="{{user.isPasswordAuth}}">
+                  <a name="auth-view" href="[[rootPath]]auth-view/">パスワード変更</a>
+                </template>
+                <a name="setting-view" href="[[rootPath]]setting-view/">設定</a>
                 <a name="logout" on-tap="logout">ログアウト</a>
               </template>
           </iron-selector>
@@ -105,8 +105,7 @@ class MyApp extends PolymerElement {
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
             <login-view name="login-view" user="{{user}}" loadingDisplay="{{loadingDisplay}}"></login-view>
             <auth-view name="auth-view" user="{{user}}"></auth-view>
-            <profile-view name="profile-view" user="{{user}}"></profile-view>
-            <skill-view name="skill-view" user="{{user}}"></skill-view>
+            <setting-view name="setting-view" user="{{user}}"></setting-view>
             <parties-view name="parties-view" user="{{user}}"></parties-view>
             <users-view name="users-view" user="{{user}}"></users-view>
             <chat-view name="chat-view" user="{{user}}" talker={{routeData.talker}}></chat-view>
@@ -143,7 +142,7 @@ class MyApp extends PolymerElement {
         console.log( '_routePageChanged', page );
         if ( !page ) {
             this.page = 'login-view';
-        } else if ( [ 'login-view', 'auth-view', 'profile-view', 'skill-view', 'parties-view', 'users-view', 'chat-view' ].indexOf( page ) !== -1 ) {
+        } else if ( [ 'login-view', 'auth-view', 'setting-view', 'parties-view', 'users-view', 'chat-view' ].indexOf( page ) !== -1 ) {
             this.page = page;
         } else {
             this.page = 'view404';
@@ -167,11 +166,8 @@ class MyApp extends PolymerElement {
             case 'auth-view':
                 import ( './auth-view.js' );
                 break;
-            case 'profile-view':
-                import ( './profile-view.js' );
-                break;
-            case 'skill-view':
-                import ( './skill-view.js' );
+            case 'setting-view':
+                import ( './setting-view.js' );
                 break;
             case 'parties-view':
                 import ( './parties-view.js' );

@@ -7,7 +7,7 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-toast/paper-toast.js';
 
-class ProfileView extends PolymerElement {
+class SettingView extends PolymerElement {
     static get template() {
         return html `
         <style include="shared-styles">
@@ -106,4 +106,4 @@ class ProfileView extends PolymerElement {
 
 }
 
-window.customElements.define( 'profile-view', ProfileView );
+window.customElements.define( 'setting-view', SettingView );
