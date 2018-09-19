@@ -85,7 +85,7 @@ class SettingView extends PolymerElement {
     capture() {
         this.loadingDisplay = 'block';
         let file = this.$.file.files[0];
-        handleImage( file, 480, dataURL => {
+        handleImage( file, 360, dataURL => {
             this.$.icon.src = dataURL;
             this.loadingDisplay = 'none';
         } )

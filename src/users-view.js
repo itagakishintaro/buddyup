@@ -30,7 +30,7 @@ class UsersView extends PolymerElement {
         </style>
 
         <div class="container">
-          <p>知り合い（自分にコメントをくれた人）が表示されます。</p>
+          <p>自分と知り合い（自分にコメントをくれた人）が表示されます。</p>
           <p>名前をタッチするとその人のスキルが表示され、そのスキルをタッチすると関連するコメントが表示されます。</p>
           <paper-button raised class="on" on-click="getFriends">更新</paper-button>
 
@@ -59,6 +59,19 @@ class UsersView extends PolymerElement {
 
           <hr>
 
+          <!-- myself -->
+          <div class="user">
+            <template is="dom-if" if="{{user.uid}}">
+                <template is="dom-if" if="{{user.photoURL}}">
+                  <img src="{{user.photoURL}}" class="icon">
+                </template>
+                <template is="dom-if" if="{{!user.photoURL}}">
+                  <img src="images/manifest/icon-48x48.png" class="icon">
+                </template>
+                <span on-click="showSkills" data-uid$="{{user.uid}}" data-photo$="{{user.photoURL}}" data-name$="{{user.displayName}}" class="username">{{user.displayName}} (自分)</span>
+            </template>
+          </div>
+
           <!-- friends -->
           <template is="dom-repeat" items="{{friends}}">
             <div class="user">
@@ -79,6 +92,8 @@ class UsersView extends PolymerElement {
     constructor() {
         console.log( 'constructor()' );
         super();
+        this.user = {};
+        this.friends = [];
         this.skills = [];
         this.getFriends();
         this.loadingDisplay = 'none';
@@ -94,7 +109,6 @@ class UsersView extends PolymerElement {
 
     // 知り合い(friend)の定義は自分にコメントしてくれた人
     getFriends() {
-      console.log(this.user.uid);
       this.loadingDisplay = 'block';
       firebase.database().ref( 'comments/' + this.user.uid ).once('value').then( snapshot => {
         if( !snapshot.val() ){
