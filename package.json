@@ -15,6 +15,7 @@
   "dependencies": {
     "@polymer/app-layout": "^3.0.0-pre.15",
     "@polymer/app-route": "^3.0.0-pre.15",
+    "@polymer/iron-collapse": "^3.0.0-pre.20",
     "@polymer/iron-flex-layout": "^3.0.0-pre.15",
     "@polymer/iron-icons": "^3.0.0-pre.20",
     "@polymer/iron-iconset-svg": "^3.0.0-pre.15",
@@ -23,6 +24,7 @@
     "@polymer/iron-selector": "^3.0.0-pre.15",
     "@polymer/paper-badge": "^3.0.0-pre.20",
     "@polymer/paper-button": "^3.0.0-pre.20",
+    "@polymer/paper-card": "^3.0.0-pre.20",
     "@polymer/paper-checkbox": "^3.0.0-pre.18",
     "@polymer/paper-dialog": "^3.0.0-pre.20",
     "@polymer/paper-icon-button": "^3.0.0-pre.20",
@@ -32,7 +34,7 @@
     "@webcomponents/webcomponentsjs": "^2.0.0"
   },
   "devDependencies": {
-    "polymer-cli": "^1.7.1",
+    "polymer-cli": "^1.8.0",
     "wct-browser-legacy": "^1.0.0"
   },
   "engines": {
