@@ -82,8 +82,8 @@ class EventView extends PolymerElement {
           .event-table-pre { @apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto; }
           .event-table { box-sizing: boarder-box; width:46%; margin:1%; word-wrap: break-word; min-height:8em; }
           .event-table-header { }
-          .event-table-title { margin: 0.3em; }
-          .event-table-edit { width:0.8em; height:0.8em; }
+          .event-table-title { margin: 0.3em; cursor: pointer;}
+          .event-table-edit {  }
           .event-table-joinBtn { padding: 0.3em; float:right; background-color:#aaf; font-size:0.8em; }
           .event-table-name {  padding: 0.2em 0em 0.2em 0em; margin: 0em 0.2em 0em 0.2em; }
           .event-table-name-icon {  width:0.8em; height:0.8em; }
@@ -215,12 +215,12 @@ class EventView extends PolymerElement {
             交流のテーブル <iron-icon id="add-member" icon="icons:add-box" on-click="addTable"></iron-icon>
           </div>
           <div style="@apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto;">
-            <template is="dom-repeat" items="{{tables}}" as="table">
+            <template is="dom-repeat" items="{{tables}}" as="table" indexAs="idx">
               <paper-card style="box-sizing: border-box; width:46%; margin:1%; padding:2px; vertical-align: top;">
                 <paper-button class="event-table-joinBtn">参加する</paper-button>
-                <div class="event-table-title">
+                <div class="event-table-title" on-click="editTable" data-tableidx$="{{table.name}}">
                   {{table.name}} 
-                  <iron-icon class="event-table-edit" icon="icons:content-copy" on-click="eventTableEdit"></iron-icon>
+                  <iron-icon  icon="icons:content-copy"></iron-icon>
                 </div> 
 
                 <template is="dom-repeat" items="{{table.members}}" as="member">
@@ -248,14 +248,15 @@ class EventView extends PolymerElement {
 
           </div>
           <paper-dialog id="event_table_edit">
-            <paper-button>名前を変更</paper-button>
-            <paper-button>参加者を追加する</paper-button>
-            <!--<paper-button>非公開にする</paper-button>-->            
-            <paper-button>削除する</paper-button>            
+            <paper-button style="border:1px;" on-click="openTableEditName">名前を変更</paper-button><br/>
+            <paper-button style="border:1px;" on-click="openTableEditAddMember">参加者を追加する</paper-button><br/>
+            <!--<paper-button>非公開にする</paper-button><br/>-->
+            <paper-button style="border:1px; padding-bottom:24px;" on-click="openTableEditDeleteTable">削除する</paper-button><br/>
           </paper-dialog>
           <paper-dialog id="event_table_edit_name">
-            <h2>テーブルの名前を変更する</h2>
-            未実装<!-- TODO: -->
+            テーブルの名前を変更する
+            <input type="text" id="event_table_edit_name_value"/>
+            <button on-click="editTableName">変更</button>
           </paper-dialog>
           <paper-dialog id="event_table_add_member">
             <h2>テーブルに参加者を追加する</h2>
@@ -263,7 +264,7 @@ class EventView extends PolymerElement {
           </paper-dialog>
           <paper-dialog id="event_table_edit_delete">
             <h2>テーブル_{{this_table.name}}を削除してよいですか？</h2>
-            <paper-button raised on-click="tableDelete" data-tableid="{{this_table}}">はい</paper-button>
+            <paper-button raised on-click="tableDelete" data-tableidx="{{this_table}}">はい</paper-button>
             <paper-button raised on-click="tableDeleteCancel">いいえ</paper-button>
             未実装<!-- TODO: -->
           </paper-dialog>
@@ -300,6 +301,8 @@ class EventView extends PolymerElement {
           {id:"tableId2", name:"table2", memberIds:["member3"], members:[{name:"小高"}]},
           {id:"tableId3", name:"table3", memberIds:[]}
         ];
+
+        this.currentTable;
 
         let getEventPromise = new Promise((resolve, reject) => {
           this.getEvent(this, resolve);
@@ -459,6 +462,31 @@ class EventView extends PolymerElement {
     showAgenda( e ) {
        this.$.expand_agenda.icon = this.$.collapse_agenda.opened ? 'expand-more' : 'expand-less';
        this.$.collapse_agenda.toggle();
+    }
+
+
+
+    addTable( e ) {
+
+    }
+    editTable( e ) {
+      this.currentTableIdx = e.target.dataset.tableidx;
+      this.$.event_table_edit.open();
+
+    }
+    openTableEditName( e ) {
+      this.$.event_table_edit_name_value.attr("value", this.tables[this.currentTableIdx].name);
+      this.$.event_table_edit_name.open();
+    }
+    openTableEditAddMember( e ){
+      this.$.event_table_add_member.open();
+    }
+    openTableEditDeleteTable( e ){
+      this.$.event_table_edit_delete.open();
+    }
+    editTableName( e ){
+      var tableIdx = e.target.dataset.tableidx
+      this.tables[tableIdx].name = this.$.event_table_edit_name_value.attr("value");
     }
 
 
