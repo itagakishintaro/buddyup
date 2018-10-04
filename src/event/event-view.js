@@ -7,6 +7,7 @@ import '@polymer/iron-collapse/iron-collapse.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/iron-icons/maps-icons.js';
 import '@polymer/iron-icons/communication-icons.js';
+import '@polymer/iron-icons/social-icons.js';
 // https://www.webcomponents.org/element/PolymerElements/iron-icons/demo/demo/index.html
 // icons:add-box  icons:expand-less  icons:expand-more  icons:face
 // maps:near-me   maps:person-pin  maps:place  maps:store-mall-directory
@@ -62,6 +63,8 @@ class EventView extends PolymerElement {
           .buddyup-button {float:right; margin-left:2em; margin-right: 2em; background-color:#fff;}
           .buddyup-explain {font-size:8px; color:#fff; margin-top:4em;}
           .member-check { margin:0em; transform:scale(0.6); color:blue;}
+          .addMemberUserBtn { padding: 0.2em 0em 0.2em 0em; margin: 0em 0.2em 0em 0.2em;}
+          .addMemberBtn { background-color:#aaf; vertical-align:bottom;}
           .newMemberLabel { margin-left: 1em; padding-left: 0.8em; display:block;}
           .newMemberInput { margin-left: 2em; margin-right: 2em; margin-top:0.1em; font-size:20px;
                             padding: 0.2em}
@@ -74,6 +77,16 @@ class EventView extends PolymerElement {
           .event-view-container { background-color: #ccc; }
           .event-place-link-a { text-decoration: none; color: #000; padding: 0.5em 1em 0.5em 1em;}
           .event-place-link { padding: 0.5em 1em 0.5em 0.5em; margin: 0.3em}
+          .event-place-badget {vertical-align:middle; margin: 0.5em; font-size:12px;}
+
+          .event-table-pre { @apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto; }
+          .event-table { box-sizing: boarder-box; width:46%; margin:1%; word-wrap: break-word; min-height:8em; }
+          .event-table-header { }
+          .event-table-title { margin: 0.3em; }
+          .event-table-edit { width:0.8em; height:0.8em; }
+          .event-table-joinBtn { padding: 0.3em; float:right; background-color:#aaf; font-size:0.8em; }
+          .event-table-name {  padding: 0.2em 0em 0.2em 0em; margin: 0em 0.2em 0em 0.2em; }
+          .event-table-name-icon {  width:0.8em; height:0.8em; }
         </style>
       </custom-style>
       <div class="event-view-container">
@@ -96,17 +109,19 @@ class EventView extends PolymerElement {
               <iron-collapse id="collapse_members" class="collapse">
                 <div class="indent">
                   <template is="dom-repeat" items="{{invitedMembers}}">
-                    {{item.profile.displayName}}
-                    <template is="dom-if" if="{{ item.isMember }}">
-                      <iron-icon icon="icons:check-circle" class="member-check"></iron-icon>
-                    </template>
-                    <template is="dom-if" if="{{ !item.isMember }}">
-                      <iron-icon icon="icons:help" class="member-check"></iron-icon>
-                    </template>
-                    ,
+                    <paper-button raised on-click="openUserPage" class="addMemberUserBtn">
+                      {{item.profile.displayName}}
+                      <template is="dom-if" if="{{ item.isMember }}">
+                        <iron-icon icon="icons:check-circle" class="member-check"></iron-icon>
+                      </template>
+                      <template is="dom-if" if="{{ !item.isMember }}">
+                        <iron-icon icon="icons:help" class="member-check"></iron-icon>
+                      </template>
+                    </paper-button>
                   </template>
-                  new
-                  <iron-icon id="add-member" icon="icons:add-box" on-click="addMember"></iron-icon>
+                  <paper-button raised on-click="addMember" class="addMemberUserBtn addMemberBtn">
+                    <iron-icon id="add-member" icon="social:person-add"></iron-icon>追加
+                  </paper-button>
                 </div>
               </iron-collapse>
               <paper-dialog id="add_member">
@@ -172,6 +187,7 @@ class EventView extends PolymerElement {
                   <paper-button raised on-click="openMapToPlace" class="event-place-link">
                     <iron-icon icon="communication:location-on"></iron-icon>Google Maps
                   </paper-button>
+                  <span class="event-place-badget">予算: {{badget}}</span>
                 </div>
               </iron-collapse>
             </div>
@@ -190,19 +206,67 @@ class EventView extends PolymerElement {
               </iron-collapse>
             </div>
             <p class="cafe-light">
-              Small plates, salads &amp; sandwiches in an intimate setting with 12 indoor seats plus patio seating.
+              {{catchPhrase}}
             </p>
           </div>
+
+
           <div class="card-actions">
-            <p>交流のテーブル</p>
-            <div class="horizontal justified">
-              <paper-icon-button icon="icons:event"></paper-icon-button>
-              <paper-button>5:30PM</paper-button>
-              <paper-button>7:30PM</paper-button>
-              <paper-button>9:00PM</paper-button>
-            </div>
-            <paper-button class="cafe-reserve">Reserve</paper-button>
+            交流のテーブル <iron-icon id="add-member" icon="icons:add-box" on-click="addTable"></iron-icon>
           </div>
+          <div style="@apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto;">
+            <template is="dom-repeat" items="{{tables}}" as="table">
+              <paper-card style="box-sizing: border-box; width:46%; margin:1%; padding:2px; vertical-align: top;">
+                <paper-button class="event-table-joinBtn">参加する</paper-button>
+                <div class="event-table-title">
+                  {{table.name}} 
+                  <iron-icon class="event-table-edit" icon="icons:content-copy" on-click="eventTableEdit"></iron-icon>
+                </div> 
+
+                <template is="dom-repeat" items="{{table.members}}" as="member">
+                  <paper-button raised class="event-table-name">{{member.name}}
+                  <iron-icon class="event-table-name-icon" icon="icons:launch"></iron-icon>
+                  </paper-button>
+                  
+                </template>
+              </paper-card>
+            </template>
+            <!--
+            <paper-card style="box-sizing: border-box; width:46%; margin:1%; ">
+              <div>table1</div>
+              <div>aaaaaaaaaaaaaaaaaaaaaaaaaa</div>
+            </paper-card>
+            <paper-card style="box-sizing: border-box; width:46%; margin:1%; ">
+              <div>table2</div>
+              <div>aaaaaaaaaaaaaaaaaaaaaaaaaa</div>
+            </paper-card>
+            <paper-card style="box-sizing: border-box; width:46%; margin:1%; ">
+              <div>table3</div>
+              <div>aaaaaaaaaaaaaaaaaaaaaaaaaa</div>
+            </paper-card>
+            -->
+
+          </div>
+          <paper-dialog id="event_table_edit">
+            <paper-button>名前を変更</paper-button>
+            <paper-button>参加者を追加する</paper-button>
+            <!--<paper-button>非公開にする</paper-button>-->            
+            <paper-button>削除する</paper-button>            
+          </paper-dialog>
+          <paper-dialog id="event_table_edit_name">
+            <h2>テーブルの名前を変更する</h2>
+            未実装<!-- TODO: -->
+          </paper-dialog>
+          <paper-dialog id="event_table_add_member">
+            <h2>テーブルに参加者を追加する</h2>
+            未実装<!-- TODO: -->
+          </paper-dialog>
+          <paper-dialog id="event_table_edit_delete">
+            <h2>テーブル_{{this_table.name}}を削除してよいですか？</h2>
+            <paper-button raised on-click="tableDelete" data-tableid="{{this_table}}">はい</paper-button>
+            <paper-button raised on-click="tableDeleteCancel">いいえ</paper-button>
+            未実装<!-- TODO: -->
+          </paper-dialog>
         </paper-card>
       </div>
     `;
@@ -223,18 +287,20 @@ class EventView extends PolymerElement {
         // 予算もあるといい
         this.invitedMembers = [{id:"member1",invited:true},{id:"member2"}]
         this.members = [{id:"member1"}]
-        // this.agenda = `<div class="event-program" data-program="1"><span>19:00-19:10</span>&nbsp;<span>全体説明</span></div>
-        //     <div class="event-program" data-program="2"><span>19:10-19:30</span>&nbsp;<span>自己紹介</span></div>
-        //     <div class="event-program" data-program="3"><span>19:30-20:00</span>&nbsp;<span>テーマトーク</span></div>
-        //     <div class="event-program" data-program="4"><span>20:00-20:30</span>&nbsp;<span>フリートーク</span></div>
-        //     `
-        this.agendaSummary = "全体説明、自己紹介、テーマトーク..."
         this.agenda = [
           {time: "19:00-19:10", program: "全体説明"}, 
           {time: "19:10-19:30", program: "自己紹介"}, 
           {time: "19:30-20:00", program: "テーマトーク"}, 
           {time: "20:00-20:30", program: "フリートーク"} 
         ]
+        this.catchPhrase = "Small plates, salads & sandwiches in an intimate setting with 12 indoor seats plus patio seating."
+
+        this.tables = [
+          {id:"tableId1", name:"table1", memberIds:["member1","member2"], members:[{name:"initName1"},{name:"シュリ"}]},
+          {id:"tableId2", name:"table2", memberIds:["member3"], members:[{name:"小高"}]},
+          {id:"tableId3", name:"table3", memberIds:[]}
+        ];
+
         let getEventPromise = new Promise((resolve, reject) => {
           this.getEvent(this, resolve);
         }).then((invitedMembers) =>{
@@ -263,10 +329,13 @@ class EventView extends PolymerElement {
             this.placeComment = v.place.comment || null;
             this.placeMapUrl = v.place.mapUrl || null;
             this.placeUrl = v.place.url;
-            // 予算もあるといい
-            // this.invitedMembers = v.invitedMembers;
+            this.badget = "未定";
             this.members = v.members;
+            // TODO: agendaのロード
             // this.agenda = v.agenda;
+            // TODO: キャッチフレーズのロード
+            // this.catchPrase = v.catchPrase;
+            // this.invitedMembers = v.invitedMembers;
             resolve(v.invitedMembers);
         } );
     }
