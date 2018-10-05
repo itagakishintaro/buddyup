@@ -210,7 +210,7 @@ class MyApp extends PolymerElement {
             if ( !user ) {
                 return;
             }
-            if( this.page === "login-view" ){
+            if ( this.page === "login-view" ) {
                 this.set( 'route.path', '/parties-view/' );
             }
 
@@ -219,28 +219,29 @@ class MyApp extends PolymerElement {
                 let userInfo = {};
                 if ( snapshot.val() ) {
                     userInfo = {
-                        providerId: user.providerData[0].providerId,
+                        providerId: user.providerData[ 0 ].providerId,
                         displayName: snapshot.val().displayName,
                         email: snapshot.val().email,
-                        photoURL: snapshot.val().photoURL,
-                        skills: snapshot.val().skills
+                        photoURL: snapshot.val().photoURL
                     };
+                    if ( snapshot.val().skills ) {
+                        userInfo.skills = snapshot.val().skills;
+                    }
                 } else {
                     console.log( 'profile does not exist' );
                     let displayName = user.displayName ? user.displayName : user.email;
                     let photoURL = user.photoURL ? user.photoURL : 'images/manifest/icon-48x48.png';
                     userInfo = {
-                        providerId: user.providerData[0].providerId,
+                        providerId: user.providerData[ 0 ].providerId,
                         displayName: displayName,
                         email: user.email,
                         photoURL: photoURL,
-                        skills: snapshot.val().skills
                     };
                     firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
                 }
                 this.set( 'user', userInfo );
                 this.set( 'user.uid', user.uid );
-                if ( userInfo.providerId === 'password' ){
+                if ( userInfo.providerId === 'password' ) {
                     this.set( 'user.isPasswordAuth', true );
                 } else {
                     this.set( 'user.isPasswordAuth', false );

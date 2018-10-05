@@ -6,7 +6,7 @@ import '@polymer/paper-button/paper-button.js';
 
 class PartiesView extends PolymerElement {
     static get template() {
-      return html `
+        return html `
       <style include="shared-styles">
         .party {
           display: flex;
@@ -61,18 +61,18 @@ class PartiesView extends PolymerElement {
         super();
         this.parties = [];
         firebase.auth().onAuthStateChanged( () => {
-          // 初期処理
-          let getPartiesPromise = new Promise( (resolve, reject) => {
-            // partyを取得する
-            this.getParties( resolve, reject );
-          });
-          // 初期処理が終わった後の処理
-          getPartiesPromise.then( () => {
-            // partyを取得して初期処理が終わった後、他の人がpartyのmemberを変更したときのイベント処理を設定
-            this.updateMembers();
-          });
+            // 初期処理
+            let getPartiesPromise = new Promise( ( resolve, reject ) => {
+                // partyを取得する
+                this.getParties( resolve, reject );
+            } );
+            // 初期処理が終わった後の処理
+            getPartiesPromise.then( () => {
+                // partyを取得して初期処理が終わった後、他の人がpartyのmemberを変更したときのイベント処理を設定
+                this.updateMembers();
+            } );
 
-        });
+        } );
     }
 
     static get properties() {
@@ -81,63 +81,65 @@ class PartiesView extends PolymerElement {
         }
     }
 
-    _sort(a, b) {
-      if(a.date + a.timeFrom < b.date + b.timeFrom){
-        return -1;
-      }
-      if(a.date + a.timeFrom > b.date + b.timeFrom){
-        return 1;
-      }
-      return 0;
+    _sort( a, b ) {
+        if ( a.date + a.timeFrom < b.date + b.timeFrom ) {
+            return -1;
+        }
+        if ( a.date + a.timeFrom > b.date + b.timeFrom ) {
+            return 1;
+        }
+        return 0;
     }
 
-    getParties(resolve, reject) {
+    getParties( resolve, reject ) {
         console.log( 'getParties()' );
         this.parties = [];
         firebase.database().ref( 'profiles' ).once( 'value', snapshot => {
-          this.profiles = snapshot.val();
+            this.profiles = snapshot.val();
 
-          firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).on( 'child_added', snapshot => {
-              let party = snapshot.val();
-              let partyKey = snapshot.key;
-              if ( party.members ) {
-                  party.joined = Object.keys( party.members ).includes( this.user.uid ); // Current user already joined or not
-                  party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, this.profiles[key] ) ); // Convert members from Object to Array
-              }
-              this.push( 'parties', Object.assign( { uid: partyKey }, party ) );
-              resolve('success');
-          } );
-          this.loadingDisplay = 'none';
+            firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).on( 'child_added', snapshot => {
+                let party = snapshot.val();
+                let partyKey = snapshot.key;
+                if ( party.members ) {
+                    party.joined = Object.keys( party.members ).includes( this.user.uid ); // Current user already joined or not
+                    party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, this.profiles[ key ] ) ); // Convert members from Object to Array
+                }
+                this.push( 'parties', Object.assign( { uid: partyKey }, party ) );
+                resolve( 'success' );
+            } );
+            this.loadingDisplay = 'none';
         } );
     }
 
     updateMembers() {
-      // 共通処理
-      let _update = ( snapshot, add ) => {
-        firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).once( 'value', snapshot => {
-          let parties = snapshot.val();
-          let tmp = Object.keys( parties ).map( key => Object.assign( { uid: key }, parties[key] ) );
+        // 共通処理
+        let _update = ( snapshot, add ) => {
+            firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).once( 'value', snapshot => {
+                let parties = snapshot.val();
+                let tmp = Object.keys( parties ).map( key => Object.assign( { uid: key }, parties[ key ] ) );
 
-          tmp = tmp.map( party => {
-            party.joined = Object.keys( party.members ).includes( this.user.uid );
-            party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, this.profiles[key] ) );
-            return party;
-          });
-          this.parties = tmp;
-        });
-      };
+                tmp = tmp.map( party => {
+                    if ( party.members ) {
+                        party.joined = Object.keys( party.members ).includes( this.user.uid );
+                        party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, this.profiles[ key ] ) );
+                    }
+                    return party;
+                } );
+                this.parties = tmp;
+            } );
+        };
 
-      // membersがaddされたときとremoveされたときのイベントを設定
-      let partyUIDs = this.parties.map( p => p.uid );
-      partyUIDs.forEach( partyKey => {
-        firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_added', snapshot => {
-          _update(snapshot, true);
+        // membersがaddされたときとremoveされたときのイベントを設定
+        let partyUIDs = this.parties.map( p => p.uid );
+        partyUIDs.forEach( partyKey => {
+            firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_added', snapshot => {
+                _update( snapshot, true );
+            } );
+
+            firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_removed', snapshot => {
+                _update( snapshot, false );
+            } );
         } );
-
-        firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_removed', snapshot => {
-          _update(snapshot, false);
-        } );
-      });
     }
 
     join( e, index ) {
