@@ -215,16 +215,16 @@ class EventView extends PolymerElement {
             交流のテーブル <iron-icon id="add-member" icon="icons:add-box" on-click="addTable"></iron-icon>
           </div>
           <div style="@apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto;">
-            <template is="dom-repeat" items="{{tables}}" as="table" indexAs="idx">
-              <paper-card style="box-sizing: border-box; width:46%; margin:1%; padding:2px; vertical-align: top;">
+            <template is="dom-repeat" items="{{tables}}" as="table">
+              <paper-card style="box-sizing: border-box; width:46%; margin:1%; padding:2px; vertical-align: top; min-height:5em;">
                 <paper-button class="event-table-joinBtn">参加する</paper-button>
-                <div class="event-table-title" on-click="editTable" data-tableidx$="{{table.name}}">
-                  {{table.name}} 
-                  <iron-icon  icon="icons:content-copy"></iron-icon>
+                <div class="event-table-title" on-click="editTable" data-tableidx$="{{index}}">
+                  <span class="event-table-title-text" data-tableidx$="{{index}}">{{table.name}}</span>
+                  <iron-icon  icon="icons:content-copy" data-tableidx$="{{index}}"></iron-icon>
                 </div> 
 
                 <template is="dom-repeat" items="{{table.members}}" as="member">
-                  <paper-button raised class="event-table-name">{{member.name}}
+                  <paper-button raised class="event-table-name">{{invitedMembers[]member.name}}
                   <iron-icon class="event-table-name-icon" icon="icons:launch"></iron-icon>
                   </paper-button>
                   
@@ -254,8 +254,8 @@ class EventView extends PolymerElement {
             <paper-button style="border:1px; padding-bottom:24px;" on-click="openTableEditDeleteTable">削除する</paper-button><br/>
           </paper-dialog>
           <paper-dialog id="event_table_edit_name">
-            テーブルの名前を変更する
-            <input type="text" id="event_table_edit_name_value"/>
+            テーブルの名前を変更する<br/>
+            <input type="text" id="event_table_edit_name_value"/><br/>
             <button on-click="editTableName">変更</button>
           </paper-dialog>
           <paper-dialog id="event_table_add_member">
@@ -306,8 +306,9 @@ class EventView extends PolymerElement {
 
         let getEventPromise = new Promise((resolve, reject) => {
           this.getEvent(this, resolve);
-        }).then((invitedMembers) =>{
-          this.initMembers(this, invitedMembers);          
+        }).then((snapshot) =>{
+          this.initMembers(this, snapshot.invitedMembers);
+          this.initTables(this, snapshot.tables);
         })
         window.this = this;
     }
@@ -334,12 +335,13 @@ class EventView extends PolymerElement {
             this.placeUrl = v.place.url;
             this.badget = "未定";
             this.members = v.members;
+            this.tables = v.tables || [{name:"table1",members:[]},{name:"table2",members:[]}];
             // TODO: agendaのロード
             // this.agenda = v.agenda;
             // TODO: キャッチフレーズのロード
             // this.catchPrase = v.catchPrase;
             // this.invitedMembers = v.invitedMembers;
-            resolve(v.invitedMembers);
+            resolve(v);
         } );
     }
 
@@ -465,7 +467,10 @@ class EventView extends PolymerElement {
     }
 
 
-
+    initTables( e ) {
+      // TODO: ここにinvitedMemberのプロファイルからテーブルに名前をコピーしてくる記述を加える。
+      // TODO: それにあたって、Promiseをもう一段やる。
+    }
     addTable( e ) {
 
     }
@@ -475,8 +480,14 @@ class EventView extends PolymerElement {
 
     }
     openTableEditName( e ) {
-      this.$.event_table_edit_name_value.attr("value", this.tables[this.currentTableIdx].name);
+      this.$.event_table_edit_name_value.value = this.tables[this.currentTableIdx].name;
       this.$.event_table_edit_name.open();
+      var obj = this;
+      this.$.event_table_edit_name_value.onkeypress = function( e ){
+        if(e.keyCode === "undefined" || e.keyCode === 13){
+              obj.editTableName(null);
+        }
+      }
     }
     openTableEditAddMember( e ){
       this.$.event_table_add_member.open();
@@ -485,8 +496,12 @@ class EventView extends PolymerElement {
       this.$.event_table_edit_delete.open();
     }
     editTableName( e ){
-      var tableIdx = e.target.dataset.tableidx
-      this.tables[tableIdx].name = this.$.event_table_edit_name_value.attr("value");
+      var tableName = this.$.event_table_edit_name_value.value;
+      this.tables[this.currentTableIdx].name = tableName;
+      this.shadowRoot.querySelector(".event-table-title-text[data-tableidx='" + this.currentTableIdx + "']").innerText = tableName;
+      this.$.event_table_edit_name.close();      
+      this.$.event_table_edit.close();
+      firebase.database().ref( `events/${this.eventid}/tables/${this.currentTableIdx}/name` ).set( tableName );
     }
 
 
