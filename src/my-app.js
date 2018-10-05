@@ -222,7 +222,8 @@ class MyApp extends PolymerElement {
                         providerId: user.providerData[0].providerId,
                         displayName: snapshot.val().displayName,
                         email: snapshot.val().email,
-                        photoURL: snapshot.val().photoURL
+                        photoURL: snapshot.val().photoURL,
+                        skills: snapshot.val().skills
                     };
                 } else {
                     console.log( 'profile does not exist' );
@@ -232,7 +233,8 @@ class MyApp extends PolymerElement {
                         providerId: user.providerData[0].providerId,
                         displayName: displayName,
                         email: user.email,
-                        photoURL: photoURL
+                        photoURL: photoURL,
+                        skills: snapshot.val().skills
                     };
                     firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
                 }

@@ -30,9 +30,8 @@ class UsersView extends PolymerElement {
         </style>
 
         <div class="container">
-          <p>自分と知り合い（自分にコメントをくれた人）が表示されます。</p>
-          <p>名前をタッチするとその人のスキルが表示され、そのスキルをタッチすると関連するコメントが表示されます。</p>
-          <paper-button raised class="on" on-click="getFriends">更新</paper-button>
+          <p>名前をタッチするとその人のスキルを最新に更新します。スキルをタッチすると関連するコメントが表示されます。</p>
+          <paper-button raised class="on" on-click="getUsers">ユーザー一覧を表示</paper-button>
 
           <paper-dialog id="dialog">
               <template is="dom-repeat" items="{{relatedComments}}">
@@ -50,16 +49,9 @@ class UsersView extends PolymerElement {
             <span>{{target.displayName}}</span>
           </div>
 
-          <!-- skills -->
-          <div class="skill">
-              <template is="dom-repeat" items="{{skills}}">
-                  <span class="tag" on-click="showComments">{{item}}</span>
-              </template>
-          </div>
-
           <hr>
 
-          <!-- myself -->
+          <p>自分</p>
           <div class="user">
             <template is="dom-if" if="{{user.uid}}">
                 <template is="dom-if" if="{{user.photoURL}}">
@@ -68,11 +60,17 @@ class UsersView extends PolymerElement {
                 <template is="dom-if" if="{{!user.photoURL}}">
                   <img src="images/manifest/icon-48x48.png" class="icon">
                 </template>
-                <span on-click="showSkills" data-uid$="{{user.uid}}" data-photo$="{{user.photoURL}}" data-name$="{{user.displayName}}" class="username">{{user.displayName}} (自分)</span>
+                <span on-click="showSkills" data-uid$="{{user.uid}}" data-photo$="{{user.photoURL}}" data-name$="{{user.displayName}}" class="username">{{user.displayName}}</span>
+                <!-- skills -->
+                <div class="skill" data-uid$="{{user.uid}}">
+                    <template is="dom-repeat" items="{{ user.skills }}">
+                        <span class="tag" on-click="showComments" data-uid$="{{item}}">{{item}}</span>
+                    </template>
+                </div>
             </template>
           </div>
 
-          <!-- friends -->
+          <p>知り合い</p>
           <template is="dom-repeat" items="{{friends}}">
             <div class="user">
               <template is="dom-if" if="{{item.photoURL}}">
@@ -82,9 +80,36 @@ class UsersView extends PolymerElement {
                 <img src="images/manifest/icon-48x48.png" class="icon">
               </template>
               <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
+              <!-- skills -->
+              <div class="skill" data-uid$="{{item.uid}}">
+                  <template is="dom-repeat" items="{{ item.skills }}">
+                      <span class="tag" on-click="showComments">{{item}}</span>
+                  </template>
+              </div>
             </div>
           </template>
+
+          <p>その他のユーザー</p>
+          <template is="dom-repeat" items="{{others}}">
+            <div class="user">
+              <template is="dom-if" if="{{item.photoURL}}">
+                <img src="{{item.photoURL}}" class="icon">
+              </template>
+              <template is="dom-if" if="{{!item.photoURL}}">
+                <img src="images/manifest/icon-48x48.png" class="icon">
+              </template>
+              <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
+              <!-- skills -->
+              <div class="skill" data-uid$="{{item.uid}}">
+                  <template is="dom-repeat" items="{{ item.skills }}">
+                      <span class="tag" on-click="showComments">{{item}}</span>
+                  </template>
+              </div>
+            </div>
+          </template>
+
         </div>
+
         <loading-view display="{{loadingDisplay}}"></loading-view>
         `;
     }
@@ -93,12 +118,11 @@ class UsersView extends PolymerElement {
         console.log( 'constructor()' );
         super();
         this.user = {};
+        this.friendUIDs = [];
         this.friends = [];
-        this.skills = [];
-        this.getFriends();
+        this.others = [];
         this.loadingDisplay = 'none';
         this.target = {};
-        this.targetDisplayName = '';
     }
 
     static get properties() {
@@ -107,47 +131,90 @@ class UsersView extends PolymerElement {
         }
     }
 
-    // 知り合い(friend)の定義は自分にコメントしてくれた人
-    getFriends() {
+    getUsers(){
+      let getFriendsPromise = new Promise( (resolve, reject) => {
+        this._getFriends( resolve, reject );
+      });
+      getFriendsPromise.then( () => {
+        this._getOthers();
+      });
+    }
+
+    // 知り合い(friend)の定義はpartyに一緒に参加した人
+    _getFriends(resolve, reject) {
       this.loadingDisplay = 'block';
-      firebase.database().ref( 'comments/' + this.user.uid ).once('value').then( snapshot => {
-        if( !snapshot.val() ){
-          return;
-        }
-        let friendUIDs = [];
-        let friends = [];
-        Object.keys( snapshot.val() ).forEach( key => {
-          if( friendUIDs.includes( snapshot.val()[key].uid ) || snapshot.val()[key].uid === this.user.uid ){ // すでに取得済み or 自分なら何もしない
-            return;
-          }
-          friendUIDs.push( snapshot.val()[key].uid );
-          friends.push( snapshot.val()[key] );
-        });
-        this.friends = friends;
-      }).finally( () => {
+      firebase.database().ref( 'profiles/' ).once('value').then( snapshot => {
+        this.profiles = snapshot.val();
+
+        firebase.database().ref( 'parties/' ).once('value')
+          .then( snapshot => {
+            console.log('parties',snapshot.val());
+            let parties = snapshot.val();
+            let friendUIDs = [];
+            Object.keys( parties ).forEach( key => {
+              if( parties[key].members && Object.keys( parties[key].members ).includes( this.user.uid ) ){ // 自分が含まれているなら
+                friendUIDs = friendUIDs.concat( Object.keys( parties[key].members ) );
+              }
+            });
+            friendUIDs = friendUIDs.filter( (x, i, self) => self.indexOf(x) === i ); // 重複排除
+            friendUIDs = friendUIDs.filter( x => x !== this.user.uid ); // 自分を削除
+
+            this.friendUIDs = friendUIDs;
+            this.friends = this.friendUIDs.map( key => {
+              let v = this.profiles[key];
+              v.uid = key;
+              return v;
+            });
+          }).finally( () => {
+            resolve();
+            this.loadingDisplay = 'none';
+          } );
+      });
+    }
+
+    _getOthers() {
+      this.loadingDisplay = 'block';
+      // firebase.database().ref( 'profiles/' ).once('value').then( snapshot => {
+        this.others = Object.keys( this.profiles )
+          .filter( key => key !== this.user.uid && !this.friendUIDs.includes(key) ) // 自分でも知り合いでもない
+          .map( key => {
+            let v = this.profiles[key];
+            v.uid = key;
+            return v;
+          });
+
         this.loadingDisplay = 'none';
-      } );
+      // });
     }
 
     showSkills( e ){
       this.skills = [];
-      // this.targetUID = e.target.dataset.uid;
       this.target.uid = e.target.dataset.uid;
-      this.target.photoURL = e.target.dataset.photo;
-      this.target.displayName = e.target.dataset.name;
-      console.log(this.target);
-      // this.targetDisplayName = e.target.dataset.displayName;
-      // console.log(e.target.dataset.name);
+      // this.target.photoURL = e.target.dataset.photo;
+      // this.target.displayName = e.target.dataset.name;
       this.notifyPath('target.photoURL');
       this.notifyPath('target.displayName');
       this.getSkills();
     }
 
     showComments( e ) {
-        this.relatedComments = this.comments
+      this.target.skill = e.target.innerText;
+
+      if( this.target.uid !== e.target.parentNode.dataset.uid ) {
+        this.target.uid = e.target.parentNode.dataset.uid;
+
+        this._getCommentsText().then( () => {
+          this.relatedComments = this.comments
             .map( c => c.text.toLowerCase() )
-            .filter( text => text.indexOf( e.target.innerText ) >= 0 );
+            .filter( text => text.indexOf( this.target.skill ) >= 0 );
+          this.$.dialog.open();
+        });
+      } else {
+        this.relatedComments = this.comments
+          .map( c => c.text.toLowerCase() )
+          .filter( text => text.indexOf( this.target.skill ) >= 0 );
         this.$.dialog.open();
+      }
     }
 
     getSkills() {
@@ -156,8 +223,25 @@ class UsersView extends PolymerElement {
         .then( text => this._callNLPSyntax( text ) )
         .then( tokens => this._extractSkills( tokens ) )
         .then( skills => {
-          this.skills = skills;
-          firebase.database().ref( 'profiles/' + this.target.uid + '/skills' ).push( skills );
+          if( this.target.uid === this.user.uid ){
+            this.user.skills = skills;
+            this.notifyPath( 'user.skills' );
+          } else if( this.friendUIDs.includes( this.target.uid ) ) {
+            this.friends.forEach( (o, i) => {
+              if( o.uid === this.target.uid ){
+                this.friends[i].skills = skills;
+                this.notifyPath( 'friends.' + i + '.skills' );
+              }
+            });
+          } else {
+            this.others.forEach( (o, i) => {
+              if( o.uid === this.target.uid ){
+                this.others[i].skills = skills;
+                this.notifyPath( 'others.' + i + '.skills' );
+              }
+            });
+          }
+          firebase.database().ref( 'profiles/' + this.target.uid + '/skills' ).set( skills );
         })
         .finally( () => {
           this.loadingDisplay = 'none';
@@ -170,12 +254,13 @@ class UsersView extends PolymerElement {
               return;
             }
             this.comments = Object.keys( snapshot.val() )
-              .map( key => snapshot.val()[key] ) // Objectから配列に経間
+              .map( key => snapshot.val()[key] ) // Objectから配列に
               .filter( comment => comment.text ); // 空のコメントを削除
             let text = '';
             this.comments.forEach( c => {
                 text = text + '\n' + c.text.toLowerCase();
             });
+            console.log(this.comments);
             return text;
         } );
     }
@@ -205,6 +290,7 @@ class UsersView extends PolymerElement {
             .filter( (x, i, self) => self.indexOf(x) === i ); // 重複排除
         return nouns.filter( v => SKILLS.includes( v ) );
     }
+
 }
 
 window.customElements.define( 'users-view', UsersView );
