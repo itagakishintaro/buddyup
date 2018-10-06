@@ -60,17 +60,7 @@ class UsersView extends PolymerElement {
               </template>
           </paper-dialog>
 
-          <!-- target user -->
-          <div class="user">
-            <template is="dom-if" if="{{target.photoURL}}">
-              <img src="{{target.photoURL}}" class="icon">
-            </template>
-            <span>{{target.displayName}}</span>
-          </div>
-
-          <hr>
-
-          <p>自分</p>
+          <!-- 自分 -->
           <div class="user">
             <template is="dom-if" if="{{user.uid}}">
                 <template is="dom-if" if="{{user.photoURL}}">
@@ -89,6 +79,7 @@ class UsersView extends PolymerElement {
             </template>
           </div>
 
+          <hr>
           <p>知り合い</p>
           <template is="dom-repeat" items="{{friends}}">
             <div class="user">
@@ -108,6 +99,7 @@ class UsersView extends PolymerElement {
             </div>
           </template>
 
+          <hr>
           <p>その他のユーザー</p>
           <template is="dom-repeat" items="{{others}}">
             <div class="user">
