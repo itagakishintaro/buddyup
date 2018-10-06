@@ -28,17 +28,35 @@ class UsersView extends PolymerElement {
           .icon {
             vertical-align: bottom;
           }
+
+          .dialog {
+              padding-bottom: 1em;
+          }
         </style>
 
         <div class="container">
           <p>名前をタッチするとその人のスキルを最新に更新します。スキルをタッチすると関連するコメントが表示されます。</p>
           <paper-button raised class="on" on-click="getUsers">ユーザー一覧を表示</paper-button>
 
-          <paper-dialog id="dialog">
+          <paper-dialog id="dialog" class="dialog">
               <template is="dom-repeat" items="{{relatedComments}}">
-                  <ul>
-                      <li>{{item}}</li>
-                  </ul>
+                <div>{{item}}</div>
+              </template>
+
+              <template is="dom-if" if="{{sameSkillHolders.length}}">
+                <hr>
+                <p>同じスキルを持つ人</p>
+              </template>
+              <template is="dom-repeat" items="{{sameSkillHolders}}">
+                <div>
+                    <template is="dom-if" if="{{item.photoURL}}">
+                        <img src="{{item.photoURL}}" class="icon">
+                     </template>
+                     <template is="dom-if" if="{{!item.photoURL}}">
+                        <img src="images/manifest/icon-48x48.png" class="icon">
+                     </template>
+                     <span>{{item.displayName}}</span>
+                </div>
               </template>
           </paper-dialog>
 
@@ -151,7 +169,6 @@ class UsersView extends PolymerElement {
 
             firebase.database().ref( 'parties/' ).once( 'value' )
                 .then( snapshot => {
-                    console.log( 'parties', snapshot.val() );
                     let parties = snapshot.val();
                     let friendUIDs = [];
                     Object.keys( parties ).forEach( key => {
@@ -214,6 +231,8 @@ class UsersView extends PolymerElement {
                 .filter( text => text.indexOf( this.target.skill ) >= 0 );
             this.$.dialog.open();
         }
+
+        this.showSameSkillHolders( e.target.innerText );
     }
 
     getSkills() {
@@ -265,7 +284,6 @@ class UsersView extends PolymerElement {
             this.comments.forEach( c => {
                 text = text + '\n' + c.text.toLowerCase();
             } );
-            console.log( this.comments );
             return text;
         } );
     }
@@ -294,6 +312,12 @@ class UsersView extends PolymerElement {
             .filter( x => x.length > 1 ) // 1文字を排除
             .filter( ( x, i, self ) => self.indexOf( x ) === i ); // 重複排除
         return nouns.filter( v => SKILLS.includes( v ) );
+    }
+
+    showSameSkillHolders( skill ) {
+        let users = [].concat( this.friends ).concat( this.others ).concat( [ this.user ] );
+        users = users.filter( u => u.uid !== this.target.uid );
+        this.sameSkillHolders = users.filter( u => ( u.skills && u.skills.includes( skill ) ) );
     }
 
 }
