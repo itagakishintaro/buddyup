@@ -85,7 +85,7 @@ class EventView extends PolymerElement {
           .event-table-title { margin: 0.3em; cursor: pointer;}
           .event-table-edit {  }
           .event-table-joinBtn { padding: 0.3em; float:right; background-color:#aaf; font-size:0.8em; }
-          .event-table-name {  padding: 0.2em 0em 0.2em 0em; margin: 0em 0.2em 0em 0.2em; }
+          .event-table-member-name {  padding: 0.2em 0em 0.2em 0em; margin: 0em 0.2em 0em 0.2em; }
           .event-table-name-icon {  width:0.8em; height:0.8em; }
         </style>
       </custom-style>
@@ -224,7 +224,7 @@ class EventView extends PolymerElement {
                 </div> 
 
                 <template is="dom-repeat" items="{{table.members}}" as="member">
-                  <paper-button raised class="event-table-name">{{invitedMembers[]member.name}}
+                  <paper-button raised class="event-table-member-name">{{member.displayName}}
                   <iron-icon class="event-table-name-icon" icon="icons:launch"></iron-icon>
                   </paper-button>
                   
@@ -253,9 +253,9 @@ class EventView extends PolymerElement {
             <!--<paper-button>非公開にする</paper-button><br/>-->
             <paper-button style="border:1px; padding-bottom:24px;" on-click="openTableEditDeleteTable">削除する</paper-button><br/>
           </paper-dialog>
-          <paper-dialog id="event_table_edit_name">
+          <paper-dialog id="event_table_edit_name" style="padding:1em;">
             テーブルの名前を変更する<br/>
-            <input type="text" id="event_table_edit_name_value"/><br/>
+            <input type="text" id="event_table_edit_name_value" style="padding-left: 0em;"/><br/>
             <button on-click="editTableName">変更</button>
           </paper-dialog>
           <paper-dialog id="event_table_add_member">
@@ -297,18 +297,21 @@ class EventView extends PolymerElement {
         this.catchPhrase = "Small plates, salads & sandwiches in an intimate setting with 12 indoor seats plus patio seating."
 
         this.tables = [
-          {id:"tableId1", name:"table1", memberIds:["member1","member2"], members:[{name:"initName1"},{name:"シュリ"}]},
-          {id:"tableId2", name:"table2", memberIds:["member3"], members:[{name:"小高"}]},
+          {id:"tableId1", name:"table1", memberIds:["member1","member2"], members:[{displayName:"initName1"},{displayName:"シュリ"}]},
+          {id:"tableId2", name:"table2", memberIds:["member3"], members:[{displayName:"小高"}]},
           {id:"tableId3", name:"table3", memberIds:[]}
         ];
 
         this.currentTable;
 
-        let getEventPromise = new Promise((resolve, reject) => {
-          this.getEvent(this, resolve);
+        let getEventPromise = new Promise((resolve1, reject1) => {
+          this.getEvent(this, resolve1);
         }).then((snapshot) =>{
-          this.initMembers(this, snapshot.invitedMembers);
-          this.initTables(this, snapshot.tables);
+          let initMembersPromise = new Promise((resolve2, reject2) => {
+            this.initMembers(this, snapshot.invitedMembers, resolve2);
+          }).then(() =>{
+            this.initTables();
+          })
         })
         window.this = this;
     }
@@ -335,7 +338,9 @@ class EventView extends PolymerElement {
             this.placeUrl = v.place.url;
             this.badget = "未定";
             this.members = v.members;
-            this.tables = v.tables || [{name:"table1",members:[]},{name:"table2",members:[]}];
+            this.tables = [{name:"table1",members:[]},{name:"table2",members:[]}];
+            this.tableMembers = v.tables; 
+
             // TODO: agendaのロード
             // this.agenda = v.agenda;
             // TODO: キャッチフレーズのロード
@@ -365,40 +370,25 @@ class EventView extends PolymerElement {
        this.$.expand_members.icon = this.$.collapse_members.opened ? 'expand-more' : 'expand-less';
        this.$.collapse_members.toggle();
     }
-    initMembers(self, invitedMembers) {
+    initMembers(self, invitedMembers, resolv_initMembers) {
       this.invitedMembers = [];
-      // console.log('===', this.invitedMembers);
-      // setTimeout( () => {
-      //   console.log(this.invitedMembers);
-      // },10000);
-//       self.invitedMembers.forEach((member) => {
-// //         firebase.database().ref(`profiles/${member.id}`).once('value',function(snapshot){
-//           //TODO: profileを入れたことで、参加者の名前を見えるようにする
-//           // 1.profileをthis.profileに転記する
-//           // 2.profileの内容をtemplateに書き込む
-//          firebase.database().ref(`profiles/member1`).on('value', (snapshot) => {
-            
-//            let profile = snapshot.val();
-//            member.profile = profile;
 
-//            console.log(this.invitedMembers);
-//          })
-//          member.isMember = self.isMember(self, member.id);
-//       })
-
-      invitedMembers.forEach(member => {
-          firebase.database().ref(`profiles/${member.id}`).on('value', (snapshot) => {
-            let profile = snapshot.val();
-            member.profile = profile;
-            member.displayName = profile.displayName;
-            this.push('invitedMembers', member);
-            // this.notifyPath('invitedMembers.displayName');
-            console.log(member);
-            console.log(this.invitedMembers);
+      Promise.all(invitedMembers.map(member => {
+          return new Promise( resolve => {
+            firebase.database().ref(`profiles/${member.id}`).on('value', (snapshot) => {
+              let profile = snapshot.val();
+              member.profile = profile;
+              member.profile.id = member.id;
+              member.displayName = profile.displayName;
+              //this.invitedMembers.push(member);   // こっちだと更新されない
+              this.push('invitedMembers', member);  // こっちだと更新される
+              member.isMember = self.isMember(self, member.id);
+              resolve();
+            })
           })
-          member.isMember = self.isMember(self, member.id);
-
-      })
+      })).then( () => {
+        resolv_initMembers();
+      });
 
     }
 
@@ -467,7 +457,44 @@ class EventView extends PolymerElement {
     }
 
 
-    initTables( e ) {
+    initTables(){
+      // invitedMembersに保存されたプロファイルをtablesにも展開する
+      for(let i=0; i<this.tableMembers.length; i++){
+        let table = this.tableMembers[i];
+        if(!table.members) break;
+        for(let j=0;j<table.members.length;j++){
+          var memberObj = this.invitedMembers.find(member_i => {
+             return member_i.id === table.members[j];
+          });
+          this.tables[i].members.push(memberObj.profile);
+        }
+      }
+      var tables = JSON.parse(JSON.stringify(this.tables));
+      this.tables = tables;
+
+
+      // Promise.all(invitedMembers.map(member => {
+      //   return new Promise( resolve => {
+      //     this.tableMembers.forEach(table => {
+      //       if(!table.memberIds) return;
+      //       table.memberIds.forEach(memberId => {
+      //         // invitedMembersから探してくる
+      //         var memberObj = this.invitedMembers.find(member_i => {
+      //            return member_i.id === memberId
+      //         })
+      //         this.tables.members.push(memberObj);
+      //         this.notifyPath("tables");
+      //         //this.shadowRoot.querySelector(".event-table-member-name[data-tableid='" + member + "']").innerText = table;
+      //       })
+      //     })
+      //     resolve();
+      //   })
+      // }).then( () => {
+      //       var tables = JSON.parse(JSON.stringify(this.tables));
+      //       this.tables = [];
+      //       tables[0].members.push({displayName:"c"});
+      //       this.tables = tables;
+      // });
       // TODO: ここにinvitedMemberのプロファイルからテーブルに名前をコピーしてくる記述を加える。
       // TODO: それにあたって、Promiseをもう一段やる。
     }
