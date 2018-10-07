@@ -281,22 +281,18 @@ class EventView extends PolymerElement {
         ]
         this.catchPhrase = "Small plates, salads & sandwiches in an intimate setting with 12 indoor seats plus patio seating."
 
-        this.tables = [
-          {id:"tableId1", name:"table1", memberIds:["member1","member2"], members:[{displayName:"initName1"},{displayName:"シュリ"}]},
-          {id:"tableId2", name:"table2", memberIds:["member3"], members:[{displayName:"小高"}]},
-          {id:"tableId3", name:"table3", memberIds:[]}
-        ];
+        // this.tables = [
+        //   {id:"tableId1", name:"table1", memberIds:["member1","member2"], members:[{displayName:"initName1"},{displayName:"シュリ"}]},
+        //   {id:"tableId2", name:"table2", memberIds:["member3"], members:[{displayName:"小高"}]},
+        //   {id:"tableId3", name:"table3", memberIds:[]}
+        // ];
 
         this.currentTable;
 
         let getEventPromise = new Promise((resolve1, reject1) => {
           this.getEvent(this, resolve1);
         }).then((snapshot) =>{
-          let initMembersPromise = new Promise((resolve2, reject2) => {
-            this.initMembers(this, snapshot.invitedMembers, resolve2);
-          }).then(() =>{
-            this.initTables();
-          })
+          this.initMembers(this, snapshot.invitedMembers);
         })
         window.this = this;
     }
@@ -323,8 +319,11 @@ class EventView extends PolymerElement {
             this.placeUrl = v.place.url;
             this.badget = "未定";
             this.members = v.members;
+            // this.inviteMembersはinitMembersで更新
+            // メンバーをIDだけを管理するテーブル。こっちがDBと同期するマスター
+            this.tableMembers = v.tables;
             this.tables = [{name:"table1",members:[]},{name:"table2",members:[]}];
-            this.tableMembers = v.tables; 
+            // this.tablesはinitMembersで更新
 
             // TODO: agendaのロード
             // this.agenda = v.agenda;
@@ -351,11 +350,18 @@ class EventView extends PolymerElement {
       window.open("https://maps.google.co.jp/maps?q=" + this.station);
     }
 
+
+    ///////////////////////////////////////////////////////////////////
+    // Members
+    //
+    //
+
+
     showMembers( e ) {
        this.$.expand_members.icon = this.$.collapse_members.opened ? 'expand-more' : 'expand-less';
        this.$.collapse_members.toggle();
     }
-    initMembers(self, invitedMembers, resolv_initMembers) {
+    initMembers(self, invitedMembers) {
       this.invitedMembers = [];
 
       Promise.all(invitedMembers.map(member => {
@@ -365,14 +371,14 @@ class EventView extends PolymerElement {
               member.profile = profile;
               member.profile.id = member.id;
               member.displayName = profile.displayName;
+              member.isMember = self.isMember(self, member.id);
               //this.invitedMembers.push(member);   // こっちだと更新されない
               this.push('invitedMembers', member);  // こっちだと更新される
-              member.isMember = self.isMember(self, member.id);
               resolve();
             })
           })
       })).then( () => {
-        resolv_initMembers();
+        this.initTables();
       });
 
     }
@@ -418,6 +424,14 @@ class EventView extends PolymerElement {
       },600);
     }
 
+
+    ///////////////////////////////////////////////////////////////////
+    //
+    //  Places
+    //
+    //
+
+
     showPlaces( e ) {
        this.$.expand_places.icon = this.$.collapse_places.opened ? 'expand-more' : 'expand-less';
        this.$.collapse_places.toggle();
@@ -436,11 +450,27 @@ class EventView extends PolymerElement {
     }
 
 
+    ////////////////////////////////////////////////////////////////////
+    //
+    //  Agendas
+    //
+    //
+
+
     showAgenda( e ) {
        this.$.expand_agenda.icon = this.$.collapse_agenda.opened ? 'expand-more' : 'expand-less';
        this.$.collapse_agenda.toggle();
     }
 
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    //  Tables
+    //
+    //
 
     initTables(){
       // invitedMembersに保存されたプロファイルをtablesにも展開する
@@ -451,39 +481,17 @@ class EventView extends PolymerElement {
           var memberObj = this.invitedMembers.find(member_i => {
              return member_i.id === table.members[j];
           });
+          if(!this.tables[i]){ this.tables[i] = {};}
+          if(!this.tables[i].members){ this.tables[i].members = [];}
           this.tables[i].members.push(memberObj.profile);
         }
       }
       var tables = JSON.parse(JSON.stringify(this.tables));
       this.tables = tables;
 
-
-      // Promise.all(invitedMembers.map(member => {
-      //   return new Promise( resolve => {
-      //     this.tableMembers.forEach(table => {
-      //       if(!table.memberIds) return;
-      //       table.memberIds.forEach(memberId => {
-      //         // invitedMembersから探してくる
-      //         var memberObj = this.invitedMembers.find(member_i => {
-      //            return member_i.id === memberId
-      //         })
-      //         this.tables.members.push(memberObj);
-      //         this.notifyPath("tables");
-      //         //this.shadowRoot.querySelector(".event-table-member-name[data-tableid='" + member + "']").innerText = table;
-      //       })
-      //     })
-      //     resolve();
-      //   })
-      // }).then( () => {
-      //       var tables = JSON.parse(JSON.stringify(this.tables));
-      //       this.tables = [];
-      //       tables[0].members.push({displayName:"c"});
-      //       this.tables = tables;
-      // });
-      // TODO: ここにinvitedMemberのプロファイルからテーブルに名前をコピーしてくる記述を加える。
-      // TODO: それにあたって、Promiseをもう一段やる。
     }
     addTable( e ) {
+      
 
     }
     editTable( e ) {
