@@ -231,21 +231,6 @@ class EventView extends PolymerElement {
                 </template>
               </paper-card>
             </template>
-            <!--
-            <paper-card style="box-sizing: border-box; width:46%; margin:1%; ">
-              <div>table1</div>
-              <div>aaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-            </paper-card>
-            <paper-card style="box-sizing: border-box; width:46%; margin:1%; ">
-              <div>table2</div>
-              <div>aaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-            </paper-card>
-            <paper-card style="box-sizing: border-box; width:46%; margin:1%; ">
-              <div>table3</div>
-              <div>aaaaaaaaaaaaaaaaaaaaaaaaaa</div>
-            </paper-card>
-            -->
-
           </div>
           <paper-dialog id="event_table_edit">
             <paper-button style="border:1px;" on-click="openTableEditName">名前を変更</paper-button><br/>
