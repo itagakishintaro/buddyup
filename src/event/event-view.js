@@ -282,7 +282,7 @@ class EventView extends PolymerElement {
           </paper-dialog>
           </paper-card>
           <paper-dialog id="event_table_edit_delete">
-            <h3>テーブル_{{this_table.name}}を削除してよいですか？</h3>
+            <h3><span id="event_table_edit_delete_confirm_name"></span>を削除してよいですか？</h3>
             <div class="indent">
               <paper-button raised on-click="deleteTable" data-tableidx="{{this_table}}">はい</paper-button>
               <paper-button raised on-click="deleteTableCancel">いいえ</paper-button>
@@ -601,6 +601,7 @@ class EventView extends PolymerElement {
 
     }
     openTableEditDeleteTable( e ){
+      this.$.event_table_edit_delete_confirm_name.innerText = this.tables[this.currentTableIdx].name;
       this.$.event_table_edit_delete.open();
     }
 
