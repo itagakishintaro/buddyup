@@ -63,6 +63,7 @@ class EventView extends PolymerElement {
           .buddyup-button {float:right; margin-left:2em; margin-right: 2em; background-color:#fff;}
           .buddyup-explain {font-size:8px; color:#fff; margin-top:4em;}
           .member-check { margin:0em; transform:scale(0.6); color:blue;}
+          .member-no-check { margin:0em; transform:scale(0.6); color:#fa0;}
           .addMemberUserBtn { padding: 0.2em 0em 0.2em 0em; margin: 0em 0.2em 0em 0.2em;}
           .addMemberBtn { background-color:#aaf; vertical-align:bottom;}
           .newMemberLabel { margin-left: 1em; padding-left: 0.8em; display:block;}
@@ -115,7 +116,7 @@ class EventView extends PolymerElement {
                         <iron-icon icon="icons:check-circle" class="member-check"></iron-icon>
                       </template>
                       <template is="dom-if" if="{{ !item.isMember }}">
-                        <iron-icon icon="icons:help" class="member-check"></iron-icon>
+                        <iron-icon icon="icons:help" class="member-no-check"></iron-icon>
                       </template>
                     </paper-button>
                   </template>
@@ -244,13 +245,43 @@ class EventView extends PolymerElement {
             <button on-click="editTableName">変更</button>
           </paper-dialog>
           <paper-dialog id="event_table_add_member">
-            <h2>テーブルに参加者を追加する</h2>
-            未実装<!-- TODO: -->
+            <paper-button raised on-click="tableAddMemberToggle" style="float:right;">直接入力</paper-button>
+            <h3>参加者を追加する</h3>
+            <div id="tableAddmenberDirectInput" style="display:none;">
+              <label class="newMemberLabel">ID/名前:</label>
+              <input id="newTableMemberName" class="newMemberInput"> </input><br/>
+              <paper-button on-click="" raised class="newMemberAddButton">追加</paper-button>
+              未実装
+            </div>
+            <div id="tableAddmenberSelectInput">
+              <label class="newMemberLabel">クリックすると追加されます</label>
+              <div>
+              <template is="dom-repeat" items="{{currentEventMembers}}">
+                <paper-button raised on-click="addTableMember" class="addMemberUserBtn" data-member_id$="{{item.profile.id}}">
+                  {{item.profile.displayName}}
+                  <template is="dom-if" if="{{ isTableMember(item.profile.id) }}">
+                    <iron-icon icon="icons:check-circle" class="member-check" data-member_id$="{{item.profile.id}}"></iron-icon>
+                  </template>
+                </paper-button>
+              </template>
+              </div>
+              <div style="float:right;"><paper-button raised on-click="closeAddTableMember">完了</paper-button></div>
+            </div>
           </paper-dialog>
+          <paper-dialog id="event_table_add_member_delete_confirm">
+            <h3>テーブルから<span id="event_table_add_member_delete_confirm_name"></span>さんを削除してよいですか？</h3>
+            <div class="indent">
+              <paper-button raised on-click="addTableMemberDeleteConfirmYes" id="event_table_add_member_delete_confirm_yes">はい</paper-button>
+              <paper-button raised on-click="addTableMemberDeleteConfirmNo">いいえ</paper-button>
+            </div>
+          </paper-dialog>
+          </paper-card>
           <paper-dialog id="event_table_edit_delete">
-            <h2>テーブル_{{this_table.name}}を削除してよいですか？</h2>
-            <paper-button raised on-click="deleteTable" data-tableidx="{{this_table}}">はい</paper-button>
-            <paper-button raised on-click="deleteTableCancel">いいえ</paper-button>
+            <h3>テーブル_{{this_table.name}}を削除してよいですか？</h3>
+            <div class="indent">
+              <paper-button raised on-click="deleteTable" data-tableidx="{{this_table}}">はい</paper-button>
+              <paper-button raised on-click="deleteTableCancel">いいえ</paper-button>
+            </div>
           </paper-dialog>
         </paper-card>
       </div>
@@ -286,6 +317,7 @@ class EventView extends PolymerElement {
         // ];
 
         this.currentTable;
+        this.currentEventMembers;
 
         let getEventPromise = new Promise((resolve1, reject1) => {
           this.getEvent(this, resolve1);
@@ -548,11 +580,15 @@ class EventView extends PolymerElement {
       }
     }
     openTableEditAddMember( e ){
+      this.tablePrevMembers = JSON.parse(JSON.stringify(this.tableMembers[this.currentTableIdx].members));
+      this.currentEventMembers = JSON.parse(JSON.stringify(this.invitedMembers));
       this.$.event_table_add_member.open();
+
     }
     openTableEditDeleteTable( e ){
       this.$.event_table_edit_delete.open();
     }
+
     editTableName( e ){
       var tableName = this.$.event_table_edit_name_value.value;
       this.tables[this.currentTableIdx].name = tableName;
@@ -562,12 +598,48 @@ class EventView extends PolymerElement {
       firebase.database().ref( `events/${this.eventid}/tables/${this.currentTableIdx}/name` ).set( tableName );
     }
 
+    addTableMember( e ){
+      let memberId = e.target.dataset.member_id;
+
+      if(this.isTableMember(memberId)){
+        // 既にメンバーなら削除する
+        // 元から参加していた人は確認ダイアログが開く  // TODO
+        if(this.tablePrevMembers.indexOf(memberId) >= 0) {
+          this.$.event_table_add_member_delete_confirm_yes.dataset.member_id = memberId;
+          this.$.event_table_add_member_delete_confirm_name.innerText = this.getProfile(memberId).displayName;
+          this.$.event_table_add_member_delete_confirm.open();
+          return;
+        }
+        this.leaveTable(this.currentTableIdx, memberId);
+        this.currentEventMembers = JSON.parse(JSON.stringify(this.currentEventMembers));
+      } else {
+        // メンバー外なら追加する
+        this.joinTable(this.currentTableIdx, memberId);
+        this.currentEventMembers = JSON.parse(JSON.stringify(this.currentEventMembers));
+      }
+    }
+    addTableMemberDeleteConfirmYes( e ){
+      let memberId = e.target.dataset.member_id;
+      this.leaveTable(this.currentTableIdx, memberId);
+      this.currentEventMembers = JSON.parse(JSON.stringify(this.currentEventMembers));
+      this.$.event_table_add_member_delete_confirm.close();
+    }
+    addTableMemberDeleteConfirmNo( e ){
+      this.$.event_table_add_member_delete_confirm.close();      
+    }
+
+    closeAddTableMember ( e ){
+      this.$.event_table_add_member.close();
+      this.$.event_table_edit.close();
+    }
     //////   join  //////////////////////
     onJoinTableBtn( e ){
       if(e.target.innerText == "参加する"){
         this.joinTable(e.target.dataset.tableidx, this.user.uid);        
+        this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + tableidx + "']").innerText = "退出する";
       } else {
         this.leaveTable(e.target.dataset.tableidx, this.user.uid);
+        this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + tableidx + "']").innerText = "参加する";
       }
       // TODO: 他の端末の人にも参加退出が伝播するようにすること
     }
@@ -576,8 +648,6 @@ class EventView extends PolymerElement {
       // 内部データを書き換える
       this.tableMembers[tableidx].members.push(memberId);
       this.tables[tableidx].members.push(this.getProfile(memberId));
-      // 画面を変更する -- 参加するボタン
-      this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + tableidx + "']").innerText = "退出する";
       // 画面を変更する -- テーブル内の名前
       var tables = JSON.parse(JSON.stringify(this.tables));
       this.tables = tables;
@@ -590,8 +660,6 @@ class EventView extends PolymerElement {
       var memberIdx = this.tableMembers[tableidx].members.indexOf(memberId);
       this.tableMembers[tableidx].members.splice(memberIdx,1);
       this.tables[tableidx].members.splice(memberIdx,1);
-      // 画面を変更する -- 参加するボタン
-      this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + tableidx + "']").innerText = "参加する";
       // 画面を変更する -- テーブル内の名前
       var tables = JSON.parse(JSON.stringify(this.tables));
       this.tables = tables;
@@ -599,6 +667,9 @@ class EventView extends PolymerElement {
       firebase.database().ref( `events/${this.eventid}/tables/${tableidx}/members` ).set(this.tableMembers[tableidx].members);
     }
 
+    isTableMember(memberId) {
+      return this.currentTableIdx && this.tableMembers && (this.tableMembers[this.currentTableIdx].members.indexOf(memberId) >=0);
+    }
 
 
     ///////////////////////////////////////////////////////////////////////////
