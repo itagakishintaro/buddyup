@@ -249,8 +249,8 @@ class EventView extends PolymerElement {
           </paper-dialog>
           <paper-dialog id="event_table_edit_delete">
             <h2>テーブル_{{this_table.name}}を削除してよいですか？</h2>
-            <paper-button raised on-click="tableDelete" data-tableidx="{{this_table}}">はい</paper-button>
-            <paper-button raised on-click="tableDeleteCancel">いいえ</paper-button>
+            <paper-button raised on-click="deleteTable" data-tableidx="{{this_table}}">はい</paper-button>
+            <paper-button raised on-click="deleteTableCancel">いいえ</paper-button>
             未実装<!-- TODO: -->
           </paper-dialog>
         </paper-card>
@@ -493,7 +493,7 @@ class EventView extends PolymerElement {
         if(!table.members){ table.members = [];} 
         if(!table.name){ table.name = "table" + (i+1);}
         if(!this.tables[i]){ this.tables[i] = {};}
-        if(!this.tables[i].members){ this.tables[i].members = [];}
+        this.tables[i].members = [];
         for(let j=0;j<table.members.length;j++){
           this.tables[i].members.push(this.getProfile(table.members[j]));
         }
@@ -511,6 +511,24 @@ class EventView extends PolymerElement {
       firebase.database().ref( `events/${this.eventid}/tables/${newtableIdx}` ).set(this.tableMembers[newtableIdx]);
       // 画面と画面用のデータを書き換える
       this.initTables();
+    }
+
+    deleteTable( e ){
+      // 内部データを書き換える
+      this.tableMembers.splice(this.currentTableIdx,1);
+      this.tables.splice(this.currentTableIdx,1);
+      // DBに書き込む
+      firebase.database().ref( `events/${this.eventid}/tables` ).set(this.tableMembers);
+      // 画面と画面用のデータを書き換える
+      this.initTables();
+      this.closeDeleteTableDialog();
+    }
+    deleteTableCancel( e ){
+      this.closeDeleteTableDialog();
+    }
+    closeDeleteTableDialog(){
+      this.$.event_table_edit_delete.close();
+      this.$.event_table_edit.close();
     }
 
     //////   edit  //////////////////////
