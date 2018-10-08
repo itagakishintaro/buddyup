@@ -270,7 +270,7 @@ class EventView extends PolymerElement {
         this.station = "溜池山王駅";
         this.place = "古田屋　溜池山王店";
         this.placeUrl = "https://r.gnavi.co.jp/n5xyt2ts0000/";
-        // 予算もあるといい
+        this.badget = "未定"
         this.invitedMembers = [{id:"member1",invited:true},{id:"member2"}]
         this.members = [{id:"member1"}]
         this.agenda = [
@@ -280,11 +280,11 @@ class EventView extends PolymerElement {
           {time: "20:00-20:30", program: "フリートーク"} 
         ]
         this.catchPhrase = "Small plates, salads & sandwiches in an intimate setting with 12 indoor seats plus patio seating."
-
+        this.tables = [{name:"table1",members:[]},{name:"table2",members:[]}];
         // this.tables = [
-        //   {id:"tableId1", name:"table1", memberIds:["member1","member2"], members:[{displayName:"initName1"},{displayName:"シュリ"}]},
-        //   {id:"tableId2", name:"table2", memberIds:["member3"], members:[{displayName:"小高"}]},
-        //   {id:"tableId3", name:"table3", memberIds:[]}
+        //   {id:"tableId1", name:"table1", members:[{id:"member1", displayName:"initName1"},{id:"member2", displayName:"シュリ"}]},
+        //   {id:"tableId2", name:"table2", members:[{id:"member3", displayName:"小高"}]},
+        //   {id:"tableId3", name:"table3", members:[]}
         // ];
 
         this.currentTable;
@@ -320,10 +320,9 @@ class EventView extends PolymerElement {
             this.badget = "未定";
             this.members = v.members;
             // this.inviteMembersはinitMembersで更新
+            // this.tablesはinitMembersで更新
             // メンバーをIDだけを管理するテーブル。こっちがDBと同期するマスター
             this.tableMembers = v.tables;
-            this.tables = [{name:"table1",members:[]},{name:"table2",members:[]}];
-            // this.tablesはinitMembersで更新
 
             // TODO: agendaのロード
             // this.agenda = v.agenda;
@@ -491,7 +490,7 @@ class EventView extends PolymerElement {
 
     }
     addTable( e ) {
-      
+
 
     }
     editTable( e ) {
