@@ -251,7 +251,6 @@ class EventView extends PolymerElement {
             <h2>テーブル_{{this_table.name}}を削除してよいですか？</h2>
             <paper-button raised on-click="deleteTable" data-tableidx="{{this_table}}">はい</paper-button>
             <paper-button raised on-click="deleteTableCancel">いいえ</paper-button>
-            未実装<!-- TODO: -->
           </paper-dialog>
         </paper-card>
       </div>
