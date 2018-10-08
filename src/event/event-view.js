@@ -218,7 +218,12 @@ class EventView extends PolymerElement {
           <div style="@apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto;">
             <template is="dom-repeat" items="{{tables}}" as="table">
               <paper-card style="box-sizing: border-box; width:46%; margin:1%; padding:2px; vertical-align: top; min-height:5em;">
-                <paper-button class="event-table-joinBtn" on-click="onJoinTableBtn" data-tableidx$="{{index}}">参加する</paper-button>
+                <template is="dom-if" if="{{ !isTableMemberMe(index) }}">
+                  <paper-button class="event-table-joinBtn" on-click="onJoinTableBtn" data-tableidx$="{{index}}">参加する</paper-button>
+                </template>
+                <template is="dom-if" if="{{ isTableMemberMe(index) }}">
+                  <paper-button class="event-table-joinBtn" on-click="onJoinTableBtn" data-tableidx$="{{index}}">退出する</paper-button>
+                </template>
                 <div class="event-table-title" on-click="editTable" data-tableidx$="{{index}}">
                   <span class="event-table-title-text" data-tableidx$="{{index}}">{{table.name}}</span>
                   <iron-icon  icon="icons:content-copy" data-tableidx$="{{index}}"></iron-icon>
@@ -533,6 +538,16 @@ class EventView extends PolymerElement {
       var tables = JSON.parse(JSON.stringify(this.tables));
       this.tables = tables;
 
+      // テーブルへ退出か参加か、タイミング問題が起きるので対処
+      for(let i=0; i<this.tableMembers.length; i++){
+        let table = this.tableMembers[i];
+        let shadowObj = this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + i + "']");
+        if(shadowObj){
+          if(table.members.indexOf(this.user.uid) >= 0){ shadowObj.innerText = "退出する";}
+          else { shadowObj.innerText = "参加する"; }
+        }
+      }
+
     }
     addTable( e ) {
       var newtableIdx = this.tableMembers.length;
@@ -635,11 +650,11 @@ class EventView extends PolymerElement {
     //////   join  //////////////////////
     onJoinTableBtn( e ){
       if(e.target.innerText == "参加する"){
-        this.joinTable(e.target.dataset.tableidx, this.user.uid);        
-        this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + tableidx + "']").innerText = "退出する";
+        this.joinTable(e.target.dataset.tableidx, this.user.uid);
+        this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + e.target.dataset.tableidx + "']").innerText = "退出する";
       } else {
         this.leaveTable(e.target.dataset.tableidx, this.user.uid);
-        this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + tableidx + "']").innerText = "参加する";
+        this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + e.target.dataset.tableidx + "']").innerText = "参加する";
       }
       // TODO: 他の端末の人にも参加退出が伝播するようにすること
     }
@@ -669,6 +684,10 @@ class EventView extends PolymerElement {
 
     isTableMember(memberId) {
       return this.currentTableIdx && this.tableMembers && (this.tableMembers[this.currentTableIdx].members.indexOf(memberId) >=0);
+    }
+    isTableMemberMe(tableidx){
+      if(!this.tableMembers) return false;
+      return (this.tableMembers[tableidx].members.indexOf(this.user.uid) >= 0);
     }
 
 
