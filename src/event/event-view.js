@@ -217,7 +217,7 @@ class EventView extends PolymerElement {
           <div style="@apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto;">
             <template is="dom-repeat" items="{{tables}}" as="table">
               <paper-card style="box-sizing: border-box; width:46%; margin:1%; padding:2px; vertical-align: top; min-height:5em;">
-                <paper-button class="event-table-joinBtn" data-tableidx$="{{index}}">参加する</paper-button>
+                <paper-button class="event-table-joinBtn" on-click="onJoinTableBtn" data-tableidx$="{{index}}">参加する</paper-button>
                 <div class="event-table-title" on-click="editTable" data-tableidx$="{{index}}">
                   <span class="event-table-title-text" data-tableidx$="{{index}}">{{table.name}}</span>
                   <iron-icon  icon="icons:content-copy" data-tableidx$="{{index}}"></iron-icon>
@@ -382,6 +382,15 @@ class EventView extends PolymerElement {
 
     }
     getProfile(memberId){
+      // 自分の時は自分のプロファイルから取る
+      if(memberId === this.user.uid){
+        var member = {
+          displayName : this.user.displayName,
+          id: this.user.uid
+        }
+        return member;
+      }
+      // 他人の時はinvitedMembersから取る
       var memberObj = this.invitedMembers.find(member => {
          return member.id === memberId;
       });
@@ -530,12 +539,40 @@ class EventView extends PolymerElement {
     }
 
     //////   join  //////////////////////
-
-    joinTable(){
-      var tables = JSON.parse(JSON.stringify(this.tables));
-      this.tables = tables;
+    onJoinTableBtn( e ){
+      if(e.target.innerText == "参加する"){
+        this.joinTable(e.target.dataset.tableidx, this.user.uid);        
+      } else {
+        this.leaveTable(e.target.dataset.tableidx, this.user.uid);
+      }
     }
 
+    joinTable(tableidx, memberId){
+      // 内部データを書き換える
+      this.tableMembers[tableidx].members.push(memberId);
+      this.tables[tableidx].members.push(this.getProfile(memberId));
+      // 画面を変更する -- 参加するボタン
+      this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + tableidx + "']").innerText = "退出する";
+      // 画面を変更する -- テーブル内の名前
+      var tables = JSON.parse(JSON.stringify(this.tables));
+      this.tables = tables;
+      // DBにjoinを書き込む
+      firebase.database().ref( `events/${this.eventid}/tables/${tableidx}/members` ).set(this.tableMembers[tableidx].members);
+    }
+
+    leaveTable(tableidx, memberId){
+      // 内部データを書き換える
+      var memberIdx = this.tableMembers[tableidx].members.indexOf(memberId);
+      this.tableMembers[tableidx].members.splice(memberIdx,1);
+      this.tables[tableidx].members.splice(memberIdx,1);
+      // 画面を変更する -- 参加するボタン
+      this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + tableidx + "']").innerText = "参加する";
+      // 画面を変更する -- テーブル内の名前
+      var tables = JSON.parse(JSON.stringify(this.tables));
+      this.tables = tables;
+      // DBにjoinを書き込む
+      firebase.database().ref( `events/${this.eventid}/tables/${tableidx}/members` ).set(this.tableMembers[tableidx].members);
+    }
 
 
 
@@ -546,7 +583,7 @@ class EventView extends PolymerElement {
     //
     buddyup ( e ) {
       // TODO: useridの取得方法
-      if (userid)
+      if (this.user.uid)
        this.$.buddyup_button.text = "今は参加しています"
        //this.
     }
