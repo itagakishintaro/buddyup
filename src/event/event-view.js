@@ -490,7 +490,7 @@ class EventView extends PolymerElement {
       // invitedMembersに保存されたプロファイルをtablesにも展開する
       for(let i=0; i<this.tableMembers.length; i++){
         let table = this.tableMembers[i];
-        if(!table.members) break;
+        if(!table.members){ table.members = []; break;} 
         for(let j=0;j<table.members.length;j++){
           if(!this.tables[i]){ this.tables[i] = {};}
           if(!this.tables[i].members){ this.tables[i].members = [];}
@@ -545,6 +545,7 @@ class EventView extends PolymerElement {
       } else {
         this.leaveTable(e.target.dataset.tableidx, this.user.uid);
       }
+      // TODO: 他の端末の人にも参加退出が伝播するようにすること
     }
 
     joinTable(tableidx, memberId){
