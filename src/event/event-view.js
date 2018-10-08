@@ -212,7 +212,7 @@ class EventView extends PolymerElement {
 
 
           <div class="card-actions">
-            交流のテーブル <iron-icon id="add-member" icon="icons:add-box" on-click="addTable"></iron-icon>
+            交流のテーブル <iron-icon id="add_table" icon="icons:add-box" on-click="addTable"></iron-icon>
           </div>
           <div style="@apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto;">
             <template is="dom-repeat" items="{{tables}}" as="table">
@@ -490,20 +490,27 @@ class EventView extends PolymerElement {
       // invitedMembersに保存されたプロファイルをtablesにも展開する
       for(let i=0; i<this.tableMembers.length; i++){
         let table = this.tableMembers[i];
-        if(!table.members){ table.members = []; break;} 
+        if(!table.members){ table.members = [];} 
+        if(!table.name){ table.name = "table" + (i+1);}
+        if(!this.tables[i]){ this.tables[i] = {};}
+        if(!this.tables[i].members){ this.tables[i].members = [];}
         for(let j=0;j<table.members.length;j++){
-          if(!this.tables[i]){ this.tables[i] = {};}
-          if(!this.tables[i].members){ this.tables[i].members = [];}
           this.tables[i].members.push(this.getProfile(table.members[j]));
         }
+        this.tables[i].name = this.tableMembers[i].name;
       }
       var tables = JSON.parse(JSON.stringify(this.tables));
       this.tables = tables;
 
     }
     addTable( e ) {
-
-
+      var newtableIdx = this.tableMembers.length;
+      // 内部データを書き換える
+      this.tableMembers[newtableIdx] = { members:[], name: "table" + (newtableIdx + 1)};
+      // DBに書き込む
+      firebase.database().ref( `events/${this.eventid}/tables/${newtableIdx}` ).set(this.tableMembers[newtableIdx]);
+      // 画面と画面用のデータを書き換える
+      this.initTables();
     }
 
     //////   edit  //////////////////////
