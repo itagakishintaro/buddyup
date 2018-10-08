@@ -217,7 +217,7 @@ class EventView extends PolymerElement {
           <div style="@apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto;">
             <template is="dom-repeat" items="{{tables}}" as="table">
               <paper-card style="box-sizing: border-box; width:46%; margin:1%; padding:2px; vertical-align: top; min-height:5em;">
-                <paper-button class="event-table-joinBtn">参加する</paper-button>
+                <paper-button class="event-table-joinBtn" data-tableidx$="{{index}}">参加する</paper-button>
                 <div class="event-table-title" on-click="editTable" data-tableidx$="{{index}}">
                   <span class="event-table-title-text" data-tableidx$="{{index}}">{{table.name}}</span>
                   <iron-icon  icon="icons:content-copy" data-tableidx$="{{index}}"></iron-icon>
@@ -259,7 +259,6 @@ class EventView extends PolymerElement {
     }
 
     // TODO: 交流のテーブルに参加ボタンをつける（板垣さんのページのやつ）
-    // TODO: 交流のテーブルを２段表示にする
     // TODO:headingの背景を薄暗くする。
 
     constructor() {
@@ -351,6 +350,7 @@ class EventView extends PolymerElement {
 
 
     ///////////////////////////////////////////////////////////////////
+    //
     // Members
     //
     //
@@ -380,6 +380,12 @@ class EventView extends PolymerElement {
         this.initTables();
       });
 
+    }
+    getProfile(memberId){
+      var memberObj = this.invitedMembers.find(member => {
+         return member.id === memberId;
+      });
+      return memberObj.profile;
     }
 
     isMember(self,memberId) {
@@ -477,12 +483,9 @@ class EventView extends PolymerElement {
         let table = this.tableMembers[i];
         if(!table.members) break;
         for(let j=0;j<table.members.length;j++){
-          var memberObj = this.invitedMembers.find(member_i => {
-             return member_i.id === table.members[j];
-          });
           if(!this.tables[i]){ this.tables[i] = {};}
           if(!this.tables[i].members){ this.tables[i].members = [];}
-          this.tables[i].members.push(memberObj.profile);
+          this.tables[i].members.push(this.getProfile(table.members[j]));
         }
       }
       var tables = JSON.parse(JSON.stringify(this.tables));
@@ -493,6 +496,9 @@ class EventView extends PolymerElement {
 
 
     }
+
+    //////   edit  //////////////////////
+
     editTable( e ) {
       this.currentTableIdx = e.target.dataset.tableidx;
       this.$.event_table_edit.open();
@@ -523,7 +529,21 @@ class EventView extends PolymerElement {
       firebase.database().ref( `events/${this.eventid}/tables/${this.currentTableIdx}/name` ).set( tableName );
     }
 
+    //////   join  //////////////////////
 
+    joinTable(){
+      var tables = JSON.parse(JSON.stringify(this.tables));
+      this.tables = tables;
+    }
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    //  edit
+    //
+    //
     buddyup ( e ) {
       // TODO: useridの取得方法
       if (userid)
