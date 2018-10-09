@@ -98,14 +98,17 @@ class EventView extends PolymerElement {
 <!--        <paper-card image="images/donuts.png" heading="{{subject}}" class="white centered"> -->
         <paper-card image="https://scontent-nrt1-1.xx.fbcdn.net/v/t1.0-9/41951333_2257908294284605_8060807024998350848_o.jpg?_nc_cat=0&oh=e103d7dfd00406bafa5406d4b0dbd10f&oe=5C626A90" heading="{{subject}}" class="white centered">
           <div class="card-content">
-            <div class="cafe-header">{{date}}
+            <div class="cafe-header">
+              <span id="dateTitle" on-click="openEditDate">{{dateStr}}</span>
+              <span id="dateTitleTimeFrom" on-click="openEditDate">{{date.timeFrom}}</span>-
+              <span id="dateTitleTimeTo" on-click="openEditDate">{{date.timeTo}}</span>
               <div class="cafe-location cafe-light" on-click="openMapToStation">
                 <iron-icon icon="communication:location-on"></iron-icon>
                 <span>{{station}}</span>
               </div>
             </div>
             <div class="event-members-container container">
-              <span><b>参加者</b>　 　　○○な人たち</span>
+              <span><b>参加者</b>　 　　</span><span id="memberTitle" on-click="openEditCatchPrase">○○な人たち</span>
               <iron-icon id="expand_members" icon="icons:expand-more" on-click="showMembers"></iron-icon>
               <iron-collapse id="collapse_members" class="collapse">
                 <div class="indent">
@@ -170,7 +173,7 @@ class EventView extends PolymerElement {
 
             <div class="event-place-container container">
               <span><b>場所</b>　　　　</span>
-              {{place}} 
+              <span id="placeTitle" on-click="openEditPlace">{{place}}</span> 
               <iron-icon id="expand_places" icon="icons:expand-more" on-click="showPlaces"></iron-icon>
               <iron-collapse id="collapse_places" class="collapse">
                 <div class="indent">
@@ -200,13 +203,13 @@ class EventView extends PolymerElement {
               <iron-collapse id="collapse_agenda" class="collapse">
                 <template is="dom-repeat" items="{{agenda}}">
                   <div class="agenda-content">
-                    <span class="indent">{{item.time}}</span>
-                    <span class="indent">{{item.program}}</span>
+                    <span class="indent" id="agendaTime{{index}}" on-click="openEditAgenda">{{item.time}}</span>
+                    <span class="indent" id="agendaTitle{{index}}" on-click="openEditAgenda">{{item.program}}</span>
                   </div>  
                 </template>
               </iron-collapse>
             </div>
-            <p class="cafe-light">
+            <p class="cafe-light" id="catchPhraseTitle" on-click="openEditCatchPrase">
               {{catchPhrase}}
             </p>
           </div>
@@ -289,6 +292,42 @@ class EventView extends PolymerElement {
             </div>
           </paper-dialog>
         </paper-card>
+
+        <paper-dialog id="adminEditDate">
+          <h3 class="adminEditTitle">開催日時</h3>
+          <div class="adminEditContent">
+            <input type="date" id="adminEditDate1"/>
+            <input type="time" id="adminEditDateTimeFrom" min="6:00"/> - <input type="time" id="adminEditDateTimeTo"/>
+          </div>
+          <paper-button on-click="editDate">更新</paper-button><paper-button on-click="closeEditDate">キャンセル</paper-button>
+        </paper-dialog>
+        <paper-dialog id="adminEditPlace">
+          <h3 class="adminEditTitle">開催場所</h3>
+          <div class="adminEditContent">
+            <input type="text" id="adminEditPlace1"/>
+          </div>
+          <paper-button on-click="editPlace">更新</paper-button><paper-button on-click="closeEditPlace">キャンセル</paper-button>
+        </paper-dialog>
+        <paper-dialog id="adminEditAgenda">
+          <h3 class="adminEditTitle">イベント内容</h3>
+          <div class="adminEditContent">
+            <input type="text" id="adminEditAgendaTime0" style="width:20%;"/><input type="text" id="adminEditAgenda0" style="width:70%;"/><br/>
+            <input type="text" id="adminEditAgendaTime1" style="width:20%;"/><input type="text" id="adminEditAgenda1" style="width:70%;"/><br/>
+            <input type="text" id="adminEditAgendaTime2" style="width:20%;"/><input type="text" id="adminEditAgenda2" style="width:70%;"/><br/>
+            <input type="text" id="adminEditAgendaTime3" style="width:20%;"/><input type="text" id="adminEditAgenda3" style="width:70%;"/><br/>
+            <input type="text" id="adminEditAgendaTime4" style="width:20%;"/><input type="text" id="adminEditAgenda4" style="width:70%;"/><br/>
+          </div>
+          <paper-button on-click="editAgenda">更新</paper-button><paper-button on-click="closeEditAgenda">キャンセル</paper-button>
+        </paper-dialog>
+        <paper-dialog id="adminEditCatchPrase" style="width:80%">
+          <div class="adminEditContent">
+            参加者:<br/>
+            <input type="text" id="adminEditCatchPrase1"/><br/>
+            キャッチフレーズ<br/>
+            <textarea type="text" id="adminEditCatchPrase2" style="width:100%; height:10em;"/></textarea>
+          </div>
+          <paper-button on-click="editCatchPrase">更新</paper-button><paper-button on-click="closeEditCatchPrase">キャンセル</paper-button>
+        </paper-dialog>
       </div>
     `;
     }
@@ -296,10 +335,112 @@ class EventView extends PolymerElement {
     // TODO: 交流のテーブルに参加ボタンをつける（板垣さんのページのやつ）
     // TODO:headingの背景を薄暗くする。
 
+    //////////////////////////////////////////////////////////////////////////////
+    //
+    // 管理者機能
+    //
+    //
+    canEdit() {
+      return this.isKanji() || this.isOpen();
+    }
+    isKanji() {
+      return this.kanji.find(member => { return member === this.user.uid; });
+    }
+    isOpen() {
+      return !this.private;
+    }
+    noPermission(){
+      console.log("you are not kanji");
+    }
+
+    openEditDate( e ){
+      if(!this.canEdit()) { this.noPermission(); return; }
+      this.$.adminEditDate1.value = this.date.date;
+      this.$.adminEditDateTimeFrom.value = this.date.timeFrom;
+      this.$.adminEditDateTimeTo.value = this.date.timeTo;
+      this.$.adminEditDate.open();
+    }
+    closeEditDate( e ){
+      this.$.adminEditDate.close();
+    }
+    editDate(){
+      this.date.date = this.$.adminEditDate1.value;
+      this.date.timeFrom = this.$.adminEditDateTimeFrom.value;
+      this.date.timeTo = this.$.adminEditDateTimeTo.value;
+
+      this.shadowRoot.querySelector("#dateTitle").innerText = this.$.adminEditDate1.value.split("-").map(t=>Number(t)).join("/");
+      this.shadowRoot.querySelector("#dateTitleTimeFrom").innerText = this.$.adminEditDateTimeFrom.value;
+      this.shadowRoot.querySelector("#dateTitleTimeTo").innerText = this.$.adminEditDateTimeTo.value;
+      // TODO: DBに書き込み
+
+      this.$.adminEditDate.close();
+    }
+    openEditPlace( e ){
+      if(!this.canEdit()) { this.noPermission(); return; }
+      this.$.adminEditPlace1.value = this.Place;
+      this.$.adminEditPlace.open();
+    }
+    closeEditPlace( e ){
+      this.$.adminEditPlace.close();
+    }
+    editPlace(){
+      this.$.adminEditPlace.close();
+    }
+    openEditAgenda( e ){
+      if(!this.canEdit()) { this.noPermission(); return; }
+      this.$.adminEditAgenda0.value = this.shadowRoot.querySelector("#agendaTitle0").innerText;
+      this.$.adminEditAgenda1.value = this.shadowRoot.querySelector("#agendaTitle1").innerText;
+      this.$.adminEditAgenda2.value = this.shadowRoot.querySelector("#agendaTitle2").innerText;
+      this.$.adminEditAgenda3.value = this.shadowRoot.querySelector("#agendaTitle3").innerText;
+      this.$.adminEditAgenda4.value = this.shadowRoot.querySelector("#agendaTitle4").innerText;
+      this.$.adminEditAgendaTime0.value = this.shadowRoot.querySelector("#agendaTime0").innerText;
+      this.$.adminEditAgendaTime1.value = this.shadowRoot.querySelector("#agendaTime1").innerText;
+      this.$.adminEditAgendaTime2.value = this.shadowRoot.querySelector("#agendaTime2").innerText;
+      this.$.adminEditAgendaTime3.value = this.shadowRoot.querySelector("#agendaTime3").innerText;
+      this.$.adminEditAgendaTime4.value = this.shadowRoot.querySelector("#agendaTime4").innerText;
+      this.$.adminEditAgenda.open();
+    }
+    closeEditAgenda( e ){
+      this.$.adminEditAgenda.close();
+    }
+    editAgenda(){
+      this.$.adminEditAgenda.close();
+
+    }
+    openEditCatchPrase( e ){
+      if(!this.canEdit()) { this.noPermission(); return; }
+      this.$.adminEditCatchPrase1.value = this.$.memberTitle.innerText;
+      this.$.adminEditCatchPrase2.innerText = this.$.catchPhraseTitle.innerText;
+      this.$.adminEditCatchPrase.open();
+    }
+    closeEditCatchPrase( e ){
+//      this.$.memberTitle.innerText = this.$.adminEditCatchPrase1.value;
+ //     this.$.catchPhraseTitle.innerText = this.$.adminEditCatchPrase2.innerText;
+      this.$.adminEditCatchPrase.close();
+    }
+    editCatchPrase(){
+      this.$.adminEditCatchPrase.close();
+    }
+
+
+
+
+
+
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //
+    // 初期化
+    //
+    //
+
+
+
     constructor() {
         super();
+        this.kanji = [];
         this.subject = "飲み会"
-        this.date = "2018/9/20 19:00-20:30";
+        this.date = "2018-09-20 19:00-20:30";
         this.taketime = "30min";
         this.station = "溜池山王駅";
         this.place = "古田屋　溜池山王店";
@@ -344,8 +485,10 @@ class EventView extends PolymerElement {
         firebase.database().ref( 'events/' + this.eventid ).off( 'value' );
         firebase.database().ref( 'events/' + this.eventid ).once( 'value', snapshot => {
             let v = snapshot.val();
+            this.kanji = v.kanji;
             this.subject = v.name;
-            this.date = v.date.date + " " + v.date.timeFrom + "-" + v.date.timeTo;
+            this.date = v.date;
+            this.dateStr = v.date.date.split("-").map(t=>Number(t)).join("/");
             this.taketime = v.place.taketime;
             this.station = v.place.station;
             this.place = v.place.name;
