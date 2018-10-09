@@ -108,7 +108,7 @@ class EventView extends PolymerElement {
               </div>
             </div>
             <div class="event-members-container container">
-              <span><b>参加者</b>　 　　</span><span id="memberTitle" on-click="openEditCatchPrase">○○な人たち</span>
+              <span><b>参加者</b>　 　　</span><span id="memberTitle" on-click="openEditCatchPhrase">{{memberTitle}}</span>
               <iron-icon id="expand_members" icon="icons:expand-more" on-click="showMembers"></iron-icon>
               <iron-collapse id="collapse_members" class="collapse">
                 <div class="indent">
@@ -209,8 +209,8 @@ class EventView extends PolymerElement {
                 </template>
               </iron-collapse>
             </div>
-            <p class="cafe-light" id="catchPhraseTitle" on-click="openEditCatchPrase">
-              {{catchPhrase}}
+            <p class="cafe-light" on-click="openEditCatchPhrase">
+              <span id="catchPhraseTitle">{{catchPhrase}}</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             </p>
           </div>
 
@@ -319,14 +319,14 @@ class EventView extends PolymerElement {
           </div>
           <paper-button on-click="editAgenda">更新</paper-button><paper-button on-click="closeEditAgenda">キャンセル</paper-button>
         </paper-dialog>
-        <paper-dialog id="adminEditCatchPrase" style="width:80%">
+        <paper-dialog id="adminEditCatchPhrase" style="width:80%">
           <div class="adminEditContent">
             参加者:<br/>
-            <input type="text" id="adminEditCatchPrase1"/><br/>
+            <input type="text" id="adminEditCatchPhrase1"/><br/>
             キャッチフレーズ<br/>
-            <textarea type="text" id="adminEditCatchPrase2" style="width:100%; height:10em;"/></textarea>
+            <textarea type="text" id="adminEditCatchPhrase2" style="width:100%; height:10em;"/></textarea>
           </div>
-          <paper-button on-click="editCatchPrase">更新</paper-button><paper-button on-click="closeEditCatchPrase">キャンセル</paper-button>
+          <paper-button on-click="editCatchPhrase">更新</paper-button><paper-button on-click="closeEditCatchPhrase">キャンセル</paper-button>
         </paper-dialog>
       </div>
     `;
@@ -371,7 +371,7 @@ class EventView extends PolymerElement {
       this.shadowRoot.querySelector("#dateTitle").innerText = this.$.adminEditDate1.value.split("-").map(t=>Number(t)).join("/");
       this.shadowRoot.querySelector("#dateTitleTimeFrom").innerText = this.$.adminEditDateTimeFrom.value;
       this.shadowRoot.querySelector("#dateTitleTimeTo").innerText = this.$.adminEditDateTimeTo.value;
-      // TODO: DBに書き込み
+      firebase.database().ref( `events/${this.eventid}/date/` ).set( this.date );
 
       this.$.adminEditDate.close();
     }
@@ -407,19 +407,21 @@ class EventView extends PolymerElement {
       this.$.adminEditAgenda.close();
 
     }
-    openEditCatchPrase( e ){
+    openEditCatchPhrase( e ){
       if(!this.canEdit()) { this.noPermission(); return; }
-      this.$.adminEditCatchPrase1.value = this.$.memberTitle.innerText;
-      this.$.adminEditCatchPrase2.innerText = this.$.catchPhraseTitle.innerText;
-      this.$.adminEditCatchPrase.open();
+      this.$.adminEditCatchPhrase1.value = this.shadowRoot.querySelector("#memberTitle").innerText;
+      this.$.adminEditCatchPhrase2.value = this.shadowRoot.querySelector("#catchPhraseTitle").innerText;
+      this.$.adminEditCatchPhrase.open();
     }
-    closeEditCatchPrase( e ){
-//      this.$.memberTitle.innerText = this.$.adminEditCatchPrase1.value;
- //     this.$.catchPhraseTitle.innerText = this.$.adminEditCatchPrase2.innerText;
-      this.$.adminEditCatchPrase.close();
+    closeEditCatchPhrase( e ){
+      this.$.adminEditCatchPhrase.close();
     }
-    editCatchPrase(){
-      this.$.adminEditCatchPrase.close();
+    editCatchPhrase(){
+      this.shadowRoot.querySelector("#memberTitle").innerText = this.$.adminEditCatchPhrase1.value;
+      this.shadowRoot.querySelector("#catchPhraseTitle").innerText = this.$.adminEditCatchPhrase2.value;
+      firebase.database().ref( `events/${this.eventid}/memberTitle` ).set( this.$.adminEditCatchPhrase1.value );
+      firebase.database().ref( `events/${this.eventid}/catchPhrase` ).set( this.$.adminEditCatchPhrase2.value );
+      this.$.adminEditCatchPhrase.close();
     }
 
 
@@ -446,7 +448,8 @@ class EventView extends PolymerElement {
         this.place = "古田屋　溜池山王店";
         this.placeUrl = "https://r.gnavi.co.jp/n5xyt2ts0000/";
         this.badget = "未定"
-        this.invitedMembers = [{id:"member1",invited:true},{id:"member2"}]
+        this.memberTitle = "○○な人たち";
+        this.invitedMembers = [{id:"member1",invited:true},{id:"member2"}];
         this.members = [{id:"member1"}]
         this.agenda = [
           {time: "19:00-19:10", program: "全体説明"}, 
@@ -487,6 +490,7 @@ class EventView extends PolymerElement {
             let v = snapshot.val();
             this.kanji = v.kanji;
             this.subject = v.name;
+            this.catchPhrase = v.catchPhrase;
             this.date = v.date;
             this.dateStr = v.date.date.split("-").map(t=>Number(t)).join("/");
             this.taketime = v.place.taketime;
@@ -496,6 +500,7 @@ class EventView extends PolymerElement {
             this.placeMapUrl = v.place.mapUrl || null;
             this.placeUrl = v.place.url;
             this.badget = "未定";
+            this.memberTitle = v.memberTitle;
             this.members = v.members;
             // this.inviteMembersはinitMembersで更新
             // this.tablesはinitMembersで更新
@@ -504,9 +509,6 @@ class EventView extends PolymerElement {
 
             // TODO: agendaのロード
             // this.agenda = v.agenda;
-            // TODO: キャッチフレーズのロード
-            // this.catchPrase = v.catchPrase;
-            // this.invitedMembers = v.invitedMembers;
             resolve(v);
         } );
     }
