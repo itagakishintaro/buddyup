@@ -108,7 +108,7 @@ class EventView extends PolymerElement {
               </div>
             </div>
             <div class="event-members-container container">
-              <span><b>参加者</b>　 　　</span><span id="memberTitle" on-click="openEditCatchPhrase">{{memberTitle}}</span>
+              <span on-click="openEditCatchPhrase"><b>参加者</b>　 　　</span><span id="memberTitle" on-click="openEditCatchPhrase">{{memberTitle}}</span>
               <iron-icon id="expand_members" icon="icons:expand-more" on-click="showMembers"></iron-icon>
               <iron-collapse id="collapse_members" class="collapse">
                 <div class="indent">
@@ -172,12 +172,12 @@ class EventView extends PolymerElement {
 
 
             <div class="event-place-container container">
-              <span><b>場所</b>　　　　</span>
+              <span on-click="openEditPlace"><b>場所</b>　　　　</span>
               <span id="placeTitle" on-click="openEditPlace">{{place}}</span> 
               <iron-icon id="expand_places" icon="icons:expand-more" on-click="showPlaces"></iron-icon>
               <iron-collapse id="collapse_places" class="collapse">
                 <div class="indent">
-                  <div id="placeComment">特に待ち合わせ等の伝言はありません。そのままお越しください。</div>
+                  <div id="placeComment">{{placeComment}}</div>
                     <!-- <a href="{{placeUrl}}" class="event-place-link-a">
                       <iron-icon icon="icons:home"></iron-icon>会場の紹介
                     </a>
@@ -304,7 +304,12 @@ class EventView extends PolymerElement {
         <paper-dialog id="adminEditPlace">
           <h3 class="adminEditTitle">開催場所</h3>
           <div class="adminEditContent">
-            <input type="text" id="adminEditPlace1"/>
+            概要：<input type="text" id="adminEditPlace1"/><br/>
+            説明：<input type="text" id="adminEditPlace2"/><br/>
+            URL ：<input type="text" id="adminEditPlace3"/><br/>
+            MAP ：<input type="text" id="adminEditPlace4"/><br/>
+            最寄駅：<input type="text" id="adminEditPlace5"/><br/>
+            予算：<input type="text" id="adminEditPlace6"/><br/>
           </div>
           <paper-button on-click="editPlace">更新</paper-button><paper-button on-click="closeEditPlace">キャンセル</paper-button>
         </paper-dialog>
@@ -377,13 +382,32 @@ class EventView extends PolymerElement {
     }
     openEditPlace( e ){
       if(!this.canEdit()) { this.noPermission(); return; }
-      this.$.adminEditPlace1.value = this.Place;
+      this.$.adminEditPlace1.value = this.place;
+      this.$.adminEditPlace2.value = this.placeComment;
+      this.$.adminEditPlace3.value = this.placeUrl;
+      this.$.adminEditPlace4.value = this.placeMapUrl;
+      this.$.adminEditPlace5.value = this.station;
+      this.$.adminEditPlace6.value = this.badget;
       this.$.adminEditPlace.open();
     }
     closeEditPlace( e ){
       this.$.adminEditPlace.close();
     }
     editPlace(){
+      this.place = this.$.adminEditPlace1.value;
+      this.placeComment = this.$.adminEditPlace2.value;
+      this.placeUrl = this.$.adminEditPlace3.value;
+      this.placeMapUrl = this.$.adminEditPlace4.value;
+      this.station = this.$.adminEditPlace5.value;
+      this.badget = this.$.adminEditPlace6.value;
+      firebase.database().ref( `events/${this.eventid}/place/name` ).set( this.place );
+      firebase.database().ref( `events/${this.eventid}/place/comment` ).set( this.placeComment );
+      firebase.database().ref( `events/${this.eventid}/place/url` ).set( this.placeUrl );
+      firebase.database().ref( `events/${this.eventid}/place/mapUrl` ).set( this.placeMapUrl );
+      firebase.database().ref( `events/${this.eventid}/place/station` ).set( this.station );
+      firebase.database().ref( `events/${this.eventid}/place/badget` ).set( this.badget );
+      // TODO: お店の予約関係の話
+      
       this.$.adminEditPlace.close();
     }
     openEditAgenda( e ){
@@ -446,6 +470,7 @@ class EventView extends PolymerElement {
         this.taketime = "30min";
         this.station = "溜池山王駅";
         this.place = "古田屋　溜池山王店";
+        this.placeComment = "特に待ち合わせ等の伝言はありません。そのままお越しください。";
         this.placeUrl = "https://r.gnavi.co.jp/n5xyt2ts0000/";
         this.badget = "未定"
         this.memberTitle = "○○な人たち";
