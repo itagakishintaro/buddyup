@@ -46,7 +46,7 @@ class EventView extends PolymerElement {
           .indent { margin-left: 1em;   }
           .container { margin: 0.2em; }
           .collapse { width:100%; margin: 0.5em 0.3em 0.8em 0.3em;}
-          paper-card { margin: 1em; }
+          paper-card { margin: 0.2em; }
           paper-card.white { --paper-card-header-color: #fff;  }
           paper-card.white { --paper-card-header-color: #fff;  }
           <!--// 効かない -->
@@ -108,8 +108,12 @@ class EventView extends PolymerElement {
               </div>
             </div>
             <div class="event-members-container container">
-              <span on-click="openEditCatchPhrase"><b>参加者</b>　 　　</span><span id="memberTitle" on-click="openEditCatchPhrase">{{memberTitle}}</span>
-              <iron-icon id="expand_members" icon="icons:expand-more" on-click="showMembers"></iron-icon>
+              <div>
+                <span on-click="openEditCatchPhrase"><b>参加者</b>　 　　</span>
+                <span id="memberTitle" on-click="openEditCatchPhrase">{{memberTitle}}</span>
+                <!--  style="overflow-wrap:word-break; white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%" --> 
+                <iron-icon id="expand_members" icon="icons:expand-more" on-click="showMembers"></iron-icon>
+              </div>
               <iron-collapse id="collapse_members" class="collapse">
                 <div class="indent">
                   <template is="dom-repeat" items="{{invitedMembers}}">
