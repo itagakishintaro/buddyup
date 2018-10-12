@@ -21,7 +21,7 @@ class EventListView extends PolymerElement {
         }
 
         .event {
-          width: 95%;
+          width: 100%;
           background: #fff;
           border-radius: 5px;
           box-shadow: 0 2px 5px #ccc;
@@ -32,7 +32,7 @@ class EventListView extends PolymerElement {
           height: auto;
         }
         .card-content {
-          padding: 20px;
+          padding: 0.7em 0.5em 0.5em 1em;
         }
         .card-title {
           font-size: 20px;
@@ -65,7 +65,7 @@ class EventListView extends PolymerElement {
                 <div class="card-text">
                   <span class="date">{{item.date.date}}</span><span>{{item.date.timeFrom}}</span> ~ <span>{{item.date.timeTo}}</span></a>
                 </div>
-                  <div class="indent card-title">{{item.name}}@{{item.place.name}}</div>
+                  <div>{{item.name}}@{{item.place.name}}</div>
                 <template is="dom-if" if="{{ item.joined }}">
                   <div class="indent">[v]参加しています</div>
                 </template>
@@ -74,7 +74,7 @@ class EventListView extends PolymerElement {
           </template>
         </template>
         <hr>
-        <a href="/event-list-view">新規イベントを作成する</a>
+        <a href="/event-view/new">新規イベントを作成する</a>
       </div>
     `;
     }

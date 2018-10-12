@@ -468,13 +468,17 @@ class EventView extends PolymerElement {
 
     constructor() {
         super();
+        if(this.eventid == "new") {
+          this.createPage();
+          return;
+        }
         this.kanji = [];
-        this.subject = "飲み会"
-        this.date = "2018-09-20 19:00-20:30";
+        this.subject = "飲み会";
+        this.date = { date: get2WeekAfterDate, timeFrom: "19:00", timeTo: "20:30"};
         this.taketime = "30min";
-        this.station = "溜池山王駅";
-        this.place = "古田屋　溜池山王店";
-        this.placeComment = "特に待ち合わせ等の伝言はありません。そのままお越しください。";
+        this.station = "○○駅";
+        this.place = "お店の名前";
+        this.placeComment = "場所に入るための方法などを記載。無ければ、「特に待ち合わせ等の伝言はありません。そのままお越しください。」";
         this.placeUrl = "https://r.gnavi.co.jp/n5xyt2ts0000/";
         this.badget = "未定"
         this.memberTitle = "○○な人たち";
@@ -511,6 +515,16 @@ class EventView extends PolymerElement {
         }
     }
 
+    get2WeekAfterDate() {
+      var dt = new Date();
+      dt.setDate(dt.getDate() + 14)
+      var y = dt.getFullYear();
+      var m = ("00" + (dt.getMonth()+1)).slice(-2);
+      var d = ("00" + dt.getDate()).slice(-2);
+      var result = y + "-" + m + "-" + d;
+      return result;
+    }
+
     getEvent(self, resolve) {
         console.log( 'getMembers()' );
         this.parties = [];
@@ -542,6 +556,38 @@ class EventView extends PolymerElement {
         } );
     }
 
+
+    createPage ( e ) {
+      this.kanji = [user.uid];
+      this.subject = "飲み会";
+      this.date =  { date: get2WeekAfterDate, timeFrom: "19:00", timeTo: "20:30"};
+      this.taketime = "30min";
+      this.station = "○○駅";
+      this.place = "お店の名前などを記載";
+      this.placeComment = "場所に入るための方法などを記載。無ければ、お店のアピールなどをお書きください";
+      this.placeUrl = "https://r.gnavi.co.jp/n5xyt2ts0000/";
+      this.badget = "未定"
+      this.memberTitle = "○○な人たち（中で追加してください）";
+      this.invitedMembers = [];
+      this.members = [{id:user.uid}]
+      this.agenda = [
+        {time: "19:00-19:10", program: "全体説明"}, 
+        {time: "19:10-19:30", program: "自己紹介"}, 
+        {time: "19:30-20:00", program: "テーマトーク"}, 
+        {time: "20:00-20:30", program: "フリートーク"} 
+      ]
+      this.catchPhrase = "この会にみんなを引き付けるためのキャッチフレーズをお書きください"
+      this.tables = [{name:"table1",members:[]},{name:"table2",members:[]}];
+      this.currentTable;
+      this.currentEventMembers;
+
+    }
+
+
+
+
+
+
     join( e ) {
         console.log( 'join()', e.target.dataset.uid );
         firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( { displayName: this.user.displayName } );
@@ -557,6 +603,7 @@ class EventView extends PolymerElement {
     openMapToStation( e ){
       window.open("https://maps.google.co.jp/maps?q=" + this.station);
     }
+
 
 
     ///////////////////////////////////////////////////////////////////
