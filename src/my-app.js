@@ -233,7 +233,7 @@ class MyApp extends PolymerElement {
                 return;
             }
             if( this.page === "login-view" ){
-                this.set( 'route.path', '/parties-view/' );
+                this.set( 'route.path', '/event-list-view/' );
             }
 
             // profile existance check. if not, then register user profile
