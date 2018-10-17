@@ -5,8 +5,8 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 
 class CommentsView extends PolymerElement {
-  static get template() {
-    return html `
+    static get template() {
+        return html `
       <style include="shared-styles">
         .container {
           /* overflow: scroll; */
@@ -53,6 +53,10 @@ class CommentsView extends PolymerElement {
         .separater {
           border: .5px solid var(--paper-blue-grey-100);
         }
+
+        .unclickable {
+            pointer-events: none;
+        }
       </style>
 
       <div class="container">
@@ -70,18 +74,20 @@ class CommentsView extends PolymerElement {
             <div>
               <div class="meta-info">{{item.displayName}} [ {{ _dateFormat(item.datetime) }} ]</div>
               <p class="text">{{item.text}}</p>
+              <div id="toggleLike">
                 <template is="dom-if" if="{{ _didLike(item.likes) }}">
-                  <div id="like" class="like" on-click="cancelLike">
+                  <div class="like" on-click="cancelLike">
                     <paper-icon-button class="like-icon" icon="thumb-up" data-uid$="{{ item.uid }}"></paper-icon-button>
                     <span class="like-number">{{ _countLikeNumber(item.likes) }}</span>
                 　</div>
                 </template>
                 <template is="dom-if" if="{{ !_didLike(item.likes) }}">
-                  <div id="like" class="like" on-click="like">
+                  <div class="like" on-click="like">
                     <paper-icon-button class="like-icon like-not-yet" icon="thumb-up" data-uid$="{{ item.uid }}"></paper-icon-button>
                     <span class="like-number">{{ _countLikeNumber(item.likes) }}</span>
               　   </div>
                 </template>
+              </div>
 
             </div>
           </div>
@@ -94,83 +100,91 @@ class CommentsView extends PolymerElement {
     }
 
     constructor() {
-      super();
-      this.comments = [];
-      this.loadingDisplay = 'none';
+        super();
+        this.comments = [];
+        this.loadingDisplay = 'none';
     }
 
     static get properties() {
-      return {
-        comments: Array
-      }
-    }
-
-    like(e) {
-      console.log( 'like()', e.target.dataset.uid );
-      firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes` ).push( {
-          uid: this.user.uid, datetime: new Date().toISOString()
-      } );
-
-      this._setLike(e.target.dataset.uid, { uid: this.user.uid, datetime: new Date().toISOString() });
-    }
-
-    cancelLike(e) {
-      console.log( 'cancelLike()', e.target.dataset.uid );
-      let targetComment = this.comments.filter( c => c.uid === e.target.dataset.uid )[0];
-      Object.keys(targetComment.likes).forEach( key => {
-        if( targetComment.likes[key].uid === this.user.uid ) {
-          firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes/${key}` ).set(null);
+        return {
+            comments: Array
         }
-      });
-
-      this._setLike(e.target.dataset.uid, null);
     }
 
-    _setLike(targetCommentId, like) {
-      this.comments.forEach( (c, i) => {
-        // do nothing if the comment is not target
-        if(c.uid !== targetCommentId){
-          return;
-        }
+    like( e ) {
+        let target = e.target.parentNode.parentNode;
+        target.classList.add( 'unclickable' );
 
-        let newLikes = c.likes? c.likes: {};
-        if(like){
-          newLikes[this.user.uid] = like;
-        } else {
-          Object.keys(newLikes).forEach( key => {
-            // delete like which this user did
-            if(newLikes[key].uid === this.user.uid){
-              delete newLikes[key];
+        firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes` ).push( {
+            uid: this.user.uid,
+            datetime: new Date().toISOString()
+        }, () => {
+            target.classList.remove( 'unclickable' );
+        } );
+
+        this._setLike( e.target.dataset.uid, { uid: this.user.uid, datetime: new Date().toISOString() } );
+    }
+
+    cancelLike( e ) {
+        let target = e.target.parentNode.parentNode;
+        target.classList.add( 'unclickable' );
+
+        let targetComment = this.comments.filter( c => c.uid === e.target.dataset.uid )[ 0 ];
+        Object.keys( targetComment.likes ).forEach( key => {
+            if ( targetComment.likes[ key ].uid === this.user.uid ) {
+                firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes/${key}` ).set( null, () => {
+                    target.classList.remove( 'unclickable' );
+                } );
             }
-          });
+        } );
+
+        this._setLike( e.target.dataset.uid, null );
+    }
+
+    _setLike( targetCommentId, like ) {
+        this.comments.forEach( ( c, i ) => {
+            // do nothing if the comment is not target
+            if ( c.uid !== targetCommentId ) {
+                return;
+            }
+
+            let newLikes = c.likes ? c.likes : {};
+            if ( like ) {
+                newLikes[ this.user.uid ] = like;
+            } else {
+                Object.keys( newLikes ).forEach( key => {
+                    // delete like which this user did
+                    if ( newLikes[ key ].uid === this.user.uid ) {
+                        delete newLikes[ key ];
+                    }
+                } );
+            }
+
+            this.set( `comments.${i}.likes`, newLikes );
+            this.notifyPath( `comments.${i}.likes` );
+        } );
+    }
+
+    _countLikeNumber( likes ) {
+        if ( !likes ) {
+            return 0;
         }
-
-        this.set(`comments.${i}.likes`, newLikes);
-        this.notifyPath(`comments.${i}.likes`);
-      } );
+        return Object.keys( likes ).length;
     }
 
-    _countLikeNumber(likes) {
-      if(!likes) {
-        return 0;
-      }
-      return Object.keys(likes).length;
-    }
-
-    _didLike(likes) {
-      if(!likes) {
-        return false;
-      }
-      let usersDidLike = Object.keys(likes).map( key => likes[key].uid );
-      return usersDidLike.includes( this.user.uid );
+    _didLike( likes ) {
+        if ( !likes ) {
+            return false;
+        }
+        let usersDidLike = Object.keys( likes ).map( key => likes[ key ].uid );
+        return usersDidLike.includes( this.user.uid );
     }
 
     _dateFormat( ISO ) {
-      if( !ISO ){
-        return;
-      }
-      console.log(ISO);
-      return ISO.substring( 5, 10 ) + ' ' + ISO.substring( 11, 16);
+        if ( !ISO ) {
+            return;
+        }
+        return ISO.substring( 5, 10 ) + ' ' + ISO.substring( 11, 16 );
     }
 
 }
