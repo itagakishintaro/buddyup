@@ -76,6 +76,7 @@ class MyApp extends PolymerElement {
         <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
           <app-toolbar>Menu</app-toolbar>
           <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+              <a name="qrcode-view" href="[[rootPath]]qrcode-view/">QRコード</a>
               <template is="dom-if" if="{{!user}}">
                 <a name="login-view" href="[[rootPath]]login-view/">ログイン</a>
               </template>
@@ -103,6 +104,7 @@ class MyApp extends PolymerElement {
           </app-header>
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
+            <qrcode-view name="qrcode-view"></qrcode-view>
             <login-view name="login-view" user="{{user}}" loadingDisplay="{{loadingDisplay}}"></login-view>
             <auth-view name="auth-view" user="{{user}}"></auth-view>
             <setting-view name="setting-view" user="{{user}}"></setting-view>
@@ -142,7 +144,7 @@ class MyApp extends PolymerElement {
         console.log( '_routePageChanged', page );
         if ( !page ) {
             this.page = 'login-view';
-        } else if ( [ 'login-view', 'auth-view', 'setting-view', 'parties-view', 'users-view', 'chat-view' ].indexOf( page ) !== -1 ) {
+        } else if ( [ 'qrcode-view', 'login-view', 'auth-view', 'setting-view', 'parties-view', 'users-view', 'chat-view' ].indexOf( page ) !== -1 ) {
             this.page = page;
         } else {
             this.page = 'view404';
@@ -160,6 +162,9 @@ class MyApp extends PolymerElement {
         // Note: `polymer build` doesn't like string concatenation in the import
         // statement, so break it up.
         switch ( page ) {
+            case 'qrcode-view':
+                import ( './qrcode-view.js' );
+                break;
             case 'login-view':
                 import ( './login-view.js' );
                 break;
