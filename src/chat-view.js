@@ -63,7 +63,7 @@ class ChatView extends PolymerElement {
         super();
         this.comments = [];
         this.oldCommentsLength = 0;
-        this.talkerProfile = { displayName: '板垣真太郎', email: '', photo: 'images/manifest/icon-48x48.png' };
+        this.talkerProfile = { displayName: '', email: '', photo: 'images/manifest/icon-48x48.png' };
     }
 
     static get properties() {
@@ -74,12 +74,12 @@ class ChatView extends PolymerElement {
     }
 
     scroll() {
-      if( this.comments.length !== this.oldCommentsLength ){
-        this.$.bottom.scrollIntoView( true );
-        setTimeout( () => {
-          this.oldCommentsLength = this.comments.length;
-        }, 500);
-      }
+        if ( this.comments.length !== this.oldCommentsLength ) {
+            this.$.bottom.scrollIntoView( true );
+            setTimeout( () => {
+                this.oldCommentsLength = this.comments.length;
+            }, 500 );
+        }
     }
 
     _talkerChanged( newTalker, oldTalker ) {
@@ -89,17 +89,17 @@ class ChatView extends PolymerElement {
 
         // get comments to the new talker
         firebase.database().ref( 'profiles' ).once( 'value' ).then( snapshot => {
-          let profiles = snapshot.val();
-          firebase.database().ref( 'comments/' + newTalker ).on( 'child_added', snapshot => {
-            let comment = snapshot.val();
-            let commentKey = snapshot.key;
-            if( profiles[comment.uid] ){
-              comment.displayName = profiles[comment.uid].displayName;
-              comment.photoURL = profiles[comment.uid].photoURL;
-            }
-            comment.uid = commentKey;
-            this.push( 'comments', comment );
-          } );
+            let profiles = snapshot.val();
+            firebase.database().ref( 'comments/' + newTalker ).on( 'child_added', snapshot => {
+                let comment = snapshot.val();
+                let commentKey = snapshot.key;
+                if ( profiles[ comment.uid ] ) {
+                    comment.displayName = profiles[ comment.uid ].displayName;
+                    comment.photoURL = profiles[ comment.uid ].photoURL;
+                }
+                comment.uid = commentKey;
+                this.push( 'comments', comment );
+            } );
         } );
 
         // get the new talker's profile
