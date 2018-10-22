@@ -59,7 +59,7 @@ class EventView extends PolymerElement {
             vertical-align: middle;
           }
           .cafe-reserve { color: var(--google-blue-500); }
-          .buddyup {position:absolute; float: right; margin-left:76%; margin-top:2em; z-index:10;}
+          .buddyup {position:absolute; float: right; margin-left:65%; margin-top:1em; z-index:10;}
           .buddyup-button {float:right; margin-left:2em; margin-right: 2em; background-color:#fff;}
           .buddyup-explain {font-size:8px; color:#fff; margin-top:4em;}
           .member-check { margin:0em; transform:scale(0.6); color:blue;}
@@ -474,7 +474,7 @@ class EventView extends PolymerElement {
         }
         this.kanji = [];
         this.subject = "飲み会";
-        this.date = { date: get2WeekAfterDate, timeFrom: "19:00", timeTo: "20:30"};
+        this.date = { date: this.get2WeekAfterDate(new Date()), timeFrom: "19:00", timeTo: "20:30"};
         this.taketime = "30min";
         this.station = "○○駅";
         this.place = "お店の名前";
@@ -560,7 +560,7 @@ class EventView extends PolymerElement {
     createPage ( e ) {
       this.kanji = [user.uid];
       this.subject = "飲み会";
-      this.date =  { date: get2WeekAfterDate, timeFrom: "19:00", timeTo: "20:30"};
+      this.date =  { date: this.get2WeekAfterDate(new Date()), timeFrom: "19:00", timeTo: "20:30"};
       this.taketime = "30min";
       this.station = "○○駅";
       this.place = "お店の名前などを記載";
