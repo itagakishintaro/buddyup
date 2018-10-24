@@ -67,6 +67,10 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
         margin-right: .2em;
         padding: 0 .5em
     }
+
+    .link {
+      color: var(--paper-blue-500);
+    }
     </style>
   </template>
 </dom-module>`;

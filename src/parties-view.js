@@ -31,15 +31,13 @@ class PartiesView extends PolymerElement {
       <div class="container">
         <template is="dom-repeat" items="{{parties}}" sort="_sort">
           <div class="party">
-            <div>
+            <div data-uid$="{{ item.uid }}">
               <div>
                 <span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span>
               </div>
               <div class="indent">{{item.name}}@{{item.place}}</div>
               <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
-                <div class="indent">
-                  <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
-                </div>
+                <div class="indent link" data-uid$="{{item.uid}}" on-click="chat">{{item.displayName}}</div>
               </template>
             </div>
             <template is="dom-if" if="{{ item.joined }}">
@@ -143,13 +141,19 @@ class PartiesView extends PolymerElement {
     }
 
     join( e, index ) {
-        console.log( 'join()', e.target.dataset.uid );
-        firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( this.user );
+      console.log( 'join()', e.target.dataset.uid );
+      firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( this.user );
     }
 
     cancel( e, index ) {
-        console.log( 'cancel()', e.target.dataset.uid );
-        firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( null );
+      console.log( 'cancel()', e.target.dataset.uid );
+      firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( null );
+    }
+
+    chat( e ) {
+      let talker = e.target.dataset.uid;
+      let party = e.target.parentNode.dataset.uid;
+      location.href = `/chat-view/${talker}/${party}`;
     }
 
 }
