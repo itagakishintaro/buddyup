@@ -35,7 +35,7 @@ class UsersView extends PolymerElement {
         </style>
 
         <div class="container">
-          <p>名前をタッチするとその人のスキルを最新に更新します。スキルをタッチすると関連するコメントが表示されます。</p>
+          <p>名前をタッチするとその人のデータを最新にします。ワードをタッチすると関連するコメントが表示されます。</p>
           <paper-button raised class="on" on-click="getUsers">ユーザー一覧を表示</paper-button>
 
           <paper-dialog id="dialog" class="dialog">
@@ -45,7 +45,7 @@ class UsersView extends PolymerElement {
 
               <template is="dom-if" if="{{sameSkillHolders.length}}">
                 <hr>
-                <p>同じスキルを持つ人</p>
+                <p>同じワードを持つ人</p>
               </template>
               <template is="dom-repeat" items="{{sameSkillHolders}}">
                 <div>
@@ -255,7 +255,7 @@ class UsersView extends PolymerElement {
                     this.toastText = "更新しました！"
                     firebase.database().ref( 'profiles/' + this.target.uid + '/skills' ).set( skills );
                 } else {
-                    this.toastText = "現在のスキルリストに一致するコメントがみつかりませんでした。"
+                    this.toastText = "現在のワードリストに一致するコメントがみつかりませんでした。"
                 }
             } )
             .finally( () => {
