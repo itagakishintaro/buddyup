@@ -5,17 +5,18 @@ import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 
 class CommentsView extends PolymerElement {
-  static get template() {
-    return html `
+    static get template() {
+        return html `
       <style include="shared-styles">
         .container {
-          overflow: scroll;
-          margin: 1em;
+          /* overflow: scroll; */
+          /* margin: 1em; */
         }
 
-        .displayName {
+        .meta-info {
           font-size: .5em;
         }
+
         .text {
           vertical-align: text-top;
           display:table-cell;
@@ -23,14 +24,11 @@ class CommentsView extends PolymerElement {
         }
 
         .msg {
-          margin-bottom: 1em;
           width: 100%;
           display: flex;
         }
 
         .like {
-          border : 1px solid var(--paper-blue-grey-200);
-          border-radius: .25em;
           padding: .25em .5em;
           width: 4em;
         }
@@ -51,10 +49,18 @@ class CommentsView extends PolymerElement {
           color: var(--paper-blue-grey-600);
           font-size: .8em;
         }
+
+        .separater {
+          border: .5px solid var(--paper-blue-grey-100);
+        }
+
+        .unclickable {
+            pointer-events: none;
+        }
       </style>
 
       <div class="container">
-        <template is="dom-repeat" items="{{comments}}" on-dom-change="scroll">
+        <template is="dom-repeat" items="{{comments}}">
           <div class="msg">
             <div>
               <template is="dom-if" if="{{item.photoURL}}">
@@ -64,101 +70,121 @@ class CommentsView extends PolymerElement {
                 <img src="images/manifest/icon-48x48.png" class="icon">
               </template>
             </div>
+
             <div>
-              <div class="displayName">{{item.displayName}}</div>
+              <div class="meta-info">{{item.displayName}} [ {{ _dateFormat(item.datetime) }} ]</div>
               <p class="text">{{item.text}}</p>
-              <div class="like">
+              <div id="toggleLike">
                 <template is="dom-if" if="{{ _didLike(item.likes) }}">
-                  <paper-icon-button class="like-icon" icon="thumb-up" data-uid$="{{ item.uid }}" on-click="cancelLike"></paper-icon-button>
+                  <div class="like" on-click="cancelLike">
+                    <paper-icon-button class="like-icon" icon="thumb-up" data-uid$="{{ item.uid }}"></paper-icon-button>
+                    <span class="like-number">{{ _countLikeNumber(item.likes) }}</span>
+                　</div>
                 </template>
                 <template is="dom-if" if="{{ !_didLike(item.likes) }}">
-                  <paper-icon-button class="like-icon like-not-yet" icon="thumb-up" data-uid$="{{ item.uid }}" on-click="like"></paper-icon-button>
+                  <div class="like" on-click="like">
+                    <paper-icon-button class="like-icon like-not-yet" icon="thumb-up" data-uid$="{{ item.uid }}"></paper-icon-button>
+                    <span class="like-number">{{ _countLikeNumber(item.likes) }}</span>
+              　   </div>
                 </template>
-                <span class="like-number">{{ _countLikeNumber(item.likes) }}</span>
-            　</div>
+              </div>
+
             </div>
           </div>
+          <hr class="separater">
         </template>
         <div id="bottom"></div>
       </div>
+      <loading-view display="{{loadingDisplay}}"></loading-view>
     `;
     }
 
     constructor() {
-      super();
-      this.comments = [];
+        super();
+        this.comments = [];
+        this.loadingDisplay = 'none';
     }
 
     static get properties() {
-      return {
-        comments: Array
-      }
-    }
-
-    scroll() {
-      console.log( 'scroll()' );
-      this.$.bottom.scrollIntoView( true );
-    }
-
-    like(e) {
-      console.log( 'like()', e.target.dataset.uid );
-      firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes` ).push( {
-          uid: this.user.uid, datetime: new Date().toISOString()
-      } );
-
-      this._setLike(e.target.dataset.uid, { uid: this.user.uid, datetime: new Date().toISOString() });
-    }
-
-    cancelLike(e) {
-      console.log( 'cancelLike()', e.target.dataset.uid );
-
-      let targetComment = this.comments.filter( c => c.uid === e.target.dataset.uid )[0];
-      Object.keys(targetComment.likes).forEach( key => {
-        if( targetComment.likes[key].uid === this.user.uid ) {
-          firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes/${key}` ).set(null);
+        return {
+            comments: Array
         }
-      });
-
-      this._setLike(e.target.dataset.uid, null);
     }
 
-    _setLike(targetCommentId, like) {
-      this.comments.forEach( (c, i) => {
-        // do nothing if the comment is not target
-        if(c.uid !== targetCommentId){
-          return;
-        }
+    like( e ) {
+        let target = e.target.parentNode.parentNode;
+        target.classList.add( 'unclickable' );
 
-        let newLikes = c.likes? c.likes: {};
-        if(like){
-          newLikes[this.user.uid] = like;
-        } else {
-          Object.keys(newLikes).forEach( key => {
-            // delete like which this user did
-            if(newLikes[key].uid === this.user.uid){
-              delete newLikes[key];
+        firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes` ).push( {
+            uid: this.user.uid,
+            datetime: new Date().toISOString()
+        }, () => {
+            target.classList.remove( 'unclickable' );
+        } );
+
+        this._setLike( e.target.dataset.uid, { uid: this.user.uid, datetime: new Date().toISOString() } );
+    }
+
+    cancelLike( e ) {
+        let target = e.target.parentNode.parentNode;
+        target.classList.add( 'unclickable' );
+
+        let targetComment = this.comments.filter( c => c.uid === e.target.dataset.uid )[ 0 ];
+        Object.keys( targetComment.likes ).forEach( key => {
+            if ( targetComment.likes[ key ].uid === this.user.uid ) {
+                firebase.database().ref( `comments/${this.talker}/${e.target.dataset.uid}/likes/${key}` ).set( null, () => {
+                    target.classList.remove( 'unclickable' );
+                } );
             }
-          });
+        } );
+
+        this._setLike( e.target.dataset.uid, null );
+    }
+
+    _setLike( targetCommentId, like ) {
+        this.comments.forEach( ( c, i ) => {
+            // do nothing if the comment is not target
+            if ( c.uid !== targetCommentId ) {
+                return;
+            }
+
+            let newLikes = c.likes ? c.likes : {};
+            if ( like ) {
+                newLikes[ this.user.uid ] = like;
+            } else {
+                Object.keys( newLikes ).forEach( key => {
+                    // delete like which this user did
+                    if ( newLikes[ key ].uid === this.user.uid ) {
+                        delete newLikes[ key ];
+                    }
+                } );
+            }
+
+            this.set( `comments.${i}.likes`, newLikes );
+            this.notifyPath( `comments.${i}.likes` );
+        } );
+    }
+
+    _countLikeNumber( likes ) {
+        if ( !likes ) {
+            return 0;
         }
-
-        this.set(`comments.${i}.likes`, newLikes);
-        this.notifyPath(`comments.${i}.likes`);
-      } );
+        return Object.keys( likes ).length;
     }
 
-    _countLikeNumber(likes) {
-      if(!likes) {
-        return 0;
-      }
-      return Object.keys(likes).length;
+    _didLike( likes ) {
+        if ( !likes ) {
+            return false;
+        }
+        let usersDidLike = Object.keys( likes ).map( key => likes[ key ].uid );
+        return usersDidLike.includes( this.user.uid );
     }
 
-    _didLike(likes) {
-      if(!likes) {
-        return false;
-      }
-      let usersDidLike = Object.keys(likes).map( key => likes[key].uid );
-      return usersDidLike.includes( this.user.uid );
+    _dateFormat( ISO ) {
+        if ( !ISO ) {
+            return;
+        }
+        return ISO.substring( 5, 10 ) + ' ' + ISO.substring( 11, 16 );
     }
 
 }

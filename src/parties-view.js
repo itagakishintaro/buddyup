@@ -1,11 +1,12 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import './shared-styles.js';
 import './newparty-view.js';
+import './loading-view.js';
 import '@polymer/paper-button/paper-button.js';
 
 class PartiesView extends PolymerElement {
     static get template() {
-      return html `
+        return html `
       <style include="shared-styles">
         .party {
           display: flex;
@@ -28,35 +29,15 @@ class PartiesView extends PolymerElement {
       </style>
 
       <div class="container">
-        <template is="dom-repeat" items="{{parties}}">
-          <template is="dom-if" if="{{ item.invited }}">
-            <div class="party">
+        <template is="dom-repeat" items="{{parties}}" sort="_sort">
+          <div class="party">
+            <div data-uid$="{{ item.uid }}">
               <div>
-                <div>
-                  <template is="dom-if" if="{{ item.partyInfo }}">
-                    <a href="{{item.partyInfo}}"><span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span></a>
-                  </template>
-                  <template is="dom-if" if="{{ !item.partyInfo }}">
-                    <span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span>
-                  </template>
-                </div>
-                <template is="dom-if" if="{{ item.placeUrl }}">
-                  <div class="indent">{{item.name}}@<a href="{{item.placeUrl}}" target="_blank">{{item.place}}</a></div>
-                </template>
-                <template is="dom-if" if="{{ !item.placeUrl }}">
-                  <div class="indent">{{item.name}}@{{item.place}}</div>
-                </template>
-                <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
-                  <div class="indent">
-                    <a href="/chat-view/{{item.uid}}">{{item.displayName}}</a>
-                  </div>
-                </template>
+                <span class="date">{{item.date}}</span><span>{{item.timeFrom}}</span> ~ <span>{{item.timeTo}}</span>
               </div>
-              <template is="dom-if" if="{{ item.joined }}">
-                <paper-button id="cancel" raised class="off" data-uid$="{{ item.uid }}" on-click="cancel">cancel</paper-button>
-              </template>
-              <template is="dom-if" if="{{ !item.joined }}">
-                <paper-button id="join" raised class="on" data-uid$="{{ item.uid }}" on-click="join">参加</paper-button>
+              <div class="indent">{{item.name}}@{{item.place}}</div>
+              <template is="dom-repeat" items="{{ item.members }}" on-dom-change="scroll">
+                <div class="indent link" data-uid$="{{item.uid}}" on-click="chat">{{item.displayName}}</div>
               </template>
             </div>
           </template>
@@ -64,18 +45,26 @@ class PartiesView extends PolymerElement {
         <hr>
         <newparty-view user={{user}}></newparty-view>
       </div>
+      <loading-view display="{{loadingDisplay}}"></loading-view>
     `;
     }
 
     constructor() {
         super();
         this.parties = [];
-        this.getMembers();
-        var self = this;
-        // XXX TODO: setTimeout使わない方法を知りたい
-        setTimeout(function(){
-          self.getMembers();
-        },500)
+        firebase.auth().onAuthStateChanged( () => {
+            // 初期処理
+            let getPartiesPromise = new Promise( ( resolve, reject ) => {
+                // partyを取得する
+                this.getParties( resolve, reject );
+            } );
+            // 初期処理が終わった後の処理
+            getPartiesPromise.then( () => {
+                // partyを取得して初期処理が終わった後、他の人がpartyのmemberを変更したときのイベント処理を設定
+                this.updateMembers();
+            } );
+
+        } );
     }
 
     static get properties() {
@@ -84,36 +73,76 @@ class PartiesView extends PolymerElement {
         }
     }
 
-    getMembers() {
-        console.log( 'getMembers()' );
+    _sort( a, b ) {
+        if ( a.date + a.timeFrom < b.date + b.timeFrom ) {
+            return -1;
+        }
+        if ( a.date + a.timeFrom > b.date + b.timeFrom ) {
+            return 1;
+        }
+        return 0;
+    }
+
+    getParties( resolve, reject ) {
+        console.log( 'getParties()' );
         this.parties = [];
-        firebase.database().ref( 'parties' ).off( 'child_added' );
         firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).on( 'child_added', snapshot => {
-            let v = snapshot.val();
-            if ( v.members ) {
-                v.joined = Object.keys( v.members ).includes( this.user.uid ); // Current user already joined or not
-                v.members = Object.keys( v.members ).map( key => Object.assign( { uid: key }, v.members[ key ] ) ); // Convert members from Object to Array
+            let party = snapshot.val();
+            let partyKey = snapshot.key;
+            if ( party.members ) {
+                party.joined = Object.keys( party.members ).includes( this.user.uid ); // Current user already joined or not
+                party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, this.profiles[ key ] ) ); // Convert members from Object to Array
             }
-            // XXX TODO: フィルタがうまく効いていないのを直す
-            // v.invited = (Object.keys(v).includes("invitedMembers")) ? (v.invitedMembers.indexOf(this.user.uid) >= 0) : true;
-            v.invited = true;
-            console.log(v.invitedMembers)
-            console.log(v.invited)
-            console.log(this.user.uid)
-            this.push( 'parties', Object.assign( { uid: snapshot.key }, v ) );
+            this.push( 'parties', Object.assign( { uid: partyKey }, party ) );
+            resolve( 'success' );
+        } );
+        this.loadingDisplay = 'none';
+    }
+
+    updateMembers() {
+        // 共通処理
+        let _update = ( snapshot, add ) => {
+            firebase.database().ref( 'parties' ).orderByChild( 'date' ).startAt( new Date().toISOString().substring( 0, 10 ) ).once( 'value', snapshot => {
+                let parties = snapshot.val();
+                let tmp = Object.keys( parties ).map( key => Object.assign( { uid: key }, parties[ key ] ) );
+
+                tmp = tmp.map( party => {
+                    if ( party.members ) {
+                        party.joined = Object.keys( party.members ).includes( this.user.uid );
+                        party.members = Object.keys( party.members ).map( key => Object.assign( { uid: key }, this.profiles[ key ] ) );
+                    }
+                    return party;
+                } );
+                this.parties = tmp;
+            } );
+        };
+
+        // membersがaddされたときとremoveされたときのイベントを設定
+        let partyUIDs = this.parties.map( p => p.uid );
+        partyUIDs.forEach( partyKey => {
+            firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_added', snapshot => {
+                _update( snapshot, true );
+            } );
+
+            firebase.database().ref( 'parties/' + partyKey + '/members' ).on( 'child_removed', snapshot => {
+                _update( snapshot, false );
+            } );
         } );
     }
 
-    join( e ) {
-        console.log( 'join()', e.target.dataset.uid );
-        firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( { displayName: this.user.displayName } );
-        this.getMembers();
+    join( e, index ) {
+      let user = { uid: this.user.uid };
+      firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( user );
     }
 
-    cancel( e ) {
-        console.log( 'cancel()', e.target.dataset.uid );
-        firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( null );
-        this.getMembers();
+    cancel( e, index ) {
+      firebase.database().ref( `parties/${e.target.dataset.uid}/members/${this.user.uid}` ).set( null );
+    }
+
+    chat( e ) {
+      let talker = e.target.dataset.uid;
+      let party = e.target.parentNode.dataset.uid;
+      location.href = `/chat-view/${talker}/${party}`;
     }
 
 }

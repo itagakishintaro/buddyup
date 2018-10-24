@@ -45,6 +45,7 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
       width: 2em;
       height: 2em;
       margin-right: .5em;
+      object-fit: contain;
     }
 
     .clearfix:after {
@@ -55,6 +56,20 @@ $_documentContainer.innerHTML = `<dom-module id="shared-styles">
 
     .error {
       color: var(--paper-red-800);
+    }
+
+    .tag {
+        border-radius: 10%;
+        border: 1px solid var(--paper-blue-grey-200);
+        color: var(--paper-blue-900);
+        display: inline-block;
+        margin-top: .4em;
+        margin-right: .2em;
+        padding: 0 .5em
+    }
+
+    .link {
+      color: var(--paper-blue-500);
     }
     </style>
   </template>

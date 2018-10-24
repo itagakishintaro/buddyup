@@ -1,13 +1,14 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import handleImage from './util/ImageHandler.js';
 import './shared-styles.js';
+import './loading-view.js';
 import '@polymer/paper-input/paper-input.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/iron-icons/iron-icons.js';
 import '@polymer/paper-icon-button/paper-icon-button.js';
 import '@polymer/paper-toast/paper-toast.js';
 
-class ProfileView extends PolymerElement {
+class SettingView extends PolymerElement {
     static get template() {
         return html `
         <style include="shared-styles">
@@ -35,18 +36,28 @@ class ProfileView extends PolymerElement {
             position: relative;
         }
         .preview {
-            width: 3em;
-            height: 3em;
+            width: 4em;
+            height: 4em;
+            margin-bottom: .2em;
+            object-fit: contain;
         }
+        .change {
+          border-radius: 1em;
+          border: .5px solid var(--paper-blue-grey-100);
+          font-size: .8em;
+          padding: 1em .8em;
+          width: 4em;
+        }
+
         </style>
 
         <div class="container">
             <div class="display">
                 <div class="photo">
-                    <label htmlFor="file">
-                        <paper-icon-button icon="camera-enhance" class="camera"></paper-icon-button>
-                        <image id="icon" class="preview" src="[[user.photoURL]]">
-                        <input id="file" class="file" type="file" accept="image/*" on-change="capture"></input>
+                    <image id="icon" class="preview" src="[[user.photoURL]]">
+                    <label class="change" htmlFor="file">
+                      Change
+                      <input id="file" class="file" type="file" accept="image/*" on-change="capture"></input>
                     </label>
                 </div>
                 <paper-input id="displayName" class="displayName" always-float-label label="表示名" value="[[user.displayName]]"></paper-input>
@@ -55,12 +66,14 @@ class ProfileView extends PolymerElement {
             <paper-button raised class="on" on-click="update">更新</paper-button>
             <paper-toast id="toast" text="更新しました!"></paper-toast>
         </div>
+        <loading-view display="{{loadingDisplay}}"></loading-view>
         `;
     }
 
     constructor() {
         console.log( 'constructor()' );
         super();
+        this.loadingDisplay = 'none';
     }
 
     static get properties() {
@@ -70,9 +83,11 @@ class ProfileView extends PolymerElement {
     }
 
     capture() {
+        this.loadingDisplay = 'block';
         let file = this.$.file.files[0];
-        handleImage( file, 48, dataURL => {
+        handleImage( file, 360, dataURL => {
             this.$.icon.src = dataURL;
+            this.loadingDisplay = 'none';
         } )
     }
 
@@ -97,4 +112,4 @@ class ProfileView extends PolymerElement {
 
 }
 
-window.customElements.define( 'profile-view', ProfileView );
+window.customElements.define( 'setting-view', SettingView );

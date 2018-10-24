@@ -14,12 +14,16 @@ class NewpartyView extends PolymerElement {
           width: 8em;
           display: inline;
         }
+        .label {
+          font-size: 12px;
+          color: var(--paper-grey-600);
+        }
       </style>
 
       <div>
-      <h1>ランチ会の新規登録</h1>
+      <h1>交流会の新規登録</h1>
           <form class="clearfix">
-            <paper-input id="date" type="date" label="日時"></paper-input>
+            <label class="label" for="date">日時</label><input id="date" type="date"></input>
             <input id="timeFrom" class="time" type="time" label="開始時刻"></input>
              ~ <input id="timeTo" class="time" type="time" label="終了時刻"></input><br>
             <paper-input id="name" always-float-label label="名前"></paper-input>
@@ -43,7 +47,7 @@ class NewpartyView extends PolymerElement {
     post() {
         console.log( 'post()', this.user );
         let userObj = {};
-        userObj[ this.user.uid ] = { displayName: this.user.displayName, email: this.user.email };
+        userObj[ this.user.uid ] = this.user;
         firebase.database().ref( 'parties' ).push( {
             date: this.$.date.value,
             timeFrom: this.$.timeFrom.value,

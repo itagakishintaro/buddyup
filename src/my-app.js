@@ -76,18 +76,19 @@ class MyApp extends PolymerElement {
         <app-drawer id="drawer" slot="drawer" swipe-open="[[narrow]]">
           <app-toolbar>Menu</app-toolbar>
           <iron-selector selected="[[page]]" attr-for-selected="name" class="drawer-list" role="navigation">
+              <a name="qrcode-view" href="[[rootPath]]qrcode-view/">QRコード</a>
               <template is="dom-if" if="{{!user}}">
                 <a name="login-view" href="[[rootPath]]login-view/">ログイン</a>
               </template>
-              <template is="dom-if" if="{{user.isPasswordAuth}}">
-                <a name="auth-view" href="[[rootPath]]auth-view/">パスワード変更</a>
-              </template>
+
               <template is="dom-if" if="{{user}}">
-                <a name="profile-view" href="[[rootPath]]profile-view/">プロフィール設定</a>
-                <a name="skill-view" href="[[rootPath]]skill-view/">スキル</a>
                 <a name="event-list-view" href="[[rootPath]]event-list-view/">イベント一覧</a>
-                <a name="parties-view" href="[[rootPath]]parties-view/">ランチ会一覧</a>
-                <a name="users-view" href="[[rootPath]]users-view/">知り合い検索</a>
+                <a name="parties-view" href="[[rootPath]]parties-view/">交流会一覧</a>
+                <a name="users-view" href="[[rootPath]]users-view/">みんなのプロフィール</a>
+                <template is="dom-if" if="{{user.isPasswordAuth}}">
+                  <a name="auth-view" href="[[rootPath]]auth-view/">パスワード変更</a>
+                </template>
+                <a name="setting-view" href="[[rootPath]]setting-view/">設定</a>
                 <a name="logout" on-tap="logout">ログアウト</a>
               </template>
           </iron-selector>
@@ -104,15 +105,15 @@ class MyApp extends PolymerElement {
           </app-header>
 
           <iron-pages selected="[[page]]" attr-for-selected="name" role="main">
+            <qrcode-view name="qrcode-view"></qrcode-view>
             <login-view name="login-view" user="{{user}}" loadingDisplay="{{loadingDisplay}}"></login-view>
             <auth-view name="auth-view" user="{{user}}"></auth-view>
-            <profile-view name="profile-view" user="{{user}}"></profile-view>
-            <skill-view name="skill-view" user="{{user}}"></skill-view>
+            <setting-view name="setting-view" user="{{user}}"></setting-view>
             <event-list-view name="event-list-view" user="{{user}}"></event-list-view>
             <event-view name="event-view" user="{{user}}" eventid={{routeData.subpage}}></event-view>
-            <parties-view name="parties-view" user="{{user}}"></parties-view>
+            <parties-view name="parties-view" user="{{user}}" profiles={{profiles}}></parties-view>
             <users-view name="users-view" user="{{user}}"></users-view>
-            <chat-view name="chat-view" user="{{user}}" talker= {{routeData.subpage}}></chat-view>
+            <chat-view name="chat-view" user="{{user}}" talker={{routeData.talker}} party={{subroute.path}} profiles={{profiles}}></chat-view>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
         </app-header-layout>
@@ -146,7 +147,7 @@ class MyApp extends PolymerElement {
         console.log( '_routePageChanged', page );
         if ( !page ) {
             this.page = 'login-view';
-        } else if ( [ 'login-view', 'auth-view', 'profile-view', 'skill-view', 'event-list-view', 'event-view', 'parties-view', 'users-view', 'chat-view' ].indexOf( page ) !== -1 ) {
+        } else if ( [ 'qrcode-view', 'login-view', 'auth-view', 'setting-view', 'event-list-view', 'event-view', 'parties-view', 'users-view', 'chat-view' ].indexOf( page ) !== -1 ) {
             this.page = page;
         } else {
             this.page = 'view404';
@@ -164,17 +165,17 @@ class MyApp extends PolymerElement {
         // Note: `polymer build` doesn't like string concatenation in the import
         // statement, so break it up.
         switch ( page ) {
+            case 'qrcode-view':
+                import ( './qrcode-view.js' );
+                break;
             case 'login-view':
                 import ( './login-view.js' );
                 break;
             case 'auth-view':
                 import ( './auth-view.js' );
                 break;
-            case 'profile-view':
-                import ( './profile-view.js' );
-                break;
-            case 'skill-view':
-                import ( './skill-view.js' );
+            case 'setting-view':
+                import ( './setting-view.js' );
                 break;
             case 'event-list-view':
                 import ( './event/event-list-view.js' );
@@ -226,6 +227,11 @@ class MyApp extends PolymerElement {
           messagingSenderId: "726570403179"
         };
         firebase.initializeApp( config );
+        // get profiles
+        firebase.database().ref( '/profiles/' ).once( 'value' ).then( snapshot => {
+          this.set( 'profiles', snapshot.val() );
+        })
+        // auth changed
         firebase.auth().onAuthStateChanged( user => {
             console.log( 'onAuthStateChanged', user );
 
@@ -238,33 +244,36 @@ class MyApp extends PolymerElement {
 
             // profile existance check. if not, then register user profile
             firebase.database().ref( 'profiles/' + user.uid ).once( 'value' ).then( snapshot => {
-                let userInfo = {};
-                if ( snapshot.val() ) {
-                    userInfo = {
-                        providerId: user.providerData[0].providerId,
-                        displayName: snapshot.val().displayName,
-                        email: snapshot.val().email,
-                        photoURL: snapshot.val().photoURL
-                    };
-                } else {
-                    console.log( 'profile does not exist' );
-                    let displayName = user.displayName ? user.displayName : user.email;
-                    let photoURL = user.photoURL ? user.photoURL : 'images/manifest/icon-48x48.png';
-                    userInfo = {
-                        providerId: user.providerData[0].providerId,
-                        displayName: displayName,
-                        email: user.email,
-                        photoURL: photoURL
-                    };
-                    firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
+              let userInfo = {};
+              if ( snapshot.val() ) {
+                userInfo = {
+                  providerId: user.providerData[ 0 ].providerId,
+                  displayName: snapshot.val().displayName,
+                  email: snapshot.val().email,
+                  photoURL: snapshot.val().photoURL
+                };
+                if ( snapshot.val().skills ) {
+                  userInfo.skills = snapshot.val().skills;
                 }
-                this.set( 'user', userInfo );
-                this.set( 'user.uid', user.uid );
-                if ( userInfo.providerId === 'password' ){
-                    this.set( 'user.isPasswordAuth', true );
-                } else {
-                    this.set( 'user.isPasswordAuth', false );
-                }
+              } else {
+                console.log( 'profile does not exist' );
+                let displayName = user.displayName ? user.displayName : user.email;
+                let photoURL = user.photoURL ? user.photoURL : 'images/manifest/icon-48x48.png';
+                userInfo = {
+                  providerId: user.providerData[ 0 ].providerId,
+                  displayName: displayName,
+                  email: user.email,
+                  photoURL: photoURL,
+                };
+                firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
+              }
+              this.set( 'user', userInfo );
+              this.set( 'user.uid', user.uid );
+              if ( userInfo.providerId === 'password' ) {
+                this.set( 'user.isPasswordAuth', true );
+              } else {
+                this.set( 'user.isPasswordAuth', false );
+              }
             } );
         } );
     }
