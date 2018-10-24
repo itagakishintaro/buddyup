@@ -108,9 +108,9 @@ class MyApp extends PolymerElement {
             <login-view name="login-view" user="{{user}}" loadingDisplay="{{loadingDisplay}}"></login-view>
             <auth-view name="auth-view" user="{{user}}"></auth-view>
             <setting-view name="setting-view" user="{{user}}"></setting-view>
-            <parties-view name="parties-view" user="{{user}}"></parties-view>
+            <parties-view name="parties-view" user="{{user}}" profiles={{profiles}}></parties-view>
             <users-view name="users-view" user="{{user}}"></users-view>
-            <chat-view name="chat-view" user="{{user}}" talker={{routeData.talker}}></chat-view>
+            <chat-view name="chat-view" user="{{user}}" talker={{routeData.talker}} party={{subroute.path}} profiles={{profiles}}></chat-view>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
         </app-header-layout>
@@ -209,6 +209,11 @@ class MyApp extends PolymerElement {
             messagingSenderId: "541079223817"
         };
         firebase.initializeApp( config );
+        // get profiles
+        firebase.database().ref( '/profiles/' ).once( 'value' ).then( snapshot => {
+          this.set( 'profiles', snapshot.val() );
+        })
+        // auth changed
         firebase.auth().onAuthStateChanged( user => {
             console.log( 'onAuthStateChanged', user );
 
@@ -221,36 +226,36 @@ class MyApp extends PolymerElement {
 
             // profile existance check. if not, then register user profile
             firebase.database().ref( 'profiles/' + user.uid ).once( 'value' ).then( snapshot => {
-                let userInfo = {};
-                if ( snapshot.val() ) {
-                    userInfo = {
-                        providerId: user.providerData[ 0 ].providerId,
-                        displayName: snapshot.val().displayName,
-                        email: snapshot.val().email,
-                        photoURL: snapshot.val().photoURL
-                    };
-                    if ( snapshot.val().skills ) {
-                        userInfo.skills = snapshot.val().skills;
-                    }
-                } else {
-                    console.log( 'profile does not exist' );
-                    let displayName = user.displayName ? user.displayName : user.email;
-                    let photoURL = user.photoURL ? user.photoURL : 'images/manifest/icon-48x48.png';
-                    userInfo = {
-                        providerId: user.providerData[ 0 ].providerId,
-                        displayName: displayName,
-                        email: user.email,
-                        photoURL: photoURL,
-                    };
-                    firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
+              let userInfo = {};
+              if ( snapshot.val() ) {
+                userInfo = {
+                  providerId: user.providerData[ 0 ].providerId,
+                  displayName: snapshot.val().displayName,
+                  email: snapshot.val().email,
+                  photoURL: snapshot.val().photoURL
+                };
+                if ( snapshot.val().skills ) {
+                  userInfo.skills = snapshot.val().skills;
                 }
-                this.set( 'user', userInfo );
-                this.set( 'user.uid', user.uid );
-                if ( userInfo.providerId === 'password' ) {
-                    this.set( 'user.isPasswordAuth', true );
-                } else {
-                    this.set( 'user.isPasswordAuth', false );
-                }
+              } else {
+                console.log( 'profile does not exist' );
+                let displayName = user.displayName ? user.displayName : user.email;
+                let photoURL = user.photoURL ? user.photoURL : 'images/manifest/icon-48x48.png';
+                userInfo = {
+                  providerId: user.providerData[ 0 ].providerId,
+                  displayName: displayName,
+                  email: user.email,
+                  photoURL: photoURL,
+                };
+                firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
+              }
+              this.set( 'user', userInfo );
+              this.set( 'user.uid', user.uid );
+              if ( userInfo.providerId === 'password' ) {
+                this.set( 'user.isPasswordAuth', true );
+              } else {
+                this.set( 'user.isPasswordAuth', false );
+              }
             } );
         } );
     }

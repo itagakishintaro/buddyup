@@ -1,4 +1,7 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
+import '@polymer/iron-collapse/iron-collapse.js';
+import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
 import './shared-styles.js';
 import './comment-post-view.js';
 import './comments-view.js';
@@ -35,9 +38,23 @@ class ChatView extends PolymerElement {
           .profile .name {
               margin-right: .5em;
           }
+          .collapse-content {
+            background-color: #EEE;
+            position: fixed;
+            top: 64;
+            padding-top: 3em;
+            padding-left: 1em;
+            padding-bottom: 1em;
+            width: 100%;
+            z-index: 8;
+          }
+          .right {
+            float: right;
+            margin-right: 1em;
+          }
         </style>
         <div>
-          <div class="profile">
+          <div class="profile" on-click="toggleMembersOpened">
             <template is="dom-if" if="{{talkerProfile.photoURL}}">
               <img src="{{talkerProfile.photoURL}}" class="icon">
             </template>
@@ -45,8 +62,17 @@ class ChatView extends PolymerElement {
               <img src="images/manifest/icon-48x48.png" class="icon">
             </template>
             <span class="name">{{talkerProfile.displayName}}</span>
-            <span>へのコメント</span>
+            <iron-icon class="right" icon="expand-more"></iron-icon>
           </div>
+
+          <iron-collapse id="collapse">
+            <div class="collapse-content">
+              <template is="dom-repeat" items="{{members}}">
+                <div class="link" data-uid$="{{item.uid}}" on-click="changeTalker">{{item.displayName}}</div>
+              </template>
+            </div>
+          </iron-collapse>
+
           <div class="comments" on-dom-change="scroll">
             <comments-view user={{user}} talker={{talker}} comments={{comments}}></comments-view>
           </div>
@@ -82,6 +108,16 @@ class ChatView extends PolymerElement {
         }
     }
 
+    toggleMembersOpened() {
+      console.log('hello');
+      this.$.collapse.toggle();
+    }
+
+    changeTalker( e ) {
+      this.set('talker', e.target.dataset.uid);
+      this.toggleMembersOpened();
+    }
+
     _talkerChanged( newTalker, oldTalker ) {
         console.log( '_talkerChanged', newTalker );
         this.comments = [];
@@ -106,6 +142,21 @@ class ChatView extends PolymerElement {
         firebase.database().ref( 'profiles/' + newTalker ).once( 'value' ).then( snapshot => {
             this.talkerProfile = snapshot.val();
         } );
+
+        this._getMembers();
+    }
+
+    _getMembers() {
+      firebase.database().ref( 'parties' + this.party ).once( 'value' ).then( snapshot => {
+        this.members = Object.keys(snapshot.val().members)
+          .filter( key => key !== this.talker ) // 自分を除外
+          .map( key => {
+            let member = this.profiles[key];
+            member.uid = key;
+            return member;
+          });
+        console.log('members', this.members);
+      });
     }
 
 }
