@@ -36,6 +36,10 @@ import '@polymer/paper-dialog/paper-dialog.js';
 // TODO: 参加者とかを枠でくくる。　例：下記の一番下のやつ
 // https://www.webcomponents.org/element/@polymer/paper-input/demo/demo/index.html
 
+import './event-members-view.js';
+import './event-place-view.js';
+import './event-agenda-view.js';
+import './event-tables-view.js';
 
 class EventView extends PolymerElement {
     static get template() {
@@ -51,6 +55,11 @@ class EventView extends PolymerElement {
           paper-card.white { --paper-card-header-color: #fff;  }
           <!--// 効かない -->
           .title-text.over-image { background-color: #aaa;}
+
+          .buddyup {position:absolute; float: right; margin-left:65%; margin-top:1em; z-index:10;}
+          .buddyup-button {float:right; margin-left:2em; margin-right: 2em; background-color:#fff;}
+          .buddyup-explain {font-size:8px; color:#fff; margin-top:4em;}
+
           .cafe-header { @apply --paper-font-headline; margin-bottom:0.5em;}
           .cafe-light { color: var(--paper-grey-600); }
           .cafe-location {
@@ -58,36 +67,7 @@ class EventView extends PolymerElement {
             font-size: 15px;
             vertical-align: middle;
           }
-          .cafe-reserve { color: var(--google-blue-500); }
-          .buddyup {position:absolute; float: right; margin-left:65%; margin-top:1em; z-index:10;}
-          .buddyup-button {float:right; margin-left:2em; margin-right: 2em; background-color:#fff;}
-          .buddyup-explain {font-size:8px; color:#fff; margin-top:4em;}
-          .member-check { margin:0em; transform:scale(0.6); color:blue;}
-          .member-no-check { margin:0em; transform:scale(0.6); color:#fa0;}
-          .addMemberUserBtn { padding: 0.2em 0em 0.2em 0em; margin: 0em 0.2em 0em 0.2em;}
-          .addMemberBtn { background-color:#aaf; vertical-align:bottom;}
-          .newMemberLabel { margin-left: 1em; padding-left: 0.8em; display:block;}
-          .newMemberInput { margin-left: 2em; margin-right: 2em; margin-top:0.1em; font-size:20px;
-                            padding: 0.2em}
-          .newMemberAddButton { display: block; margin-right: 1em; padding-top: 0.5em; padding-bottom: 0.5em; float: right;}
-          .newMemberIronIcon { width:40px; height:40px; vertical-align:middle; margin: 0px 6px 0px 6px;}
-          .newMemberFbIcon { width:30px; height:30px; vertical-align:middle; margin: 0px 12px 0px 12px;}
-          .newMemberLinkCopy { float: right;}
           .invite-code { width: 228px; height: 38px;}
-
-          .event-view-container { background-color: #ccc; }
-          .event-place-link-a { text-decoration: none; color: #000; padding: 0.5em 1em 0.5em 1em;}
-          .event-place-link { padding: 0.5em 1em 0.5em 0.5em; margin: 0.3em}
-          .event-place-badget {vertical-align:middle; margin: 0.5em; font-size:12px;}
-
-          .event-table-pre { @apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto; }
-          .event-table { box-sizing: boarder-box; width:46%; margin:1%; word-wrap: break-word; min-height:8em; }
-          .event-table-header { }
-          .event-table-title { margin: 0.3em; cursor: pointer;}
-          .event-table-edit {  }
-          .event-table-joinBtn { padding: 0.3em; float:right; background-color:#aaf; font-size:0.8em; }
-          .event-table-member-name {  padding: 0.2em 0em 0.2em 0em; margin: 0em 0.2em 0em 0.2em; }
-          .event-table-name-icon {  width:0.8em; height:0.8em; }
         </style>
       </custom-style>
       <div class="event-view-container">
@@ -107,195 +87,13 @@ class EventView extends PolymerElement {
                 <span>{{station}}</span>
               </div>
             </div>
-            <div class="event-members-container container">
-              <div>
-                <span on-click="openEditCatchPhrase"><b>参加者</b>　 　　</span>
-                <span id="memberTitle" on-click="openEditCatchPhrase">{{memberTitle}}</span>
-                <!--  style="overflow-wrap:word-break; white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%" --> 
-                <iron-icon id="expand_members" icon="icons:expand-more" on-click="showMembers"></iron-icon>
-              </div>
-              <iron-collapse id="collapse_members" class="collapse">
-                <div class="indent">
-                  <template is="dom-repeat" items="{{invitedMembers}}">
-                    <paper-button raised on-click="openUserPage" class="addMemberUserBtn">
-                      {{item.profile.displayName}}
-                      <template is="dom-if" if="{{ item.isMember }}">
-                        <iron-icon icon="icons:check-circle" class="member-check"></iron-icon>
-                      </template>
-                      <template is="dom-if" if="{{ !item.isMember }}">
-                        <iron-icon icon="icons:help" class="member-no-check"></iron-icon>
-                      </template>
-                    </paper-button>
-                  </template>
-                  <paper-button raised on-click="addMember" class="addMemberUserBtn addMemberBtn">
-                    <iron-icon id="add-member" icon="social:person-add"></iron-icon>追加
-                  </paper-button>
-                </div>
-              </iron-collapse>
-              <paper-dialog id="add_member">
-                <h2>参加者を追加する</h2><!-- TODO:-->
-                <div class="indent">
-                  <iron-icon icon="icons:face" on-click="addMemberBuddyUp" class="newMemberIronIcon"></iron-icon>
-                  <iron-icon icon="communication:mail-outline" on-click="addMemberMail" class="newMemberIronIcon"></iron-icon>
-                  <iron-icon icon="icons:link" on-click="addMemberLink" class="newMemberIronIcon"></iron-icon>                  
-                  <!-- <img src="images/fb_icon_325x325.png" class="newMemberFbIcon" on-click="addMemberFB"/>-->
-                </div>
-              </paper-dialog>
-              <paper-dialog id="add_member_buddyup">
-                <h2>参加者を追加する</h2><!-- TODO:-->
-                  <label class="newMemberLabel">ID/名前:</label>
-                  <input id="newMemberName" class="newMemberInput"> </input><br/>
-                <paper-button on-click="" raised class="newMemberAddButton">追加</paper-button>
-              </paper-dialog>
-              <paper-dialog id="add_member_mail">
-                <h2>参加者を追加する</h2><!-- TODO:-->
-                  <!-- <paper-input label="name" value="{{newMemberName}}"></paper-input> -->
-                  <label class="newMemberLabel">名前:</label>
-                  <input id="newMemberName" class="newMemberInput"> </input><br/>
-                  <!-- <paper-input label="email" value="{{newMemberMail}}"></paper-input> -->
-                  <label class="newMemberLabel">メールアドレス：</label>
-                  <input id="newMemberMail" class="newMemberInput"> </input><br/>
-                <paper-button on-click="" raised class="newMemberAddButton">追加</paper-button>
-              </paper-dialog>
-              <paper-dialog id="add_member_link">
-                <h2>参加者を追加する</h2>
-                <div class="newMemberLabel">追加する参加者に下記URLを送信してください。</div>
-                <div class="indent">
-                  <paper-button raised on-click="addMemberLink_copy" class="newMemberLinkCopy">
-                    <iron-icon icon="icons:content-copy"></iron-icon>
-                  </paper-button>
-                  <textarea id="add_member_link_inviteUrl" class="invite-code">http://buddyup.tokyo/invite/<invite-code></textarea>
-                  <div id="add_member_link_copied">&nbsp;</div>
-                </div>
-              </paper-dialog>
-              <paper-dialog id="add_member_facebook">
-                <h2>参加者を追加する</h2>
-                追加する参加者にFacebookで下記URLを送ってください。
-              </paper-dialog>
-            </div>
 
-
-            <div class="event-place-container container">
-              <span on-click="openEditPlace"><b>場所</b>　　　　</span>
-              <span id="placeTitle" on-click="openEditPlace">{{place}}</span> 
-              <iron-icon id="expand_places" icon="icons:expand-more" on-click="showPlaces"></iron-icon>
-              <iron-collapse id="collapse_places" class="collapse">
-                <div class="indent">
-                  <div id="placeComment">{{placeComment}}</div>
-                    <!-- <a href="{{placeUrl}}" class="event-place-link-a">
-                      <iron-icon icon="icons:home"></iron-icon>会場の紹介
-                    </a>
-                    <span on-click="openMapToPlace" class="event-place-link">
-                      <iron-icon icon="communication:location-on"></iron-icon>Google Maps
-                    </span>
-                    -->
-                  <paper-button raised on-click="openPlaceUrl" class="event-place-link">
-                    <iron-icon icon="icons:home"></iron-icon>会場の紹介
-                  </paper-button>
-                  <paper-button raised on-click="openMapToPlace" class="event-place-link">
-                    <iron-icon icon="communication:location-on"></iron-icon>Google Maps
-                  </paper-button>
-                  <span class="event-place-badget">予算: {{badget}}</span>
-                </div>
-              </iron-collapse>
-            </div>
-
-
-            <div class="event-agenda-container container">
-              <span><b>アジェンダ</b>　</span>
-              <iron-icon id="expand_agenda" icon="icons:expand-more" on-click="showAgenda"></iron-icon>
-              <iron-collapse id="collapse_agenda" class="collapse">
-                <template is="dom-repeat" items="{{agenda}}">
-                  <div class="agenda-content">
-                    <span class="indent" id="agendaTime{{index}}" on-click="openEditAgenda">{{item.time}}</span>
-                    <span class="indent" id="agendaTitle{{index}}" on-click="openEditAgenda">{{item.program}}</span>
-                  </div>  
-                </template>
-              </iron-collapse>
-            </div>
-            <p class="cafe-light" on-click="openEditCatchPhrase">
-              <span id="catchPhraseTitle">{{catchPhrase}}</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            </p>
+            <event-members-view invitedMembers={{invitedMembers}} memberTitle={{memberTitle}}></event-members-view>
+            <event-place-view place={{place}} placeComment={{placeComment}} budget={{budget}}></event-place-view>
+            <event-agenda-view agenda={{agenda}} catchPhrase={{catchPhrase}}></event-agenda-view>
           </div>
 
-
-          <div class="card-actions">
-            交流のテーブル <iron-icon id="add_table" icon="icons:add-box" on-click="addTable"></iron-icon>
-          </div>
-          <div style="@apply --layout-vertical; @apply --layout-wrap; width: 95%; margin:auto;">
-            <template is="dom-repeat" items="{{tables}}" as="table">
-              <paper-card style="box-sizing: border-box; width:46%; margin:1%; padding:2px; vertical-align: top; min-height:5em;">
-                <template is="dom-if" if="{{ !isTableMemberMe(index) }}">
-                  <paper-button class="event-table-joinBtn" on-click="onJoinTableBtn" data-tableidx$="{{index}}">参加する</paper-button>
-                </template>
-                <template is="dom-if" if="{{ isTableMemberMe(index) }}">
-                  <paper-button class="event-table-joinBtn" on-click="onJoinTableBtn" data-tableidx$="{{index}}">退出する</paper-button>
-                </template>
-                <div class="event-table-title" on-click="editTable" data-tableidx$="{{index}}">
-                  <span class="event-table-title-text" data-tableidx$="{{index}}">{{table.name}}</span>
-                  <iron-icon  icon="icons:content-copy" data-tableidx$="{{index}}"></iron-icon>
-                </div> 
-
-                <template is="dom-repeat" items="{{table.members}}" as="member">
-                  <paper-button raised class="event-table-member-name">{{member.displayName}}
-                  <iron-icon class="event-table-name-icon" icon="icons:launch"></iron-icon>
-                  </paper-button>
-                  
-                </template>
-              </paper-card>
-            </template>
-          </div>
-          <paper-dialog id="event_table_edit">
-            <paper-button style="border:1px;" on-click="openTableEditName">名前を変更</paper-button><br/>
-            <paper-button style="border:1px;" on-click="openTableEditAddMember">参加者を追加する</paper-button><br/>
-            <!--<paper-button>非公開にする</paper-button><br/>-->
-            <paper-button style="border:1px; padding-bottom:24px;" on-click="openTableEditDeleteTable">削除する</paper-button><br/>
-          </paper-dialog>
-          <paper-dialog id="event_table_edit_name" style="padding:1em;">
-            テーブルの名前を変更する<br/>
-            <input type="text" id="event_table_edit_name_value" style="padding-left: 0em;"/><br/>
-            <button on-click="editTableName">変更</button>
-          </paper-dialog>
-          <paper-dialog id="event_table_add_member">
-            <paper-button raised on-click="tableAddMemberToggle" style="float:right;">直接入力</paper-button>
-            <h3>参加者を追加する</h3>
-            <div id="tableAddmenberDirectInput" style="display:none;">
-              <label class="newMemberLabel">ID/名前:</label>
-              <input id="newTableMemberName" class="newMemberInput"> </input><br/>
-              <paper-button on-click="" raised class="newMemberAddButton">追加</paper-button>
-              未実装
-            </div>
-            <div id="tableAddmenberSelectInput">
-              <label class="newMemberLabel">クリックすると追加されます</label>
-              <div>
-              <template is="dom-repeat" items="{{currentEventMembers}}">
-                <paper-button raised on-click="addTableMember" class="addMemberUserBtn" data-member_id$="{{item.profile.id}}">
-                  {{item.profile.displayName}}
-                  <template is="dom-if" if="{{ isTableMember(item.profile.id) }}">
-                    <iron-icon icon="icons:check-circle" class="member-check" data-member_id$="{{item.profile.id}}"></iron-icon>
-                  </template>
-                </paper-button>
-              </template>
-              </div>
-              <div style="float:right;"><paper-button raised on-click="closeAddTableMember">完了</paper-button></div>
-            </div>
-          </paper-dialog>
-          <paper-dialog id="event_table_add_member_delete_confirm">
-            <h3>テーブルから<span id="event_table_add_member_delete_confirm_name"></span>さんを削除してよいですか？</h3>
-            <div class="indent">
-              <paper-button raised on-click="addTableMemberDeleteConfirmYes" id="event_table_add_member_delete_confirm_yes">はい</paper-button>
-              <paper-button raised on-click="addTableMemberDeleteConfirmNo">いいえ</paper-button>
-            </div>
-          </paper-dialog>
-          </paper-card>
-          <paper-dialog id="event_table_edit_delete">
-            <h3><span id="event_table_edit_delete_confirm_name"></span>を削除してよいですか？</h3>
-            <div class="indent">
-              <paper-button raised on-click="deleteTable" data-tableidx="{{this_table}}">はい</paper-button>
-              <paper-button raised on-click="deleteTableCancel">いいえ</paper-button>
-            </div>
-          </paper-dialog>
-        </paper-card>
+          <event-tables-view tables={{tables}} tableMembers={{tableMembers}} initTables={{initTables}}></event-tables-view>
 
         <paper-dialog id="adminEditDate">
           <h3 class="adminEditTitle">開催日時</h3>
@@ -328,15 +126,7 @@ class EventView extends PolymerElement {
           </div>
           <paper-button on-click="editAgenda">更新</paper-button><paper-button on-click="closeEditAgenda">キャンセル</paper-button>
         </paper-dialog>
-        <paper-dialog id="adminEditCatchPhrase" style="width:80%">
-          <div class="adminEditContent">
-            参加者:<br/>
-            <input type="text" id="adminEditCatchPhrase1"/><br/>
-            キャッチフレーズ<br/>
-            <textarea type="text" id="adminEditCatchPhrase2" style="width:100%; height:10em;"/></textarea>
-          </div>
-          <paper-button on-click="editCatchPhrase">更新</paper-button><paper-button on-click="closeEditCatchPhrase">キャンセル</paper-button>
-        </paper-dialog>
+
       </div>
     `;
     }
@@ -384,16 +174,7 @@ class EventView extends PolymerElement {
 
       this.$.adminEditDate.close();
     }
-    openEditPlace( e ){
-      if(!this.canEdit()) { this.noPermission(); return; }
-      this.$.adminEditPlace1.value = this.place;
-      this.$.adminEditPlace2.value = this.placeComment;
-      this.$.adminEditPlace3.value = this.placeUrl;
-      this.$.adminEditPlace4.value = this.placeMapUrl;
-      this.$.adminEditPlace5.value = this.station;
-      this.$.adminEditPlace6.value = this.badget;
-      this.$.adminEditPlace.open();
-    }
+
     closeEditPlace( e ){
       this.$.adminEditPlace.close();
     }
@@ -411,23 +192,10 @@ class EventView extends PolymerElement {
       firebase.database().ref( `events/${this.eventid}/place/station` ).set( this.station );
       firebase.database().ref( `events/${this.eventid}/place/badget` ).set( this.badget );
       // TODO: お店の予約関係の話
-      
+
       this.$.adminEditPlace.close();
     }
-    openEditAgenda( e ){
-      if(!this.canEdit()) { this.noPermission(); return; }
-      this.$.adminEditAgenda0.value = this.shadowRoot.querySelector("#agendaTitle0").innerText;
-      this.$.adminEditAgenda1.value = this.shadowRoot.querySelector("#agendaTitle1").innerText;
-      this.$.adminEditAgenda2.value = this.shadowRoot.querySelector("#agendaTitle2").innerText;
-      this.$.adminEditAgenda3.value = this.shadowRoot.querySelector("#agendaTitle3").innerText;
-      this.$.adminEditAgenda4.value = this.shadowRoot.querySelector("#agendaTitle4").innerText;
-      this.$.adminEditAgendaTime0.value = this.shadowRoot.querySelector("#agendaTime0").innerText;
-      this.$.adminEditAgendaTime1.value = this.shadowRoot.querySelector("#agendaTime1").innerText;
-      this.$.adminEditAgendaTime2.value = this.shadowRoot.querySelector("#agendaTime2").innerText;
-      this.$.adminEditAgendaTime3.value = this.shadowRoot.querySelector("#agendaTime3").innerText;
-      this.$.adminEditAgendaTime4.value = this.shadowRoot.querySelector("#agendaTime4").innerText;
-      this.$.adminEditAgenda.open();
-    }
+
     closeEditAgenda( e ){
       this.$.adminEditAgenda.close();
     }
@@ -435,23 +203,6 @@ class EventView extends PolymerElement {
       this.$.adminEditAgenda.close();
 
     }
-    openEditCatchPhrase( e ){
-      if(!this.canEdit()) { this.noPermission(); return; }
-      this.$.adminEditCatchPhrase1.value = this.shadowRoot.querySelector("#memberTitle").innerText;
-      this.$.adminEditCatchPhrase2.value = this.shadowRoot.querySelector("#catchPhraseTitle").innerText;
-      this.$.adminEditCatchPhrase.open();
-    }
-    closeEditCatchPhrase( e ){
-      this.$.adminEditCatchPhrase.close();
-    }
-    editCatchPhrase(){
-      this.shadowRoot.querySelector("#memberTitle").innerText = this.$.adminEditCatchPhrase1.value;
-      this.shadowRoot.querySelector("#catchPhraseTitle").innerText = this.$.adminEditCatchPhrase2.value;
-      firebase.database().ref( `events/${this.eventid}/memberTitle` ).set( this.$.adminEditCatchPhrase1.value );
-      firebase.database().ref( `events/${this.eventid}/catchPhrase` ).set( this.$.adminEditCatchPhrase2.value );
-      this.$.adminEditCatchPhrase.close();
-    }
-
 
 
 
@@ -485,10 +236,10 @@ class EventView extends PolymerElement {
         this.invitedMembers = [{id:"member1",invited:true},{id:"member2"}];
         this.members = [{id:"member1"}]
         this.agenda = [
-          {time: "19:00-19:10", program: "全体説明"}, 
-          {time: "19:10-19:30", program: "自己紹介"}, 
-          {time: "19:30-20:00", program: "テーマトーク"}, 
-          {time: "20:00-20:30", program: "フリートーク"} 
+          {time: "19:00-19:10", program: "全体説明"},
+          {time: "19:10-19:30", program: "自己紹介"},
+          {time: "19:30-20:00", program: "テーマトーク"},
+          {time: "20:00-20:30", program: "フリートーク"}
         ]
         this.catchPhrase = "Small plates, salads & sandwiches in an intimate setting with 12 indoor seats plus patio seating."
         this.tables = [{name:"table1",members:[]},{name:"table2",members:[]}];
@@ -571,10 +322,10 @@ class EventView extends PolymerElement {
       this.invitedMembers = [];
       this.members = [{id:user.uid}]
       this.agenda = [
-        {time: "19:00-19:10", program: "全体説明"}, 
-        {time: "19:10-19:30", program: "自己紹介"}, 
-        {time: "19:30-20:00", program: "テーマトーク"}, 
-        {time: "20:00-20:30", program: "フリートーク"} 
+        {time: "19:00-19:10", program: "全体説明"},
+        {time: "19:10-19:30", program: "自己紹介"},
+        {time: "19:30-20:00", program: "テーマトーク"},
+        {time: "20:00-20:30", program: "フリートーク"}
       ]
       this.catchPhrase = "この会にみんなを引き付けるためのキャッチフレーズをお書きください"
       this.tables = [{name:"table1",members:[]},{name:"table2",members:[]}];
@@ -613,10 +364,6 @@ class EventView extends PolymerElement {
     //
 
 
-    showMembers( e ) {
-       this.$.expand_members.icon = this.$.collapse_members.opened ? 'expand-more' : 'expand-less';
-       this.$.collapse_members.toggle();
-    }
     initMembers(self, invitedMembers) {
       this.invitedMembers = [];
 
@@ -638,6 +385,18 @@ class EventView extends PolymerElement {
       });
 
     }
+
+    isMember(self,memberId) {
+      var isMember = false;
+      var members = Object.keys(self.members).map( key => self.members[key] );
+      members.forEach(function(member){
+        if(member == memberId){
+          isMember = true;
+        }
+      });
+      return isMember;
+    }
+
     getProfile(memberId){
       // 自分の時は自分のプロファイルから取る
       if(memberId === this.user.uid){
@@ -651,50 +410,11 @@ class EventView extends PolymerElement {
       var memberObj = this.invitedMembers.find(member => {
          return member.id === memberId;
       });
+      if(!memberObj){
+        return {};
+      }
       return memberObj.profile;
     }
-
-    isMember(self,memberId) {
-      var isMember = false;
-      self.members.forEach(function(member){
-        if(member == memberId){
-          isMember = true;
-        }
-      });
-      return isMember;
-    }
-
-    addMember( e ) {
-      this.$.add_member.open();
-    }
-    addMemberBuddyUp ( e ){
-      this.$.add_member.close();      
-      this.$.add_member_buddyup.open();      
-    }
-    addMemberMail ( e ){
-      this.$.add_member.close();      
-      this.$.add_member_mail.open();      
-    }
-    addMemberLink ( e ){
-      this.$.add_member.close();
-      // TODO:リアルなinviteCodeを用意する
-      this.$.add_member_link_inviteUrl.innerText = "http://buddyup.tokyo/invite/<invite-code>";
-      this.$.add_member_link.open();
-      setTimeout(() => {
-        this.$.add_member_link_inviteUrl.select();
-      },1200);
-    }
-    addMemberLink_copy ( e ){
-      // TODO:リアルなinviteCodeを用意する
-      this.$.add_member_link_inviteUrl.innerText = "http://buddyup.tokyo/invite/<invite-code>";
-      this.$.add_member_link_inviteUrl.select();
-      document.execCommand('copy');
-      this.$.add_member_link_copied.innerText = "　";
-      setTimeout(() => {
-        this.$.add_member_link_copied.innerText = "- コピーされました";
-      },600);
-    }
-
 
     ///////////////////////////////////////////////////////////////////
     //
@@ -703,22 +423,7 @@ class EventView extends PolymerElement {
     //
 
 
-    showPlaces( e ) {
-       this.$.expand_places.icon = this.$.collapse_places.opened ? 'expand-more' : 'expand-less';
-       this.$.collapse_places.toggle();
-    }
-    openPlaceUrl( e ){
-      if(this.placeUrl){
-        window.open(this.placeUrl);                
-      }
-    }
-    openMapToPlace( e ){
-      if(this.placeMapUrl){
-        window.open(this.placeMapUrl);
-      } else {
-        window.open("https://maps.google.co.jp/maps?q=" + this.place);        
-      }
-    }
+
 
 
     ////////////////////////////////////////////////////////////////////
@@ -728,10 +433,7 @@ class EventView extends PolymerElement {
     //
 
 
-    showAgenda( e ) {
-       this.$.expand_agenda.icon = this.$.collapse_agenda.opened ? 'expand-more' : 'expand-less';
-       this.$.collapse_agenda.toggle();
-    }
+
 
 
 
@@ -742,12 +444,11 @@ class EventView extends PolymerElement {
     //  Tables
     //
     //
-
     initTables(){
       // invitedMembersに保存されたプロファイルをtablesにも展開する
       for(let i=0; i<this.tableMembers.length; i++){
         let table = this.tableMembers[i];
-        if(!table.members){ table.members = [];} 
+        if(!table.members){ table.members = [];}
         if(!table.name){ table.name = "table" + (i+1);}
         if(!this.tables[i]){ this.tables[i] = {};}
         this.tables[i].members = [];
@@ -770,147 +471,8 @@ class EventView extends PolymerElement {
       }
 
     }
-    addTable( e ) {
-      var newtableIdx = this.tableMembers.length;
-      // 内部データを書き換える
-      this.tableMembers[newtableIdx] = { members:[], name: "table" + (newtableIdx + 1)};
-      // DBに書き込む
-      firebase.database().ref( `events/${this.eventid}/tables/${newtableIdx}` ).set(this.tableMembers[newtableIdx]);
-      // 画面と画面用のデータを書き換える
-      this.initTables();
-    }
 
-    deleteTable( e ){
-      // 内部データを書き換える
-      this.tableMembers.splice(this.currentTableIdx,1);
-      this.tables.splice(this.currentTableIdx,1);
-      // DBに書き込む
-      firebase.database().ref( `events/${this.eventid}/tables` ).set(this.tableMembers);
-      // 画面と画面用のデータを書き換える
-      this.initTables();
-      this.closeDeleteTableDialog();
-    }
-    deleteTableCancel( e ){
-      this.closeDeleteTableDialog();
-    }
-    closeDeleteTableDialog(){
-      this.$.event_table_edit_delete.close();
-      this.$.event_table_edit.close();
-    }
 
-    //////   edit  //////////////////////
-
-    editTable( e ) {
-      this.currentTableIdx = e.target.dataset.tableidx;
-      this.$.event_table_edit.open();
-
-    }
-    openTableEditName( e ) {
-      this.$.event_table_edit_name_value.value = this.tables[this.currentTableIdx].name;
-      this.$.event_table_edit_name.open();
-      var obj = this;
-      this.$.event_table_edit_name_value.onkeypress = function( e ){
-        if(e.keyCode === "undefined" || e.keyCode === 13){
-              obj.editTableName(null);
-        }
-      }
-    }
-    openTableEditAddMember( e ){
-      this.tablePrevMembers = JSON.parse(JSON.stringify(this.tableMembers[this.currentTableIdx].members));
-      this.currentEventMembers = JSON.parse(JSON.stringify(this.invitedMembers));
-      this.$.event_table_add_member.open();
-
-    }
-    openTableEditDeleteTable( e ){
-      this.$.event_table_edit_delete_confirm_name.innerText = this.tables[this.currentTableIdx].name;
-      this.$.event_table_edit_delete.open();
-    }
-
-    editTableName( e ){
-      var tableName = this.$.event_table_edit_name_value.value;
-      this.tables[this.currentTableIdx].name = tableName;
-      this.shadowRoot.querySelector(".event-table-title-text[data-tableidx='" + this.currentTableIdx + "']").innerText = tableName;
-      this.$.event_table_edit_name.close();      
-      this.$.event_table_edit.close();
-      firebase.database().ref( `events/${this.eventid}/tables/${this.currentTableIdx}/name` ).set( tableName );
-    }
-
-    addTableMember( e ){
-      let memberId = e.target.dataset.member_id;
-
-      if(this.isTableMember(memberId)){
-        // 既にメンバーなら削除する
-        // 元から参加していた人は確認ダイアログが開く  // TODO
-        if(this.tablePrevMembers.indexOf(memberId) >= 0) {
-          this.$.event_table_add_member_delete_confirm_yes.dataset.member_id = memberId;
-          this.$.event_table_add_member_delete_confirm_name.innerText = this.getProfile(memberId).displayName;
-          this.$.event_table_add_member_delete_confirm.open();
-          return;
-        }
-        this.leaveTable(this.currentTableIdx, memberId);
-        this.currentEventMembers = JSON.parse(JSON.stringify(this.currentEventMembers));
-      } else {
-        // メンバー外なら追加する
-        this.joinTable(this.currentTableIdx, memberId);
-        this.currentEventMembers = JSON.parse(JSON.stringify(this.currentEventMembers));
-      }
-    }
-    addTableMemberDeleteConfirmYes( e ){
-      let memberId = e.target.dataset.member_id;
-      this.leaveTable(this.currentTableIdx, memberId);
-      this.currentEventMembers = JSON.parse(JSON.stringify(this.currentEventMembers));
-      this.$.event_table_add_member_delete_confirm.close();
-    }
-    addTableMemberDeleteConfirmNo( e ){
-      this.$.event_table_add_member_delete_confirm.close();      
-    }
-
-    closeAddTableMember ( e ){
-      this.$.event_table_add_member.close();
-      this.$.event_table_edit.close();
-    }
-    //////   join  //////////////////////
-    onJoinTableBtn( e ){
-      if(e.target.innerText == "参加する"){
-        this.joinTable(e.target.dataset.tableidx, this.user.uid);
-        this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + e.target.dataset.tableidx + "']").innerText = "退出する";
-      } else {
-        this.leaveTable(e.target.dataset.tableidx, this.user.uid);
-        this.shadowRoot.querySelector(".event-table-joinBtn[data-tableidx='" + e.target.dataset.tableidx + "']").innerText = "参加する";
-      }
-      // TODO: 他の端末の人にも参加退出が伝播するようにすること
-    }
-
-    joinTable(tableidx, memberId){
-      // 内部データを書き換える
-      this.tableMembers[tableidx].members.push(memberId);
-      this.tables[tableidx].members.push(this.getProfile(memberId));
-      // 画面を変更する -- テーブル内の名前
-      var tables = JSON.parse(JSON.stringify(this.tables));
-      this.tables = tables;
-      // DBにjoinを書き込む
-      firebase.database().ref( `events/${this.eventid}/tables/${tableidx}/members` ).set(this.tableMembers[tableidx].members);
-    }
-
-    leaveTable(tableidx, memberId){
-      // 内部データを書き換える
-      var memberIdx = this.tableMembers[tableidx].members.indexOf(memberId);
-      this.tableMembers[tableidx].members.splice(memberIdx,1);
-      this.tables[tableidx].members.splice(memberIdx,1);
-      // 画面を変更する -- テーブル内の名前
-      var tables = JSON.parse(JSON.stringify(this.tables));
-      this.tables = tables;
-      // DBにjoinを書き込む
-      firebase.database().ref( `events/${this.eventid}/tables/${tableidx}/members` ).set(this.tableMembers[tableidx].members);
-    }
-
-    isTableMember(memberId) {
-      return this.currentTableIdx && this.tableMembers && (this.tableMembers[this.currentTableIdx].members.indexOf(memberId) >=0);
-    }
-    isTableMemberMe(tableidx){
-      if(!this.tableMembers) return false;
-      return (this.tableMembers[tableidx].members.indexOf(this.user.uid) >= 0);
-    }
 
 
     ///////////////////////////////////////////////////////////////////////////
