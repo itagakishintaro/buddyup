@@ -1,5 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles.js';
+import common from './event-common.js';
 
 class EventPlaceView extends PolymerElement {
   static get template() {
@@ -44,7 +45,7 @@ class EventPlaceView extends PolymerElement {
   }
 
   openEditPlace( e ){
-    if(!this.canEdit()) { this.noPermission(); return; }
+    if(!common.canEdit(this)) { common.noPermission(); return; }
     this.$.adminEditPlace1.value = this.place;
     this.$.adminEditPlace2.value = this.placeComment;
     this.$.adminEditPlace3.value = this.placeUrl;

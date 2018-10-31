@@ -1,6 +1,7 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles.js';
 import '@polymer/paper-dialog/paper-dialog.js';
+import common from './event-common.js';
 
 class EventAgendaView extends PolymerElement {
   static get template() {
@@ -19,14 +20,11 @@ class EventAgendaView extends PolymerElement {
           <template is="dom-repeat" items="{{agenda}}">
             <div class="agenda-content">
               <span class="indent" id="agendaTime{{index}}" on-click="openEditAgenda">{{item.time}}</span>
-              <span class="indent" id="agendaTitle{{index}}" on-click="openEditAgenda">{{item.program}}</span>
+              <span class="indent agendaTitle" id="agendaTitle{{index}}" on-click="openEditAgenda">{{item.program}}</span>
             </div>
           </template>
         </iron-collapse>
       </div>
-      <p class="cafe-light" on-click="openEditCatchPhrase">
-        <span id="catchPhraseTitle">{{catchPhrase}}</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      </p>
 
       <paper-dialog id="adminEditCatchPhrase" style="width:80%">
         <div class="adminEditContent">
@@ -37,6 +35,18 @@ class EventAgendaView extends PolymerElement {
         </div>
         <paper-button on-click="editCatchPhrase">更新</paper-button><paper-button on-click="closeEditCatchPhrase">キャンセル</paper-button>
       </paper-dialog>
+      <paper-dialog id="adminEditAgenda">
+        <h3 class="adminEditTitle">イベント内容</h3>
+        <div class="adminEditContent">
+          <input type="text" id="adminEditAgendaTime0" style="width:20%;"/><input type="text" id="adminEditAgenda0" style="width:70%;"/><br/>
+          <input type="text" id="adminEditAgendaTime1" style="width:20%;"/><input type="text" id="adminEditAgenda1" style="width:70%;"/><br/>
+          <input type="text" id="adminEditAgendaTime2" style="width:20%;"/><input type="text" id="adminEditAgenda2" style="width:70%;"/><br/>
+          <input type="text" id="adminEditAgendaTime3" style="width:20%;"/><input type="text" id="adminEditAgenda3" style="width:70%;"/><br/>
+          <input type="text" id="adminEditAgendaTime4" style="width:20%;"/><input type="text" id="adminEditAgenda4" style="width:70%;"/><br/>
+        </div>
+        <paper-button on-click="editAgenda">更新</paper-button><paper-button on-click="closeEditAgenda">キャンセル</paper-button>
+      </paper-dialog>
+
       `;
   }
 
@@ -46,35 +56,13 @@ class EventAgendaView extends PolymerElement {
   }
 
   openEditAgenda( e ){
-    if(!this.canEdit()) { this.noPermission(); return; }
-    this.$.adminEditAgenda0.value = this.shadowRoot.querySelector("#agendaTitle0").innerText;
-    this.$.adminEditAgenda1.value = this.shadowRoot.querySelector("#agendaTitle1").innerText;
-    this.$.adminEditAgenda2.value = this.shadowRoot.querySelector("#agendaTitle2").innerText;
-    this.$.adminEditAgenda3.value = this.shadowRoot.querySelector("#agendaTitle3").innerText;
-    this.$.adminEditAgenda4.value = this.shadowRoot.querySelector("#agendaTitle4").innerText;
-    this.$.adminEditAgendaTime0.value = this.shadowRoot.querySelector("#agendaTime0").innerText;
-    this.$.adminEditAgendaTime1.value = this.shadowRoot.querySelector("#agendaTime1").innerText;
-    this.$.adminEditAgendaTime2.value = this.shadowRoot.querySelector("#agendaTime2").innerText;
-    this.$.adminEditAgendaTime3.value = this.shadowRoot.querySelector("#agendaTime3").innerText;
-    this.$.adminEditAgendaTime4.value = this.shadowRoot.querySelector("#agendaTime4").innerText;
+    if(!common.canEdit(this)) { this.noPermission(); return; }
+    var agendaLength = this.shadowRoot.querySelectorAll(".agendaTitle").length;
+    for(let i = 0; i < agendaLength; i++){
+      this.$["adminEditAgenda" + i].value = this.shadowRoot.querySelector("#agendaTitle" + i).innerText;
+      this.$["adminEditAgendaTime" + i].value = this.shadowRoot.querySelector("#agendaTime" + i).innerText;
+    }
     this.$.adminEditAgenda.open();
-  }
-
-  openEditCatchPhrase( e ){
-    if(!this.canEdit()) { this.noPermission(); return; }
-    this.$.adminEditCatchPhrase1.value = this.shadowRoot.querySelector("#memberTitle").innerText;
-    this.$.adminEditCatchPhrase2.value = this.shadowRoot.querySelector("#catchPhraseTitle").innerText;
-    this.$.adminEditCatchPhrase.open();
-  }
-  closeEditCatchPhrase( e ){
-    this.$.adminEditCatchPhrase.close();
-  }
-  editCatchPhrase(){
-    this.shadowRoot.querySelector("#memberTitle").innerText = this.$.adminEditCatchPhrase1.value;
-    this.shadowRoot.querySelector("#catchPhraseTitle").innerText = this.$.adminEditCatchPhrase2.value;
-    firebase.database().ref( `events/${this.eventid}/memberTitle` ).set( this.$.adminEditCatchPhrase1.value );
-    firebase.database().ref( `events/${this.eventid}/catchPhrase` ).set( this.$.adminEditCatchPhrase2.value );
-    this.$.adminEditCatchPhrase.close();
   }
 
 }

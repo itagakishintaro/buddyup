@@ -1,5 +1,6 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles.js';
+import common from './event-common.js';
 
 class EventMembersView extends PolymerElement {
   static get template() {
@@ -89,6 +90,23 @@ class EventMembersView extends PolymerElement {
       </div>
       `;
   }
+
+  constructor() {
+    super();
+  }
+
+  ready() {
+    super.ready();
+  }
+
+
+  static get properties() {
+      return {
+          user: Object,
+          //invitedMembers: Array
+      }
+  }
+
 
   showMembers( e ) {
      this.$.expand_members.icon = this.$.collapse_members.opened ? 'expand-more' : 'expand-less';

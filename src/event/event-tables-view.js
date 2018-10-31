@@ -1,6 +1,8 @@
 import { PolymerElement, html } from '@polymer/polymer/polymer-element.js';
 import '../shared-styles.js';
 import '@polymer/paper-card/paper-card.js';
+import common from './event-common.js';
+import '@polymer/iron-icons/iron-icons.js';
 
 class EventTablesView extends PolymerElement {
   static get template() {
@@ -170,7 +172,7 @@ class EventTablesView extends PolymerElement {
       // 元から参加していた人は確認ダイアログが開く  // TODO
       if(this.tablePrevMembers.indexOf(memberId) >= 0) {
         this.$.event_table_add_member_delete_confirm_yes.dataset.member_id = memberId;
-        this.$.event_table_add_member_delete_confirm_name.innerText = this.getProfile(memberId).displayName;
+        this.$.event_table_add_member_delete_confirm_name.innerText = this.getProfile(this.user, this.invitedMembers, memberId).displayName;
         this.$.event_table_add_member_delete_confirm.open();
         return;
       }
@@ -211,7 +213,7 @@ class EventTablesView extends PolymerElement {
   joinTable(tableidx, memberId){
     // 内部データを書き換える
     this.tableMembers[tableidx].members.push(memberId);
-    this.tables[tableidx].members.push(this.getProfile(memberId));
+    this.tables[tableidx].members.push(this.getProfile(this.user, this.invitedMembers, memberId));
     // 画面を変更する -- テーブル内の名前
     var tables = JSON.parse(JSON.stringify(this.tables));
     this.tables = tables;

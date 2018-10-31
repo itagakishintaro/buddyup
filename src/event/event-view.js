@@ -40,6 +40,7 @@ import './event-members-view.js';
 import './event-place-view.js';
 import './event-agenda-view.js';
 import './event-tables-view.js';
+import common from './event-common.js';
 
 class EventView extends PolymerElement {
     static get template() {
@@ -88,12 +89,15 @@ class EventView extends PolymerElement {
               </div>
             </div>
 
-            <event-members-view invitedMembers={{invitedMembers}} memberTitle={{memberTitle}}></event-members-view>
-            <event-place-view place={{place}} placeComment={{placeComment}} budget={{budget}}></event-place-view>
-            <event-agenda-view agenda={{agenda}} catchPhrase={{catchPhrase}}></event-agenda-view>
+            <event-members-view invited-members={{invitedMembers}} user={{user}} kanji={{kanji}} member-title={{memberTitle}}></event-members-view>
+            <event-place-view place={{place}} place-comment={{placeComment}} user={{user}} kanji={{kanji}} budget={{budget}} place-url={{placeUrl}} can-edit={{canEdit}}></event-place-view>
+            <event-agenda-view agenda={{agenda}} catch-phrase={{catchPhrase}} user={{user}} kanji={{kanji}}></event-agenda-view>
+            <p class="cafe-light" on-click="openEditCatchPhrase">
+              <span id="catchPhraseTitle">{{catchPhrase}}</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            </p>
           </div>
 
-          <event-tables-view tables={{tables}} tableMembers={{tableMembers}} initTables={{initTables}}></event-tables-view>
+          <event-tables-view tables={{tables}} table-members={{tableMembers}} get-profile={{getProfile}} user={{user}} kanji={{kanji}} init-tables={{initTables}} invited-members={{invitedMembers}}></event-tables-view>
 
         <paper-dialog id="adminEditDate">
           <h3 class="adminEditTitle">開催日時</h3>
@@ -115,17 +119,6 @@ class EventView extends PolymerElement {
           </div>
           <paper-button on-click="editPlace">更新</paper-button><paper-button on-click="closeEditPlace">キャンセル</paper-button>
         </paper-dialog>
-        <paper-dialog id="adminEditAgenda">
-          <h3 class="adminEditTitle">イベント内容</h3>
-          <div class="adminEditContent">
-            <input type="text" id="adminEditAgendaTime0" style="width:20%;"/><input type="text" id="adminEditAgenda0" style="width:70%;"/><br/>
-            <input type="text" id="adminEditAgendaTime1" style="width:20%;"/><input type="text" id="adminEditAgenda1" style="width:70%;"/><br/>
-            <input type="text" id="adminEditAgendaTime2" style="width:20%;"/><input type="text" id="adminEditAgenda2" style="width:70%;"/><br/>
-            <input type="text" id="adminEditAgendaTime3" style="width:20%;"/><input type="text" id="adminEditAgenda3" style="width:70%;"/><br/>
-            <input type="text" id="adminEditAgendaTime4" style="width:20%;"/><input type="text" id="adminEditAgenda4" style="width:70%;"/><br/>
-          </div>
-          <paper-button on-click="editAgenda">更新</paper-button><paper-button on-click="closeEditAgenda">キャンセル</paper-button>
-        </paper-dialog>
 
       </div>
     `;
@@ -139,21 +132,9 @@ class EventView extends PolymerElement {
     // 管理者機能
     //
     //
-    canEdit() {
-      return this.isKanji() || this.isOpen();
-    }
-    isKanji() {
-      return this.kanji.find(member => { return member === this.user.uid; });
-    }
-    isOpen() {
-      return !this.private;
-    }
-    noPermission(){
-      console.log("you are not kanji");
-    }
 
     openEditDate( e ){
-      if(!this.canEdit()) { this.noPermission(); return; }
+      if(!common.canEdit(this)) { this.noPermission(); return; }
       this.$.adminEditDate1.value = this.date.date;
       this.$.adminEditDateTimeFrom.value = this.date.timeFrom;
       this.$.adminEditDateTimeTo.value = this.date.timeTo;
@@ -397,17 +378,17 @@ class EventView extends PolymerElement {
       return isMember;
     }
 
-    getProfile(memberId){
+    getProfile(user, invitedMembers, memberId){
       // 自分の時は自分のプロファイルから取る
-      if(memberId === this.user.uid){
+      if(memberId === user.uid){
         var member = {
-          displayName : this.user.displayName,
-          id: this.user.uid
+          displayName : user.displayName,
+          id: user.uid
         }
         return member;
       }
       // 他人の時はinvitedMembersから取る
-      var memberObj = this.invitedMembers.find(member => {
+      var memberObj = invitedMembers.find(member => {
          return member.id === memberId;
       });
       if(!memberObj){
@@ -433,6 +414,22 @@ class EventView extends PolymerElement {
     //
 
 
+    openEditCatchPhrase( e ){
+      if(!common.canEdit(this)) { this.noPermission(); return; }
+      this.$.adminEditCatchPhrase1.value = this.shadowRoot.querySelector("#memberTitle").innerText;
+      this.$.adminEditCatchPhrase2.value = this.shadowRoot.querySelector("#catchPhraseTitle").innerText;
+      this.$.adminEditCatchPhrase.open();
+    }
+    closeEditCatchPhrase( e ){
+      this.$.adminEditCatchPhrase.close();
+    }
+    editCatchPhrase(){
+      this.shadowRoot.querySelector("#memberTitle").innerText = this.$.adminEditCatchPhrase1.value;
+      this.shadowRoot.querySelector("#catchPhraseTitle").innerText = this.$.adminEditCatchPhrase2.value;
+      firebase.database().ref( `events/${this.eventid}/memberTitle` ).set( this.$.adminEditCatchPhrase1.value );
+      firebase.database().ref( `events/${this.eventid}/catchPhrase` ).set( this.$.adminEditCatchPhrase2.value );
+      this.$.adminEditCatchPhrase.close();
+    }
 
 
 
@@ -453,7 +450,7 @@ class EventView extends PolymerElement {
         if(!this.tables[i]){ this.tables[i] = {};}
         this.tables[i].members = [];
         for(let j=0;j<table.members.length;j++){
-          this.tables[i].members.push(this.getProfile(table.members[j]));
+          this.tables[i].members.push(this.getProfile(this.user, this.invitedMembers, table.members[j]));
         }
         this.tables[i].name = this.tableMembers[i].name;
       }
