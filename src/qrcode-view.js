@@ -14,11 +14,16 @@ class QrcodeView extends PolymerElement {
         <div class="container">
             <h1>QRコード</h1>
             <div class="qrcode">
-                <img src="images/qrcode.png">
+                <img src="https://chart.apis.google.com/chart?cht=qr&chs=150x150&chl={{origin}}">
             </div>
-            <a href="https://buddyup-204005.firebaseapp.com/">https://buddyup-204005.firebaseapp.com/</a>
+            <a href="{{origin}}">{{origin}}</a>
         <div>
         `;
+    }
+
+    constructor() {
+      super();
+      this.origin = location.origin
     }
 
 }
