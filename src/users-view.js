@@ -5,6 +5,9 @@ import './loading-view.js';
 import '@polymer/paper-button/paper-button.js';
 import '@polymer/paper-dialog/paper-dialog.js';
 import '@polymer/paper-toast/paper-toast.js';
+import '@polymer/iron-collapse/iron-collapse.js';
+import '@polymer/iron-icon/iron-icon.js';
+import '@polymer/iron-icons/iron-icons.js';
 
 class UsersView extends PolymerElement {
     static get template() {
@@ -80,44 +83,68 @@ class UsersView extends PolymerElement {
           </div>
 
           <hr>
-          <p>知り合い</p>
-          <template is="dom-repeat" items="{{friends}}">
-            <div class="user">
-              <template is="dom-if" if="{{item.photoURL}}">
-                <img src="{{item.photoURL}}" class="icon">
-              </template>
-              <template is="dom-if" if="{{!item.photoURL}}">
-                <img src="images/manifest/icon-48x48.png" class="icon">
-              </template>
-              <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
-              <!-- skills -->
-              <div class="skill" data-uid$="{{item.uid}}">
-                  <template is="dom-repeat" items="{{ item.skills }}">
-                      <span class="tag" on-click="showComments">{{item}}</span>
+          <div on-click="toggleFriends">
+            <span>知り合い<span>
+            <template is="dom-if" if="{{ !friendsOpened }}">
+              <iron-icon class="right" icon="expand-more"></iron-icon>
+            </template>
+            <template is="dom-if" if="{{ friendsOpened }}">
+              <iron-icon class="right" icon="expand-less"></iron-icon>
+            </template>
+          </div>
+          <iron-collapse id="friends">
+            <div class="collapse-content">
+              <template is="dom-repeat" items="{{friends}}">
+                <div class="user">
+                  <template is="dom-if" if="{{item.photoURL}}">
+                    <img src="{{item.photoURL}}" class="icon">
                   </template>
-              </div>
+                  <template is="dom-if" if="{{!item.photoURL}}">
+                    <img src="images/manifest/icon-48x48.png" class="icon">
+                  </template>
+                  <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
+                  <!-- skills -->
+                  <div class="skill" data-uid$="{{item.uid}}">
+                      <template is="dom-repeat" items="{{ item.skills }}">
+                          <span class="tag" on-click="showComments">{{item}}</span>
+                      </template>
+                  </div>
+                </div>
+              </template>
             </div>
-          </template>
+          </iron-collapse>
 
           <hr>
-          <p>その他のユーザー</p>
-          <template is="dom-repeat" items="{{others}}">
-            <div class="user">
-              <template is="dom-if" if="{{item.photoURL}}">
-                <img src="{{item.photoURL}}" class="icon">
-              </template>
-              <template is="dom-if" if="{{!item.photoURL}}">
-                <img src="images/manifest/icon-48x48.png" class="icon">
-              </template>
-              <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
-              <!-- skills -->
-              <div class="skill" data-uid$="{{item.uid}}">
-                  <template is="dom-repeat" items="{{ item.skills }}">
-                      <span class="tag" on-click="showComments">{{item}}</span>
+          <div on-click="toggleOthers">
+            <span>その他のユーザー<span>
+            <template is="dom-if" if="{{ !othersOpened }}">
+              <iron-icon class="right" icon="expand-more"></iron-icon>
+            </template>
+            <template is="dom-if" if="{{ othersOpened }}">
+              <iron-icon class="right" icon="expand-less"></iron-icon>
+            </template>
+          </div>
+          <iron-collapse id="others">
+            <div class="collapse-content">
+              <template is="dom-repeat" items="{{others}}">
+                <div class="user">
+                  <template is="dom-if" if="{{item.photoURL}}">
+                    <img src="{{item.photoURL}}" class="icon">
                   </template>
-              </div>
+                  <template is="dom-if" if="{{!item.photoURL}}">
+                    <img src="images/manifest/icon-48x48.png" class="icon">
+                  </template>
+                  <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
+                  <!-- skills -->
+                  <div class="skill" data-uid$="{{item.uid}}">
+                      <template is="dom-repeat" items="{{ item.skills }}">
+                          <span class="tag" on-click="showComments">{{item}}</span>
+                      </template>
+                  </div>
+                </div>
+              </template>
             </div>
-          </template>
+          </iron-collapse>
 
           <paper-toast id="toast" text="{{toastText}}"></paper-toast>
         </div>
@@ -136,6 +163,13 @@ class UsersView extends PolymerElement {
         this.loadingDisplay = 'none';
         this.target = {};
         this.toastText = "更新しました!";
+    }
+
+    ready() {
+      super.ready();
+      this.$.friends.opened = true;
+      this.friendsOpened = this.$.friends.opened;
+      this.othersOpened = this.$.others.opened;
     }
 
     static get properties() {
@@ -311,6 +345,18 @@ class UsersView extends PolymerElement {
         users = users.filter( u => u.uid !== this.target.uid );
         this.sameSkillHolders = users.filter( u => ( u.skills && u.skills.includes( skill ) ) );
     }
+
+    toggleFriends() {
+      this.$.friends.toggle();
+      this.friendsOpened = this.$.friends.opened;
+    }
+
+    toggleOthers() {
+      this.$.others.toggle();
+      this.othersOpened = this.$.others.opened;
+    }
+
+
 
 }
 
