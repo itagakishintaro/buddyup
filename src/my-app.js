@@ -209,6 +209,7 @@ class MyApp extends PolymerElement {
             messagingSenderId: "541079223817"
         };
         firebase.initializeApp( config );
+
         // get profiles
         firebase.database().ref( '/profiles/' ).once( 'value' ).then( snapshot => {
           this.set( 'profiles', snapshot.val() );

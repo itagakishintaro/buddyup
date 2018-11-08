@@ -92,15 +92,21 @@ class SettingView extends PolymerElement {
     }
 
     update() {
-        console.log( 'update()' );
-        let photoURLPromise = firebase.database().ref( 'profiles/' + this.user.uid + '/photoURL' ).set( this.$.icon.src );
+        let storageRef = firebase.storage().ref().child('images/' + this.user.uid + '.png');
+        let photoURLPromise = storageRef.putString(this.$.icon.src, 'data_url').then( snapshot => {
+          console.log('Uploaded a data_url string!');
+          storageRef.getDownloadURL().then( url => {
+            firebase.database().ref( 'profiles/' + this.user.uid + '/photoURL' ).set( url );
+          });
+        });
+
         let displayNamePromise = firebase.database().ref( 'profiles/' + this.user.uid + '/displayName' ).set( this.$.displayName.value );
         let promises = [];
 
-        if( this.$.icon.src && this.$.icon.src !== this.user.photoURL ){
+        if( this.$.icon.src ){
             promises.push(photoURLPromise);
         }
-        if( this.$.displayName.value && this.$.displayName.value !== this.user.displayName ){
+        if( this.$.displayName.value ){
             promises.push(displayNamePromise);
         }
 
