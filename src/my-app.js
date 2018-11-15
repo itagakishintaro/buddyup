@@ -217,9 +217,6 @@ class MyApp extends PolymerElement {
             if ( !user ) {
                 return;
             }
-            if ( this.page === "login-view" ) {
-                this.set( 'route.path', '/parties-view/' );
-            }
 
             // profile existance check. if not, then register user profile
             firebase.database().ref( 'profiles/' + user.uid ).once( 'value' ).then( snapshot => {
@@ -234,6 +231,9 @@ class MyApp extends PolymerElement {
                 if ( snapshot.val().skills ) {
                   userInfo.skills = snapshot.val().skills;
                 }
+                if ( this.page === "login-view" ) {
+                    this.set( 'route.path', '/parties-view/' );
+                }
               } else {
                 console.log( 'profile does not exist' );
                 let displayName = user.displayName ? user.displayName : user.email;
@@ -244,7 +244,11 @@ class MyApp extends PolymerElement {
                   email: user.email,
                   photoURL: photoURL,
                 };
-                firebase.database().ref( 'profiles/' + user.uid ).set( userInfo );
+                firebase.database().ref( 'profiles/' + user.uid ).set( userInfo ).then( () => {
+                  if ( this.page === "login-view" ) {
+                      this.set( 'route.path', '/parties-view/' );
+                  }
+                });
               }
               this.set( 'user', userInfo );
               this.set( 'user.uid', user.uid );
