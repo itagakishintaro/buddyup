@@ -108,9 +108,9 @@ class MyApp extends PolymerElement {
             <login-view name="login-view" user="{{user}}" loadingDisplay="{{loadingDisplay}}"></login-view>
             <auth-view name="auth-view" user="{{user}}"></auth-view>
             <setting-view name="setting-view" user="{{user}}"></setting-view>
-            <parties-view name="parties-view" user="{{user}}" profiles={{profiles}}></parties-view>
+            <parties-view name="parties-view" user="{{user}}"></parties-view>
             <users-view name="users-view" user="{{user}}"></users-view>
-            <chat-view name="chat-view" user="{{user}}" talker={{routeData.talker}} party={{subroute.path}} profiles={{profiles}}></chat-view>
+            <chat-view name="chat-view" user="{{user}}" talker={{routeData.talker}} party={{subroute.path}}></chat-view>
             <my-view404 name="view404"></my-view404>
           </iron-pages>
         </app-header-layout>
@@ -210,10 +210,6 @@ class MyApp extends PolymerElement {
         };
         firebase.initializeApp( config );
 
-        // get profiles
-        firebase.database().ref( '/profiles/' ).once( 'value' ).then( snapshot => {
-          this.set( 'profiles', snapshot.val() );
-        })
         // auth changed
         firebase.auth().onAuthStateChanged( user => {
             console.log( 'onAuthStateChanged', user );
