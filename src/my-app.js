@@ -201,12 +201,12 @@ class MyApp extends PolymerElement {
         console.log( 'initFirebase()' );
         // Initialize Firebase
         var config = {
-          apiKey: "AIzaSyAy5nyGyZabIm4ukKzxYhTKngs6SYFINhI",
-          authDomain: "buddyuptsep.firebaseapp.com",
-          databaseURL: "https://buddyuptsep.firebaseio.com",
-          projectId: "buddyuptsep",
-          storageBucket: "buddyuptsep.appspot.com",
-          messagingSenderId: "583795896284"
+          apiKey: "AIzaSyCcJNp96wO-CTVDQG2VwoDz2dR3lKTamNA",
+          authDomain: "buddyuponejapan.firebaseapp.com",
+          databaseURL: "https://buddyuponejapan.firebaseio.com",
+          projectId: "buddyuponejapan",
+          storageBucket: "buddyuponejapan.appspot.com",
+          messagingSenderId: "315780052223"
         };
         firebase.initializeApp( config );
 
