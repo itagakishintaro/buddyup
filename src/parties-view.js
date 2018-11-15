@@ -60,24 +60,22 @@ class PartiesView extends PolymerElement {
         this.parties = [];
         this.profiles = [];
         // 初期処理
-        firebase.auth().onAuthStateChanged( () => {
-            let getProfilesPromise = new Promise( ( resolve, reject ) => {
-                // profilesを取得する
-                this.getProfiles( resolve, reject );
-            } );
+        let getProfilesPromise = new Promise( ( resolve, reject ) => {
+            // profilesを取得する
+            this.getProfiles( resolve, reject );
+        } );
 
-            let getPartiesPromise = new Promise( ( resolve, reject ) => {
-                // partyを取得する
-                this.getParties( resolve, reject );
-            } );
+        let getPartiesPromise = new Promise( ( resolve, reject ) => {
+            // partyを取得する
+            this.getParties( resolve, reject );
+        } );
 
-            getProfilesPromise.then( () => {
-                //profilesを取得した後、partiesを取得
-                getPartiesPromise.then( () => {
-                  // partyを取得して初期処理が終わった後、他の人がpartyのmemberを変更したときのイベント処理を設定
-                  this.updateMembers();
-                } );
-              } );
+        getProfilesPromise.then( () => {
+          //profilesを取得した後、partiesを取得
+          getPartiesPromise.then( () => {
+            // partyを取得して初期処理が終わった後、他の人がpartyのmemberを変更したときのイベント処理を設定
+            this.updateMembers();
+          } );
         } );
     }
 
