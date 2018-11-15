@@ -10,42 +10,7 @@
         "!node_modules/@webcomponents/webcomponentsjs/gulpfile.js",
         "node_modules/@webcomponents/webcomponentsjs/bundles/*.js"
     ],
-    "builds": [{
-            "name": "esm-bundled",
-            "browserCapabilities": [
-                "es2015",
-                "modules"
-            ],
-            "js": {
-                "minify": true
-            },
-            "css": {
-                "minify": true
-            },
-            "html": {
-                "minify": true
-            },
-            "bundle": false,
-            "addServiceWorker": true
-        },
-        {
-            "name": "es6-bundled",
-            "browserCapabilities": [
-                "es2015"
-            ],
-            "js": {
-                "minify": true,
-                "transformModulesToAmd": true
-            },
-            "css": {
-                "minify": true
-            },
-            "html": {
-                "minify": true
-            },
-            "bundle": false,
-            "addServiceWorker": true
-        },
+    "builds": [
         {
             "name": "es5-bundled",
             "js": {
