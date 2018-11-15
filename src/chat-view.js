@@ -88,6 +88,7 @@ class ChatView extends PolymerElement {
         console.log( 'constructor()' );
         super();
         this.comments = [];
+        this.profiles = [];
         this.oldCommentsLength = 0;
         this.talkerProfile = { displayName: '', email: '', photo: 'images/manifest/icon-48x48.png' };
     }
@@ -125,25 +126,22 @@ class ChatView extends PolymerElement {
 
         // get comments to the new talker
         firebase.database().ref( 'profiles' ).once( 'value' ).then( snapshot => {
-            let profiles = snapshot.val();
+            this.profiles = snapshot.val();
             firebase.database().ref( 'comments/' + newTalker ).on( 'child_added', snapshot => {
                 let comment = snapshot.val();
                 let commentKey = snapshot.key;
-                if ( profiles[ comment.uid ] ) {
-                    comment.displayName = profiles[ comment.uid ].displayName;
-                    comment.photoURL = profiles[ comment.uid ].photoURL;
+                if ( this.profiles[ comment.uid ] ) {
+                    comment.displayName = this.profiles[ comment.uid ].displayName;
+                    comment.photoURL = this.profiles[ comment.uid ].photoURL;
                 }
                 comment.uid = commentKey;
                 this.push( 'comments', comment );
             } );
-        } );
 
-        // get the new talker's profile
-        firebase.database().ref( 'profiles/' + newTalker ).once( 'value' ).then( snapshot => {
-            this.talkerProfile = snapshot.val();
+            // set the new talker's profile
+            this.talkerProfile = this.profiles[ newTalker ];
+            this._getMembers();
         } );
-
-        this._getMembers();
     }
 
     _getMembers() {
@@ -151,6 +149,12 @@ class ChatView extends PolymerElement {
         this.members = Object.keys(snapshot.val().members)
           .filter( key => key !== this.talker ) // 自分を除外
           .map( key => {
+            if( !this.profiles[key] ){
+              firebase.database().ref( '/profiles/' + key ).once( 'value' ).then( snapshot => {
+                console.log(key);
+                this.profiles[ key ] = snapshot.val();
+              });
+            }
             let member = this.profiles[key];
             member.uid = key;
             return member;
