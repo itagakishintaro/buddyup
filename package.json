@@ -6,11 +6,12 @@
   "license": "BSD-3-Clause",
   "repository": "Polymer/polymer-starter-kit",
   "scripts": {
-    "start": "polymer serve",
+    "start": "polymer serve --port 8081 | npm run watch",
     "build": "polymer build",
     "lint": "polymer lint",
     "test": "polymer test",
-    "test:integration": "polymer build # test that psk builds without error with the CLI"
+    "test:integration": "polymer build # test that psk builds without error with the CLI",
+    "watch": "browser-sync start --browser 'Google Chrome' --proxy localhost:8081 --files \"src/**/*.*, index.html, *.js\""
   },
   "dependencies": {
     "@polymer/app-layout": "^3.0.1",
