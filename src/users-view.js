@@ -2,6 +2,7 @@ import { PolymerElement, html } from "@polymer/polymer/polymer-element.js";
 import SKILLS from "./util/Skills.js";
 import "./shared-styles.js";
 import "./loading-view.js";
+import "./users-buddyup-view.js";
 import "@polymer/paper-button/paper-button.js";
 import "@polymer/paper-dialog/paper-dialog.js";
 import "@polymer/paper-toast/paper-toast.js";
@@ -35,27 +36,6 @@ class UsersView extends PolymerElement {
           .dialog {
             padding-bottom: 1em;
           }
-
-          .favorite {
-            color: var(--paper-pink-400);
-          }
-
-          .favorite-large {
-            --iron-icon-height: 2em;
-            --iron-icon-width: 2em;
-          }
-
-          .favarite-not-yet {
-            color: var(--paper-pink-50);
-          }
-
-          .right {
-            float: right
-          }
-
-          .candidate-header {
-            margin: 1em 0;
-          }
         </style>
 
         <div class="container">
@@ -88,39 +68,7 @@ class UsersView extends PolymerElement {
           </div>
 
           <!-- Buddyup候補 -->
-          <template is="dom-if" if="{{ candidates.length }}">
-            <hr>
-            <div>
-              <template is="dom-repeat" items="{{candidates}}" as="candidate" indexAs="index">
-                <div class="candidate-header">
-                  <span>「{{ candidate.skill }}」でBuddyup!</span>
-                  <template is="dom-if" if="{{ candidate.buddyupTime }}">
-                    <iron-icon class="favorite favorite-large right" icon="favorite" on-click="unBuddyup" data-skill$="{{ candidate.skill }}" data-index$="{{index}}"></iron-icon>
-                  </template>
-                  <template is="dom-if" if="{{ !candidate.buddyupTime }}">
-                    <iron-icon class="favorite favorite-large favarite-not-yet right" icon="favorite" on-click="buddyup" data-skill$="{{ candidate.skill }}" data-index$="{{index}}"></iron-icon>
-                  </template>
-                </div>
-
-                <template is="dom-repeat" items="{{candidate.buddies}}" as="buddy">
-                  <template is="dom-if" if="{{ !_isMe(buddy.uid) }}">
-                    <div>
-                      <template is="dom-if" if="{{buddy.photoURL}}">
-                          <img src="{{buddy.photoURL}}" class="icon">
-                       </template>
-                       <template is="dom-if" if="{{!buddy.photoURL}}">
-                          <img src="images/manifest/icon-48x48.png" class="icon">
-                       </template>
-                       <span>{{buddy.displayName}}</span>
-                       <template is="dom-if" if="{{buddy.buddyupTime}}">
-                         <iron-icon class="favorite" icon="favorite"></iron-icon>
-                       </template>
-                    </div>
-                  </template>
-                </template>
-              </template>
-            </div>
-          </template>
+          <users-buddyup-view candidates={{candidates}} user={{user}}></users-buddyup-view>
 
           <hr>
           <div on-click="toggleFriends">
@@ -423,21 +371,14 @@ class UsersView extends PolymerElement {
       );
       if (sameSkillUsers.length >= 3) {
         // 自分を含めて3人になれば候補
-        this.candidates.push({ skill, buddies: sameSkillUsers });
+        let num = this.candidates.push({ skill, buddies: sameSkillUsers });
         // 誰かがBuddyupしたときの処理
-        this._buddyupEventHandler(skill);
+        this._buddyupEventHandler(skill, num - 1);
       }
     });
   }
 
-  _buddyupEventHandler(skill) {
-    let index;
-    this.candidates.forEach((candidate, i) => {
-      if (candidate.skill === skill) {
-        index = i;
-      }
-    });
-
+  _buddyupEventHandler(skill, index) {
     firebase
       .database()
       .ref("buddies/" + skill)
@@ -498,25 +439,6 @@ class UsersView extends PolymerElement {
   toggleOthers() {
     this.$.others.toggle();
     this.othersOpened = this.$.others.opened;
-  }
-
-  buddyup(e) {
-    let buddyupTime = new Date().toISOString();
-    firebase
-      .database()
-      .ref("buddies/" + e.target.dataset.skill + "/" + this.user.uid)
-      .set({ uid: this.user.uid, buddyupTime });
-  }
-
-  unBuddyup(e) {
-    firebase
-      .database()
-      .ref("buddies/" + e.target.dataset.skill + "/" + this.user.uid)
-      .set(null);
-  }
-
-  _isMe(uid) {
-    return uid === this.user.uid;
   }
 }
 
