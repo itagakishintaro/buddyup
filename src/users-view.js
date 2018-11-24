@@ -1,17 +1,17 @@
-import {PolymerElement, html} from '@polymer/polymer/polymer-element.js';
-import SKILLS from './util/Skills.js';
-import './shared-styles.js';
-import './loading-view.js';
-import '@polymer/paper-button/paper-button.js';
-import '@polymer/paper-dialog/paper-dialog.js';
-import '@polymer/paper-toast/paper-toast.js';
-import '@polymer/iron-collapse/iron-collapse.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@polymer/iron-icons/iron-icons.js';
+import { PolymerElement, html } from "@polymer/polymer/polymer-element.js";
+import SKILLS from "./util/Skills.js";
+import "./shared-styles.js";
+import "./loading-view.js";
+import "@polymer/paper-button/paper-button.js";
+import "@polymer/paper-dialog/paper-dialog.js";
+import "@polymer/paper-toast/paper-toast.js";
+import "@polymer/iron-collapse/iron-collapse.js";
+import "@polymer/iron-icon/iron-icon.js";
+import "@polymer/iron-icons/iron-icons.js";
 
 class UsersView extends PolymerElement {
   static get template() {
-    return html `
+    return html`
         <style include="shared-styles">
           .on {
             margin-bottom: 1em;
@@ -33,7 +33,28 @@ class UsersView extends PolymerElement {
           }
 
           .dialog {
-              padding-bottom: 1em;
+            padding-bottom: 1em;
+          }
+
+          .favorite {
+            color: var(--paper-pink-400);
+          }
+
+          .favorite-large {
+            --iron-icon-height: 2em;
+            --iron-icon-width: 2em;
+          }
+
+          .favarite-not-yet {
+            color: var(--paper-pink-50);
+          }
+
+          .right {
+            float: right
+          }
+
+          .candidate-header {
+            margin: 1em 0;
           }
         </style>
 
@@ -70,18 +91,32 @@ class UsersView extends PolymerElement {
           <template is="dom-if" if="{{ candidates.length }}">
             <hr>
             <div>
-              <template is="dom-repeat" items="{{candidates}}" as="candidate">
-                <div>「{{ candidate.skill }}」でBuddyup!</div>
-                <template is="dom-repeat" items="{{candidate.buddies}}">
-                  <div>
-                    <template is="dom-if" if="{{item.photoURL}}">
-                        <img src="{{item.photoURL}}" class="icon">
-                     </template>
-                     <template is="dom-if" if="{{!item.photoURL}}">
-                        <img src="images/manifest/icon-48x48.png" class="icon">
-                     </template>
-                     <span>{{item.displayName}}</span>
-                  </div>
+              <template is="dom-repeat" items="{{candidates}}" as="candidate" indexAs="index">
+                <div class="candidate-header">
+                  <span>「{{ candidate.skill }}」でBuddyup!</span>
+                  <template is="dom-if" if="{{ candidate.buddyupTime }}">
+                    <iron-icon class="favorite favorite-large right" icon="favorite" on-click="unBuddyup" data-skill$="{{ candidate.skill }}" data-index$="{{index}}"></iron-icon>
+                  </template>
+                  <template is="dom-if" if="{{ !candidate.buddyupTime }}">
+                    <iron-icon class="favorite favorite-large favarite-not-yet right" icon="favorite" on-click="buddyup" data-skill$="{{ candidate.skill }}" data-index$="{{index}}"></iron-icon>
+                  </template>
+                </div>
+
+                <template is="dom-repeat" items="{{candidate.buddies}}" as="buddy">
+                  <template is="dom-if" if="{{ !_isMe(buddy.uid) }}">
+                    <div>
+                      <template is="dom-if" if="{{buddy.photoURL}}">
+                          <img src="{{buddy.photoURL}}" class="icon">
+                       </template>
+                       <template is="dom-if" if="{{!buddy.photoURL}}">
+                          <img src="images/manifest/icon-48x48.png" class="icon">
+                       </template>
+                       <span>{{buddy.displayName}}</span>
+                       <template is="dom-if" if="{{buddy.buddyupTime}}">
+                         <iron-icon class="favorite" icon="favorite"></iron-icon>
+                       </template>
+                    </div>
+                  </template>
                 </template>
               </template>
             </div>
@@ -91,10 +126,10 @@ class UsersView extends PolymerElement {
           <div on-click="toggleFriends">
             <span>知り合い<span>
             <template is="dom-if" if="{{ !friendsOpened }}">
-              <iron-icon class="right" icon="expand-more"></iron-icon>
+              <iron-icon icon="expand-more"></iron-icon>
             </template>
             <template is="dom-if" if="{{ friendsOpened }}">
-              <iron-icon class="right" icon="expand-less"></iron-icon>
+              <iron-icon icon="expand-less"></iron-icon>
             </template>
           </div>
           <iron-collapse id="friends">
@@ -123,10 +158,10 @@ class UsersView extends PolymerElement {
           <div on-click="toggleOthers">
             <span>その他のユーザー<span>
             <template is="dom-if" if="{{ !othersOpened }}">
-              <iron-icon class="right" icon="expand-more"></iron-icon>
+              <iron-icon icon="expand-more"></iron-icon>
             </template>
             <template is="dom-if" if="{{ othersOpened }}">
-              <iron-icon class="right" icon="expand-less"></iron-icon>
+              <iron-icon icon="expand-less"></iron-icon>
             </template>
           </div>
           <iron-collapse id="others">
@@ -159,15 +194,15 @@ class UsersView extends PolymerElement {
   }
 
   constructor() {
-    console.log('constructor()');
     super();
     this.user = {};
+    this.buddyups = {};
     this.friendUIDs = [];
     this.friends = [];
     this.others = [];
-    this.loadingDisplay = 'none';
+    this.loadingDisplay = "none";
     this.target = {};
-    this.toastText = '更新しました!';
+    this.toastText = "更新しました!";
     this.candidates = [];
   }
 
@@ -176,10 +211,11 @@ class UsersView extends PolymerElement {
     this.$.friends.opened = true;
     this.friendsOpened = this.$.friends.opened;
     this.othersOpened = this.$.others.opened;
+    this.getUsers();
   }
 
   static get properties() {
-    return {user: Object}
+    return { user: Object };
   }
 
   getUsers() {
@@ -201,48 +237,62 @@ class UsersView extends PolymerElement {
 
   // Profilesを取得する
   _getProfiles(resolve, reject) {
-    firebase.database().ref('profiles/').once('value').then(snapshot => {
-      this.profiles = snapshot.val();
-      resolve();
-    });
+    firebase
+      .database()
+      .ref("profiles/")
+      .once("value")
+      .then(snapshot => {
+        this.profiles = snapshot.val();
+        resolve();
+      });
   }
 
   // 知り合い(friend)の定義はpartyに一緒に参加した人
   _getFriends(resolve, reject) {
-    this.loadingDisplay = 'block';
-    firebase.database().ref('parties/').once('value').then(snapshot => {
-      let parties = snapshot.val();
-      let friendUIDs = [];
-      Object.keys(parties).forEach(key => {
-        if (parties[key].members && Object.keys(parties[key].members).includes(this.user.uid)) { // 自分が含まれているなら
-          friendUIDs = friendUIDs.concat(Object.keys(parties[key].members));
-        }
-      });
-      friendUIDs = friendUIDs.filter((x, i, self) => self.indexOf(x) === i); // 重複排除
-      friendUIDs = friendUIDs.filter(x => x !== this.user.uid); // 自分を削除
+    this.loadingDisplay = "block";
+    firebase
+      .database()
+      .ref("parties/")
+      .once("value")
+      .then(snapshot => {
+        let parties = snapshot.val();
+        let friendUIDs = [];
+        Object.keys(parties).forEach(key => {
+          if (
+            parties[key].members &&
+            Object.keys(parties[key].members).includes(this.user.uid)
+          ) {
+            // 自分が含まれているなら
+            friendUIDs = friendUIDs.concat(Object.keys(parties[key].members));
+          }
+        });
+        friendUIDs = friendUIDs.filter((x, i, self) => self.indexOf(x) === i); // 重複排除
+        friendUIDs = friendUIDs.filter(x => x !== this.user.uid); // 自分を削除
 
-      this.friendUIDs = friendUIDs;
-      this.friends = this.friendUIDs.map(key => {
+        this.friendUIDs = friendUIDs;
+        this.friends = this.friendUIDs.map(key => {
+          let v = this.profiles[key];
+          v.uid = key;
+          return v;
+        });
+      })
+      .finally(() => {
+        resolve();
+        this.loadingDisplay = "none";
+      });
+  }
+
+  _getOthers() {
+    this.loadingDisplay = "block";
+    this.others = Object.keys(this.profiles)
+      .filter(key => key !== this.user.uid && !this.friendUIDs.includes(key)) // 自分でも知り合いでもない
+      .map(key => {
         let v = this.profiles[key];
         v.uid = key;
         return v;
       });
-    }). finally(() => {
-      resolve();
-      this.loadingDisplay = 'none';
-    });
-  }
 
-  _getOthers() {
-    this.loadingDisplay = 'block';
-    this.others = Object.keys(this.profiles).filter(key => key !== this.user.uid && !this.friendUIDs.includes(key)). // 自分でも知り合いでもない
-    map(key => {
-      let v = this.profiles[key];
-      v.uid = key;
-      return v;
-    });
-
-    this.loadingDisplay = 'none';
+    this.loadingDisplay = "none";
   }
 
   showSkills(e) {
@@ -258,97 +308,186 @@ class UsersView extends PolymerElement {
       this.target.uid = e.target.parentNode.dataset.uid;
 
       this._getCommentsText().then(() => {
-        this.relatedComments = this.comments.map(c => c.text.toLowerCase()).filter(text => text.indexOf(this.target.skill) >= 0);
+        this.relatedComments = this.comments
+          .map(c => c.text.toLowerCase())
+          .filter(text => text.indexOf(this.target.skill) >= 0);
         this.$.dialog.open();
       });
     } else {
-      this.relatedComments = this.comments.map(c => c.text.toLowerCase()).filter(text => text.indexOf(this.target.skill) >= 0);
+      this.relatedComments = this.comments
+        .map(c => c.text.toLowerCase())
+        .filter(text => text.indexOf(this.target.skill) >= 0);
       this.$.dialog.open();
     }
   }
 
   getSkills() {
-    this.loadingDisplay = 'block';
-    this._getCommentsText().then(text => this._callNLPSyntax(text)).then(tokens => this._extractSkills(tokens)).then(skills => {
-      if (this.target.uid === this.user.uid) {
-        this.user.skills = skills;
-        this.notifyPath('user.skills');
-      } else if (this.friendUIDs.includes(this.target.uid)) {
-        this.friends.forEach((o, i) => {
-          if (o.uid === this.target.uid) {
-            this.friends[i].skills = skills;
-            this.notifyPath('friends.' + i + '.skills');
-          }
-        });
-      } else {
-        this.others.forEach((o, i) => {
-          if (o.uid === this.target.uid) {
-            this.others[i].skills = skills;
-            this.notifyPath('others.' + i + '.skills');
-          }
-        });
-      }
-      if (skills) {
-        this.toastText = "更新しました！"
-        firebase.database().ref('profiles/' + this.target.uid + '/skills').set(skills);
-        this.setBuddyupCandidates(skills);
-      } else {
-        this.toastText = "現在のワードリストに一致するコメントがみつかりませんでした。"
-      }
-    }). finally(() => {
-      this.$.toast.open();
-      this.loadingDisplay = 'none';
-    });
+    this.loadingDisplay = "block";
+    this._getCommentsText()
+      .then(text => this._callNLPSyntax(text))
+      .then(tokens => this._extractSkills(tokens))
+      .then(skills => {
+        if (this.target.uid === this.user.uid) {
+          this.user.skills = skills;
+          this.notifyPath("user.skills");
+        } else if (this.friendUIDs.includes(this.target.uid)) {
+          this.friends.forEach((o, i) => {
+            if (o.uid === this.target.uid) {
+              this.friends[i].skills = skills;
+              this.notifyPath("friends." + i + ".skills");
+            }
+          });
+        } else {
+          this.others.forEach((o, i) => {
+            if (o.uid === this.target.uid) {
+              this.others[i].skills = skills;
+              this.notifyPath("others." + i + ".skills");
+            }
+          });
+        }
+        if (skills) {
+          this.toastText = "更新しました！";
+          firebase
+            .database()
+            .ref("profiles/" + this.target.uid + "/skills")
+            .set(skills);
+          this.setBuddyupCandidates(skills);
+        } else {
+          this.toastText =
+            "現在のワードリストに一致するコメントがみつかりませんでした。";
+        }
+      })
+      .finally(() => {
+        this.$.toast.open();
+        this.loadingDisplay = "none";
+      });
   }
 
   _getCommentsText() {
-    return firebase.database().ref('comments/' + this.target.uid).once('value').then(snapshot => {
-      if (!snapshot.val()) {
-        return;
-      }
-      this.comments = Object.keys(snapshot.val()).map(key => snapshot.val()[key]). // Objectから配列に
-      filter(comment => comment.text); // 空のコメントを削除
-      let text = '';
-      this.comments.forEach(c => {
-        text = text + '\n' + c.text.toLowerCase();
+    return firebase
+      .database()
+      .ref("comments/" + this.target.uid)
+      .once("value")
+      .then(snapshot => {
+        if (!snapshot.val()) {
+          return;
+        }
+        this.comments = Object.keys(snapshot.val())
+          .map(key => snapshot.val()[key]) // Objectから配列に
+          .filter(comment => comment.text); // 空のコメントを削除
+        let text = "";
+        this.comments.forEach(c => {
+          text = text + "\n" + c.text.toLowerCase();
+        });
+        return text;
       });
-      return text;
-    });
   }
 
   _callNLPSyntax(text) {
     if (!text) {
       return;
     }
-    const url = 'https://us-central1-buddyup-204005.cloudfunctions.net/NLP-syntax';
+    const url =
+      "https://us-central1-buddyup-204005.cloudfunctions.net/NLP-syntax";
     let data = {
       message: text
     };
     return fetch(url, {
       body: JSON.stringify(data),
-      method: 'POST'
-    }).then(response => response.json()).then(json => json[0].tokens);
+      method: "POST"
+    })
+      .then(response => response.json())
+      .then(json => json[0].tokens);
   }
 
   _extractSkills(tokens) {
     if (!tokens) {
       return;
     }
-    let nouns = tokens.filter(v => ['NOUN', 'X'].includes(v.partOfSpeech.tag)). // 名詞とその他のみにフィルター
-    map(v => v.lemma). // 語幹を抽出（英語のときの活用などが原型になる）
-    filter(x => x.length > 1). // 1文字を排除
-    filter((x, i, self) => self.indexOf(x) === i); // 重複排除
+    let nouns = tokens
+      .filter(v => ["NOUN", "X"].includes(v.partOfSpeech.tag)) // 名詞とその他のみにフィルター
+      .map(v => v.lemma) // 語幹を抽出（英語のときの活用などが原型になる）
+      .filter(x => x.length > 1) // 1文字を排除
+      .filter((x, i, self) => self.indexOf(x) === i); // 重複排除
     return nouns.filter(v => SKILLS.includes(v));
   }
 
   setBuddyupCandidates(skills) {
-    let users = [].concat(this.friends).concat(this.others);
-    skills.forEach( skill => {
-      let buddies = users.filter(u => (u.skills && u.skills.includes(skill)));
-      if ( buddies.length >= 2 ){ // 自分を含めて3人になれば候補
-        this.push('candidates', { skill, buddies });
+    let users = []
+      .concat(this.friends)
+      .concat(this.others)
+      .concat(this.user);
+    skills.forEach(skill => {
+      let sameSkillUsers = users.filter(
+        u => u.skills && u.skills.includes(skill)
+      );
+      if (sameSkillUsers.length >= 3) {
+        // 自分を含めて3人になれば候補
+        this.candidates.push({ skill, buddies: sameSkillUsers });
+        // 誰かがBuddyupしたときの処理
+        this._buddyupEventHandler(skill);
       }
     });
+  }
+
+  _buddyupEventHandler(skill) {
+    let index;
+    this.candidates.forEach((candidate, i) => {
+      if (candidate.skill === skill) {
+        index = i;
+      }
+    });
+
+    firebase
+      .database()
+      .ref("buddies/" + skill)
+      .on("value", snapshot => {
+        if (!snapshot.val()) {
+          this.candidates[index].buddyupTime = null;
+          this.notifyPath("candidates." + index + ".buddyupTime");
+          return;
+        }
+        // このスキルのBuddy
+        let buddies = Object.keys(snapshot.val()).map(key => {
+          let buddy = Object.assign({}, this.profiles[key]); // プロファイルを汚染しないように値渡し
+          buddy.uid = key;
+          buddy.buddyupTime = snapshot.val()[key].buddyupTime;
+          return buddy;
+        });
+
+        // このスキルのBuddy候補（target）にBuddyになっている人がいたら、Buddy情報で更新
+        let target = this.candidates.filter(v => v.skill === skill)[0];
+        target.buddies = target.buddies.map(buddyCandidate => {
+          let newBuddy = buddyCandidate;
+          // Buddyがいる場合は更新
+          buddies.forEach(buddy => {
+            if (buddyCandidate.uid === buddy.uid) {
+              newBuddy = buddy;
+            }
+          });
+          // Buddyがいない場合はそのまま
+          return newBuddy;
+        });
+
+        // 自分がいたら、buddyupTimeを設定
+        target.buddyupTime = null;
+        buddies.forEach(buddy => {
+          if (buddy.uid === this.user.uid) {
+            target.buddyupTime = buddy.buddyupTime;
+          }
+        });
+
+        let newCandidates = this.candidates.map(candidate => {
+          // このスキルのBuddy候補を更新
+          if (candidate.skill === skill) {
+            return target;
+          }
+          return candidate;
+        });
+
+        this.set("candidates", newCandidates);
+        this.notifyPath("candidates." + index + ".buddyupTime");
+      });
   }
 
   toggleFriends() {
@@ -361,6 +500,24 @@ class UsersView extends PolymerElement {
     this.othersOpened = this.$.others.opened;
   }
 
+  buddyup(e) {
+    let buddyupTime = new Date().toISOString();
+    firebase
+      .database()
+      .ref("buddies/" + e.target.dataset.skill + "/" + this.user.uid)
+      .set({ uid: this.user.uid, buddyupTime });
+  }
+
+  unBuddyup(e) {
+    firebase
+      .database()
+      .ref("buddies/" + e.target.dataset.skill + "/" + this.user.uid)
+      .set(null);
+  }
+
+  _isMe(uid) {
+    return uid === this.user.uid;
+  }
 }
 
-window.customElements.define('users-view', UsersView);
+window.customElements.define("users-view", UsersView);
