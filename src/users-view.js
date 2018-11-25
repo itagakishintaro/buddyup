@@ -3,6 +3,7 @@ import SKILLS from "./util/Skills.js";
 import "./shared-styles.js";
 import "./loading-view.js";
 import "./users-buddyup-view.js";
+import "./util/user-photo.js";
 import "@polymer/paper-button/paper-button.js";
 import "@polymer/paper-dialog/paper-dialog.js";
 import "@polymer/paper-toast/paper-toast.js";
@@ -51,12 +52,7 @@ class UsersView extends PolymerElement {
           <!-- 自分 -->
           <div class="user">
             <template is="dom-if" if="{{user.uid}}">
-                <template is="dom-if" if="{{user.photoURL}}">
-                  <img src="{{user.photoURL}}" class="icon">
-                </template>
-                <template is="dom-if" if="{{!user.photoURL}}">
-                  <img src="images/manifest/icon-48x48.png" class="icon">
-                </template>
+                <user-photo user={{user}}></user-photo>
                 <span on-click="showSkills" data-uid$="{{user.uid}}" data-photo$="{{user.photoURL}}" data-name$="{{user.displayName}}" class="username">{{user.displayName}}</span>
                 <!-- skills -->
                 <div class="skill" data-uid$="{{user.uid}}">
@@ -84,12 +80,7 @@ class UsersView extends PolymerElement {
             <div class="collapse-content">
               <template is="dom-repeat" items="{{friends}}">
                 <div class="user">
-                  <template is="dom-if" if="{{item.photoURL}}">
-                    <img src="{{item.photoURL}}" class="icon">
-                  </template>
-                  <template is="dom-if" if="{{!item.photoURL}}">
-                    <img src="images/manifest/icon-48x48.png" class="icon">
-                  </template>
+                  <user-photo user={{item}}></user-photo>
                   <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
                   <!-- skills -->
                   <div class="skill" data-uid$="{{item.uid}}">
@@ -116,12 +107,7 @@ class UsersView extends PolymerElement {
             <div class="collapse-content">
               <template is="dom-repeat" items="{{others}}">
                 <div class="user">
-                  <template is="dom-if" if="{{item.photoURL}}">
-                    <img src="{{item.photoURL}}" class="icon">
-                  </template>
-                  <template is="dom-if" if="{{!item.photoURL}}">
-                    <img src="images/manifest/icon-48x48.png" class="icon">
-                  </template>
+                  <user-photo user={{item}}></user-photo>
                   <span on-click="showSkills" data-uid$="{{item.uid}}" data-photo$="{{item.photoURL}}" data-name$="{{item.displayName}}" class="username">{{item.displayName}}</span>
                   <!-- skills -->
                   <div class="skill" data-uid$="{{item.uid}}">
