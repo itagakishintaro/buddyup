@@ -4,6 +4,7 @@ import "./shared-styles.js";
 import "./loading-view.js";
 import "./users-buddyup-view.js";
 import "./util/user-photo.js";
+import "./util/expand-icon.js";
 import "@polymer/paper-button/paper-button.js";
 import "@polymer/paper-dialog/paper-dialog.js";
 import "@polymer/paper-toast/paper-toast.js";
@@ -28,10 +29,6 @@ class UsersView extends PolymerElement {
 
           .skill {
             margin-bottom: 1em;
-          }
-
-          .icon {
-            vertical-align: bottom;
           }
 
           .dialog {
@@ -69,12 +66,7 @@ class UsersView extends PolymerElement {
           <hr>
           <div on-click="toggleFriends">
             <span>知り合い<span>
-            <template is="dom-if" if="{{ !friendsOpened }}">
-              <iron-icon icon="expand-more"></iron-icon>
-            </template>
-            <template is="dom-if" if="{{ friendsOpened }}">
-              <iron-icon icon="expand-less"></iron-icon>
-            </template>
+            <expand-icon opened={{friendsOpened}}></expand-icon>
           </div>
           <iron-collapse id="friends">
             <div class="collapse-content">
@@ -96,12 +88,7 @@ class UsersView extends PolymerElement {
           <hr>
           <div on-click="toggleOthers">
             <span>その他のユーザー<span>
-            <template is="dom-if" if="{{ !othersOpened }}">
-              <iron-icon icon="expand-more"></iron-icon>
-            </template>
-            <template is="dom-if" if="{{ othersOpened }}">
-              <iron-icon icon="expand-less"></iron-icon>
-            </template>
+            <expand-icon opened={{othersOpened}}></expand-icon>
           </div>
           <iron-collapse id="others">
             <div class="collapse-content">
