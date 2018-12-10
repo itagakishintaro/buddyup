@@ -92,21 +92,26 @@ class SettingView extends PolymerElement {
     }
 
     update() {
-        let storageRef = firebase.storage().ref().child('images/' + this.user.uid + '.png');
-        let photoURLPromise = storageRef.putString(this.$.icon.src, 'data_url').then( snapshot => {
-          console.log('Uploaded a data_url string!');
-          storageRef.getDownloadURL().then( url => {
-            firebase.database().ref( 'profiles/' + this.user.uid + '/photoURL' ).set( url );
-          });
-        });
-
-        let displayNamePromise = firebase.database().ref( 'profiles/' + this.user.uid + '/displayName' ).set( this.$.displayName.value );
         let promises = [];
+        let photoURLPromise = null;
+        let displayNamePromise = null;
 
         if( this.$.icon.src ){
-            promises.push(photoURLPromise);
+            try {
+                let storageRef = firebase.storage().ref().child('images/' + this.user.uid + '.png');
+                photoURLPromise = storageRef.putString(this.$.icon.src, 'data_url').then( snapshot => {
+                    console.log('Uploaded a data_url string!');
+                    storageRef.getDownloadURL().then( url => {
+                        firebase.database().ref( 'profiles/' + this.user.uid + '/photoURL' ).set( url );
+                    });
+                });
+                promises.push(photoURLPromise);
+            } catch (e){
+
+            }
         }
         if( this.$.displayName.value ){
+            displayNamePromise = firebase.database().ref( 'profiles/' + this.user.uid + '/displayName' ).set( this.$.displayName.value );
             promises.push(displayNamePromise);
         }
 
