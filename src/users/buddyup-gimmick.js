@@ -27,7 +27,7 @@ class BuddyupGimmick extends PolymerElement {
   }
 
   _activeChanged(newValue, oldValue) {
-    if (newValue) {
+    if (newValue && this.skill) {
       this.$.dialog.open();
     }
   }

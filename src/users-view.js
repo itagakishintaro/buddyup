@@ -48,7 +48,6 @@ class UsersView extends PolymerElement {
           </paper-dialog>
 
           <comments-dialog comments={{relatedComments}}></comments-dialog>
-
           <buddyup-gimmick skill={{gimmickSkill}} active={{gimmickActive[gimmickSkill]}}></buddyup-gimmick>
 
           <!-- 自分 -->
@@ -344,6 +343,9 @@ class UsersView extends PolymerElement {
       .concat(this.friends)
       .concat(this.others)
       .concat(this.user);
+    if (!skills) {
+      return;
+    }
     skills.forEach(skill => {
       let sameSkillUsers = users.filter(
         u => u.skills && u.skills.includes(skill)

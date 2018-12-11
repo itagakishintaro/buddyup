@@ -256,6 +256,7 @@ class MyApp extends PolymerElement {
 
     // auth changed
     firebase.auth().onAuthStateChanged(user => {
+      console.log("---", firebase.auth().currentUser);
       console.log("onAuthStateChanged", user);
 
       if (!user) {
