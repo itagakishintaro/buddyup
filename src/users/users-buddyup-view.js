@@ -1,5 +1,5 @@
 import { PolymerElement, html } from "@polymer/polymer/polymer-element.js";
-import "./shared-styles.js";
+import "../shared-styles.js";
 import "@polymer/iron-icon/iron-icon.js";
 import "@polymer/iron-icons/iron-icons.js";
 
@@ -45,23 +45,31 @@ class UsersBuddyupView extends PolymerElement {
             >
               <div class="candidate-header">
                 <span>「{{ candidate.skill }}」でBuddyup!</span>
-                <template is="dom-if" if="{{ candidate.buddyupTime }}">
-                  <iron-icon
-                    class="favorite favorite-large right"
-                    icon="favorite"
-                    on-click="unBuddyup"
-                    data-skill$="{{ candidate.skill }}"
-                    data-index$="{{index}}"
-                  ></iron-icon>
-                </template>
-                <template is="dom-if" if="{{ !candidate.buddyupTime }}">
-                  <iron-icon
-                    class="favorite favorite-large favarite-not-yet right"
-                    icon="favorite"
-                    on-click="buddyup"
-                    data-skill$="{{ candidate.skill }}"
-                    data-index$="{{index}}"
-                  ></iron-icon>
+                <template
+                  is="dom-repeat"
+                  items="{{candidate.buddies}}"
+                  as="buddy"
+                >
+                  <template is="dom-if" if="{{ _isMe(buddy.uid) }}">
+                    <template is="dom-if" if="{{ buddy.buddyupTime }}">
+                      <iron-icon
+                        class="favorite favorite-large right"
+                        icon="favorite"
+                        on-click="unBuddyup"
+                        data-skill$="{{ candidate.skill }}"
+                        data-index$="{{index}}"
+                      ></iron-icon>
+                    </template>
+                    <template is="dom-if" if="{{ !buddy.buddyupTime }}">
+                      <iron-icon
+                        class="favorite favorite-large favarite-not-yet right"
+                        icon="favorite"
+                        on-click="buddyup"
+                        data-skill$="{{ candidate.skill }}"
+                        data-index$="{{index}}"
+                      ></iron-icon>
+                    </template>
+                  </template>
                 </template>
               </div>
 

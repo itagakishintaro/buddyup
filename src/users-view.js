@@ -2,7 +2,8 @@ import { PolymerElement, html } from "@polymer/polymer/polymer-element.js";
 import SKILLS from "./util/Skills.js";
 import "./shared-styles.js";
 import "./loading-view.js";
-import "./users-buddyup-view.js";
+import "./users/users-buddyup-view.js";
+import "./users/buddyup-gimmick.js";
 import "./util/user-photo.js";
 import "./util/expand-icon.js";
 import "@polymer/paper-button/paper-button.js";
@@ -32,7 +33,7 @@ class UsersView extends PolymerElement {
           }
 
           .dialog {
-            padding-bottom: 1em;
+            padding-bottom: 2em;
           }
         </style>
 
@@ -45,6 +46,10 @@ class UsersView extends PolymerElement {
               <div>{{item}}</div>
             </template>
           </paper-dialog>
+
+          <comments-dialog comments={{relatedComments}}></comments-dialog>
+
+          <buddyup-gimmick skill={{gimmickSkill}} active={{gimmickActive[gimmickSkill]}}></buddyup-gimmick>
 
           <!-- 自分 -->
           <div class="user">
@@ -125,6 +130,7 @@ class UsersView extends PolymerElement {
     this.target = {};
     this.toastText = "更新しました!";
     this.candidates = [];
+    this.gimmickActive = {};
   }
 
   ready() {
@@ -356,12 +362,24 @@ class UsersView extends PolymerElement {
       .database()
       .ref("buddies/" + skill)
       .on("value", snapshot => {
+        let candidateBuddies = this.candidates[index].buddies;
+        // Buddyがいないとき
         if (!snapshot.val()) {
-          this.candidates[index].buddyupTime = null;
-          this.notifyPath("candidates." + index + ".buddyupTime");
+          candidateBuddies = candidateBuddies.map((candidate, no) => {
+            candidate.buddyupTime = null;
+            this.notifyPath("candidates." + index + ".buddies." + no);
+            this.notifyPath(
+              "candidates." + index + ".buddies." + no + ".buddyupTime"
+            );
+            return candidate;
+          });
           return;
         }
-        // このスキルのBuddy
+        // このスキルのBuddyのbuddyupTimeを設定
+        candidateBuddies = candidateBuddies.map(candidate => {
+          candidate.buddyupTime = null;
+          return candidate;
+        });
         let buddies = Object.keys(snapshot.val()).map(key => {
           let buddy = Object.assign({}, this.profiles[key]); // プロファイルを汚染しないように値渡し
           buddy.uid = key;
@@ -379,16 +397,7 @@ class UsersView extends PolymerElement {
               newBuddy = buddy;
             }
           });
-          // Buddyがいない場合はそのまま
           return newBuddy;
-        });
-
-        // 自分がいたら、buddyupTimeを設定
-        target.buddyupTime = null;
-        buddies.forEach(buddy => {
-          if (buddy.uid === this.user.uid) {
-            target.buddyupTime = buddy.buddyupTime;
-          }
         });
 
         let newCandidates = this.candidates.map(candidate => {
@@ -400,8 +409,33 @@ class UsersView extends PolymerElement {
         });
 
         this.set("candidates", newCandidates);
-        this.notifyPath("candidates." + index + ".buddyupTime");
+        candidateBuddies.forEach((v, no) => {
+          this.notifyPath("candidates." + index + ".buddies." + no);
+          this.notifyPath(
+            "candidates." + index + ".buddies." + no + ".buddyupTime"
+          );
+        });
+
+        console.log(this.candidates);
+        let number = this.candidates[index].buddies.filter(candidate => {
+          // 60分以内ならOK
+          return (
+            Date.now() - new Date(candidate.buddyupTime).getTime() < 3600000
+          );
+        }).length;
+        console.log("number", number);
+        if (number >= 3) {
+          this._openBuddyupGimmick(skill);
+        }
       });
+  }
+
+  _openBuddyupGimmick(skill) {
+    // 連続しておきたときのために、1秒のwaitをとる
+    setTimeout(() => {
+      this.gimmickSkill = skill;
+      this.gimmickActive[skill] = true;
+    }, 1000);
   }
 
   toggleFriends() {
