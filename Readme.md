@@ -1,7 +1,7 @@
 ＃Architecture
 
-* mBaaS(Hosting, Database, Authentication): [firebase](https://console.firebase.google.com/)
-* Framework: [Polymer](https://www.polymer-project.org/)
+- mBaaS(Hosting, Database, Authentication): [firebase](https://console.firebase.google.com/)
+- Framework: [Polymer](https://www.polymer-project.org/)
 
 # Contribute
 
@@ -15,97 +15,117 @@ npm install
 
 ## build & deploy
 
+以下の npm start をすると、3000 ポートで起動し、ソースを変更するとオートリロードします。起動してうまく表示されないときは 8081 ポートで一度アクセスするとうまくいきます。
+
 ```
-polymer serve // local check
+npm start // local check
 polymer build // JS transpile etc
 firebase deploy // deploy to firebase
 ```
 
----
+## Facebook 認証の環境構築
 
-# Polymer App Toolbox - Starter Kit
+Facebook 認証は https じゃないと動かないので、次の手順が必要。
 
-[![Build Status](https://travis-ci.org/Polymer/polymer-starter-kit.svg?branch=master)](https://travis-ci.org/Polymer/polymer-starter-kit)
+1. ngrok をインストール
 
-This template is a starting point for building apps using a drawer-based
-layout. The layout is provided by `app-layout` elements.
-
-This template, along with the `polymer-cli` toolchain, also demonstrates use
-of the "PRPL pattern" This pattern allows fast first delivery and interaction with
-the content at the initial route requested by the user, along with fast subsequent
-navigation by pre-caching the remaining components required by the app and
-progressively loading them on-demand as the user navigates through the app.
-
-The PRPL pattern, in a nutshell:
-
-* **Push** components required for the initial route
-* **Render** initial route ASAP
-* **Pre-cache** components for remaining routes
-* **Lazy-load** and progressively upgrade next routes on-demand
-
-### Setup
-
-##### Prerequisites
-
-Install [Polymer CLI](https://github.com/Polymer/polymer-cli) using
-[npm](https://www.npmjs.com) (we assume you have pre-installed [node.js](https://nodejs.org)).
-
-    npm install -g polymer-cli@next
-
-##### Initialize project from template
-
-    mkdir my-app
-    cd my-app
-    polymer init polymer-3-starter-kit
-
-### Start the development server
-
-This command serves the app at `http://127.0.0.1:8081` and provides basic URL
-routing for the app:
-
-    npm start
-
-### Build
-
-The `npm run build` command builds your Polymer application for production, using build configuration options provided by the command line or in your project's `polymer.json` file.
-
-You can configure your `polymer.json` file to create multiple builds. This is necessary if you will be serving different builds optimized for different browsers. You can define your own named builds, or use presets. See the documentation on [building your project for production](https://www.polymer-project.org/3.0/toolbox/build-for-production) for more information.
-
-The Polymer Starter Kit is configured to create three builds. These builds will be output to a subdirectory under the `build/` directory as follows:
+Mac の場合
 
 ```
-build/
-  es5-bundled/
-  es6-bundled/
-  esm-bundled/
+brew cask install ngrok
 ```
 
-* `es5-bundled` is a bundled, minified build with a service worker. ES6 code is compiled to ES5 for compatibility with older browsers.
-* `es6-bundled` is a bundled, minified build with a service worker. ES6 code is served as-is. This build is for browsers that can handle ES6 code - see [building your project for production](https://www.polymer-project.org/3.0/toolbox/build-for-production#compiling) for a list.
-* `esm-bundled` is a bundled, minified build with a service worker. It uses standard ES module import/export statements for browsers that support them.
+2. ngrok で https の URL をメモ
 
-Run `polymer help build` for the full list of available options and optimizations. Also, see the documentation on the [polymer.json specification](https://www.polymer-project.org/3.0/docs/tools/polymer-json) and [building your Polymer application for production](https://www.polymer-project.org/3.0/toolbox/build-for-production).
+```
+brew cask install ngrok
+```
 
-### Preview the build
+3. 準備
 
-This command serves your app. Replace `build-folder-name` with the folder name of the build you want to serve.
+以下の「準備」に従って、Facebook 認証を設定する。
 
-    npm start build/build-folder-name/
+https://firebase.google.com/docs/auth/web/facebook-login?hl=ja
 
-### Run tests
+4. firebase の設定
 
-This command will run [Web Component Tester](https://github.com/Polymer/web-component-tester)
-against the browsers currently installed on your machine:
+firebase の Authentication-ログイン方法の「承認済みドメイン」に 2 でメモした https の URL を追加する。
 
-    npm test
+5. facebook の設定
 
-If running Windows you will need to set the following environment variables:
+- 設定-ベーシック-アプリドメイン　に 2 でメモした https の URL を追加する。
+- Facebook ログイン-設定-有効な OAuth リダイレクト URI に 2 でメモした https の URL+"/\_\_/auth/handler"を追加する。
 
-- LAUNCHPAD_BROWSERS
-- LAUNCHPAD_CHROME
+# BuddyUp イベント開催手順　（コミュニティ生成）
 
-Read More here [daffl/launchpad](https://github.com/daffl/launchpad#environment-variables-impacting-local-browsers-detection)
-
----
-
-Looking for our older PSK2 Polycast or migration blog post? See [the previous README](https://github.com/Polymer/polymer-starter-kit/blob/v3.2.1/README.md).
+1 コミュニティを台帳に登録する
+このワークシートの「コミュティ一覧」　タブに記載する
+Slack にコミュニティ用 Ch を切る
+2 Buddyup のソースをクローン ↓
+https://github.com/itagakishintaro/buddyup
+１ 画面内「Clone or Download」から URL をコピー
+２ 適当なフォルダを作成
+３　 FJ-WAN の場合、プロキシ認証のため、以下のコマンドをたたく
+　　 git config --global http.proxy http://okamura.kana%40jp.fujitsu.com:password@nmb.proxy.nic.fujitsu.com:8080
+４ 配下で　 git clone https://github.com/itagakishintaro/buddyup.git
+3 firebase のアプリを作る
+https://console.firebase.google.com/
+はじめに
+[+] をクリックする　 → 　プロジェクトを作成　プロジェクト名は「buddyup[コミュニティ名]」にする　　　例： buddyupONEJAPAN
+作成したプロジェクトをクリック
+Project Overview 欄の　「歯車マーク」をクリック
+メンバーを追加で下記を追加 (オーナー)
+itagaki.shintaro@gmail.com
+sumioka.motoshi@gmail.com
+「開発」をクリック
+Authentication
+「ログイン方法を設定」をクリック
+メールアドレスとパスワードを有効に　（上だけ）
+自分の名前か、sumioka.motoshi@gmail.com を設定
+google アカウントを有効に
+Database
+Realtime Database の欄で。（Cloud Firestore ではない！！！）
+「データベースを作成」をクリック
+テストモードで開始
+有効にする
+Storage
+「スタートガイド」をクリック
+Hosting
+「使ってみる」をクリック
+4 ソースコードを変更する
+.firebaserc
+プロジェクトＩＤを変更する　例：　 buddyup-204005 　　 → 　　 buddyup-23skf
+src/my-app.js
+作成したプロジェクトに入り、冒頭アプリ追加の部分にある</>からスニペットの Config の内容をコピー
+コピーした Config の内容をソースの./src/my-app.js の 248 行目 Config にコピー
+5 firebase のツール類をインストールする　（https://github.com/itagakishintaro/buddyup/blob/master/Readme.md）
+nodejs, npm をインストールする　（nodejs は、javascript のエンジン、npm はパッケージ管理ツール）
+https://nodejs.org/ja/ ※ nodejs をインストールすると両方インストールされる
+必要に応じて npm のプロキシ設定をする https://qiita.com/Shogo_TODA/items/dfbc5104f6b35612e838
+下記のコマンドを実行する
+npm install -g polymer-cli@next --unsafe-perm
+npm install -g firebase-tools
+npm install
+※　ダメなら、 --unsafe-perm 　をつけたり、sudo でやってみよう
+6 手元で動作確認する
+下記のコマンドを実行する
+polymer serve
+ローカルで動いているかブラウザで確認する
+http://localhost:8081
+7 firebase にデプロイする
+下記のコマンドを実行する
+polymer build (polymer serve 　は実行しっぱなしで別プロンプトで実行してもよいし CtrlC してもよい)
+firebase login （社内からはできてない、社外ネットワークからログイン）
+firebase deploy (同じく社外ネットワークから推奨)　(成功すると Hosting url にデプロイして Web 上にできたアプリの URL が記載されている)
+インターネット上で動いているか、ブラウザやスマホなどで確認する
+8 コミュニティ一覧に追加する
+firebase deploy の出力で Hosting url 　の欄に書かれた URL を「コミュニティ一覧」タブの URL 欄に記載する
+9 確認
+ログインする
+設定＞プロフィール画像の変更　 → 　できる
+交流会の登録をする　 → 　できる
+交流会に参加する　 → 　参加がＣＡＮＣＥＬに変わる（変わらなかったらリロード）
+自分のチャットに入る　 → 　入れる
+プロフィール一覧を表示する　 → 　自分が出てくる
+自分の名前をクリックする　　 → 　タグが表示される
+ユーザ一覧を表示する　 → 　まだ出てこない（笑）
