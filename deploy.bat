@@ -2,9 +2,13 @@
 
 rem コミュニティごとにgitのブランチを一つずつ作る。
 
+if "%1" == "" (
+  echo usage: % deploy.bat community_name 
+  exit /b 1
+}
+
 rem echo doing "npm install"  
 rem call npm install
-
 
 
 echo we will checkout master branch, ok?
